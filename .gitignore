@@ -4,6 +4,7 @@ __pycache__/
 *.py~
 
 # temporairement JH
+Ui_mon_parcellaire_dockwidget_base.py
 *.zip
 Makefile
 test/
