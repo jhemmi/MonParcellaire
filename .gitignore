@@ -1,0 +1,15 @@
+﻿# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.py~
+
+# temporairement JH
+*.zip
+Makefile
+test/
+i18n/
+scripts/
+.eric6project/
+MonParcellaire.e4p
+# A vérifier
+resources.qrc
