@@ -9,7 +9,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-import os
+#import os
 # import sys
 from qgis.core import (
   Qgis,  QgsVectorLayer, QgsMessageLog,  
@@ -77,7 +77,7 @@ EXT_geojson=".geojson"
 
 # NOM du GPKG et de ses tables 
 MonParcellaire_GPKG="MonParcellaire" + EXT_gpkg
-MesFondsDeCarte_GPKG="MesFondsDeCarte" + EXT_gpkg
+MesFondsDeCarte_GPKG="MesFondsDePlan" + EXT_gpkg
 GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"
@@ -228,16 +228,7 @@ def my_print( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX
         else:
             print( chaine)
             
-def nommage_vecteur( Repertoire, Nom_vecteur, Extension=EXT_geojson, doitExister="Oui"):
-    """ Calcule le nom du vecteur et vérifie si le chemin au vecteur existe
-    Rend le nom """
-    # Assert
-    if not os.path.isdir( Repertoire):
-        erreur_repertoire( Repertoire)
-    chemin_complet = os.path.join( Repertoire, Nom_vecteur + Extension)
-    if  doitExister == "Oui" and not os.path.isfile( chemin_complet):
-        erreur_vecteur( Repertoire,  Nom_vecteur + Extension)
-    return chemin_complet
+
 
 def ouvre_vecteur( Repertoire, Nom_vecteur, Libelle, mon_dialogue=None, Extension=EXT_geojson):
     """ Ouvre le vecteur, vérifie sa validité

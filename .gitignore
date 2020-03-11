@@ -9,6 +9,7 @@ Ui_mon_parcellaire_dockwidget_base.py
 Makefile
 test/
 i18n/
+data/MonParcellaire_SAUVEGARDE
 scripts/
 .eric6project/
 MonParcellaire.e4p

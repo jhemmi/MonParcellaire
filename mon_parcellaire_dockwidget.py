@@ -107,7 +107,18 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Choisir library calcul itineraire
         #LIB_ITINERAIRE = s.value("MonParcellaire/LibItineraire", "QGIS")
         return CHOIX_TOUT_VOIR, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE #, LIB_ITINERAIRE
-
+    
+    def nommage_vecteur( self, Repertoire, nomVecteur, Extension=EXT_geojson, doitExister="Oui"):
+        """ Calcule le nom du vecteur et vérifie si le chemin au vecteur existe
+        Rend le nom """
+        # Assert
+        if not os.path.isdir( Repertoire):
+            erreur_repertoire( Repertoire)
+        chemin_complet = os.path.join( Repertoire, nomVecteur + Extension)
+        if  doitExister == "Oui" and not os.path.isfile( chemin_complet):
+            erreur_vecteur( Repertoire,  nomVecteur + Extension)
+        return chemin_complet
+    
     def nommages_gpkg( self, Repertoire, nomVecteur, nomGPKG=MonParcellaire_GPKG, doitExister="Oui"):
         """ Calcule le nom du vecteur et vérifie si le chemin au vecteur existe
         Rend le nom du gpkg, le nom pour ouvrir avec QGIS API"""
@@ -119,12 +130,12 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             erreur_gpkg( nomGPKG,  CHEMIN_GPKG)
         return CHEMIN_GPKG, "layer='{}'".format(nomVecteur), CHEMIN_GPKG + GPKG_LAYERNAME + nomVecteur
 
-    def sauvergardeGPKGs(self, repertoireGPKG, suiteSauvegarde, frequence):
+    def sauvergardeGPKGs(self, repertoireGPKG, frequence, suiteSauvegarde):
         """ Deux GPKG sont sauvés selon la fréquence et si nécessaire"""
         REPERTOIRE_SAUVEGARDE = os.path.join( repertoireGPKG, suiteSauvegarde)
         if not os.path.isdir( REPERTOIRE_SAUVEGARDE):
             os.mkdir( REPERTOIRE_SAUVEGARDE)
-        # ON determine les noms des gpkg pour les copier
+        # Déterminer les noms des gpkg pour les copier
         CHEMIN_GPKG, _,  _ = self.nommages_gpkg( repertoireGPKG, "xxx")  
         CHEMIN_GPKG_RASTER, _,  _ = self.nommages_gpkg( repertoireGPKG, "xxx", MesFondsDeCarte_GPKG)
         dateMaintenant = datetime.now()
@@ -160,21 +171,29 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     break
                     
     def slotLectureRepertoireGPKG(self):
-        # Repertoire
+        # Répertoire
         s = QgsSettings( APPLI_NOM)
         TOM_REPERTOIRE = s.value( "MonTomParcellaire/Répertoire_gpkg", "Arretez vous au répertoire")
-        dirName = QFileDialog.getExistingDirectory( self, self.tr(u'Choisir le répertoire de votre GPKG'),
+        dirName = QFileDialog.getExistingDirectory( self, self.tr("Choisir le répertoire de votre GPKG"),
                      TOM_REPERTOIRE, QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks);
         if len( dirName) == 0:
             return
         self.Repertoire_lineEdit.setText( dirName )
         return
         
+    def fusionnerJointure(self, repertoireGPKG, frequence, nomJointure=MonParcellaire_JOI):
+        """ Recherche de la jointure"""
+        CHEMIN_GPKG, libelle, CHEMIN_JOINTURE_GPKG = self.nommages_gpkg( repertoireGPKG, nomJointure, nomJointure, "Non pre existance")  
+        # Déterminer le nom de la jointure qui doit exister
+        CHEMIN_JOINTURE = self.nommage_vecteur( repertoireGPKG, nomJointure, EXT_csv)
+        # TODO: Faire la jointure par attribut
+        return CHEMIN_JOINTURE, CHEMIN_JOINTURE_GPKG
+        
     def slotVerifierRepertoireGPKGJointure( self):
         """ Gestion la sauvegarde du GPKG : trois cas de frequences de sauvegarde, 
             Gestion de la jointure    
         """
-        my_print( self.tr("Vérifier répertoire et GPKG ... Version {0}".format(APPLI_VERSION)))
+        my_print( self.tr("Vérifier répertoire, GPKGs et jointure ... Version {0}".format(APPLI_VERSION)))
         
         # Utiliser les dernières saisies
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
@@ -182,10 +201,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         ###############
         # Sauvegarde 
         ###############
-        CHEMIN_GPKG, _, _, _ = self.sauvergardeGPKGs(REPERTOIRE_GPKG, MonParcellaire_SAV, FREQUENCE_SAUVEGARDE)
+        CHEMIN_GPKG, _, _, _ = self.sauvergardeGPKGs(REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, MonParcellaire_SAV)
         ###############
         # Jointure 
         ###############                   
-        
+        CHEMIN_JOINTURE, CHEMIN_JOINTURE_GPKG = self.fusionnerJointure( REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE)
         self.ecrireSettings()        
         my_print( self.tr("Fin Vérifier répertoire et GPKG", T_OK))
