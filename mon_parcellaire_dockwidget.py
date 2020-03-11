@@ -119,22 +119,29 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             erreur_gpkg( nomGPKG,  CHEMIN_GPKG)
         return CHEMIN_GPKG, "layer='{}'".format(nomVecteur), CHEMIN_GPKG + GPKG_LAYERNAME + nomVecteur
 
-    def sauvergardeGPKG(self, repertoireGPKG, suiteSauvegarde, frequence):
+    def sauvergardeGPKGs(self, repertoireGPKG, suiteSauvegarde, frequence):
+        """ Deux GPKG sont sauvés selon la fréquence et si nécessaire"""
         REPERTOIRE_SAUVEGARDE = os.path.join( repertoireGPKG, suiteSauvegarde)
         if not os.path.isdir( REPERTOIRE_SAUVEGARDE):
             os.mkdir( REPERTOIRE_SAUVEGARDE)
-        CHEMIN_GPKG, _,  _ = self.nommages_gpkg( repertoireGPKG, "xxx")  # on cherche le nom du gpkg pour le copier
-        la_date = datetime.now()
+        # ON determine les noms des gpkg pour les copier
+        CHEMIN_GPKG, _,  _ = self.nommages_gpkg( repertoireGPKG, "xxx")  
+        CHEMIN_GPKG_RASTER, _,  _ = self.nommages_gpkg( repertoireGPKG, "xxx", MesFondsDeCarte_GPKG)
+        dateMaintenant = datetime.now()
         if frequence == LISTE_FREQUENCE_SAUVEGARDE[0]: # prochain run
-            CHEMIN_GPKG_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  MonParcellaire_GPKG) + "_SAUVEGARDE_" + la_date.strftime("%Y%m%d%H%M")
+            dateFormatee=dateMaintenant.strftime("%Y%m%d%H%M")
         elif frequence == LISTE_FREQUENCE_SAUVEGARDE[1]: # par jour
-            CHEMIN_GPKG_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  MonParcellaire_GPKG) + "_SAUVEGARDE_" + la_date.strftime("%Y%m%d")
+            dateFormatee=dateMaintenant.strftime("%Y%m%d")
         else: # par semaine
             assert( frequence == LISTE_FREQUENCE_SAUVEGARDE[2])
-            CHEMIN_GPKG_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  MonParcellaire_GPKG) + "_SAUVEGARDE_" + la_date.strftime("%Y%mSemaine%U")
-        if not os.path.isfile( CHEMIN_GPKG_SAVE):
-            shutil.copy( CHEMIN_GPKG, CHEMIN_GPKG_SAVE)
-        return CHEMIN_GPKG, CHEMIN_GPKG_SAVE
+            dateFormatee=dateMaintenant.strftime("%Y%mSemaine%U")
+        CHEMIN_GPKG_VECTEUR_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  MonParcellaire_GPKG) + "_SAUVEGARDE_" + dateFormatee
+        if not os.path.isfile( CHEMIN_GPKG_VECTEUR_SAVE):
+            shutil.copy( CHEMIN_GPKG, CHEMIN_GPKG_VECTEUR_SAVE)
+        CHEMIN_GPKG_RASTER_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  MesFondsDeCarte_GPKG) + "_SAUVEGARDE_" + dateFormatee
+        if not os.path.isfile( CHEMIN_GPKG_RASTER_SAVE):
+            shutil.copy( CHEMIN_GPKG_RASTER, CHEMIN_GPKG_RASTER_SAVE)
+        return CHEMIN_GPKG, CHEMIN_GPKG_RASTER, CHEMIN_GPKG_VECTEUR_SAVE, CHEMIN_GPKG_RASTER_SAVE
 
     def slotInitCombo( self, comboAInitialiser, LISTE_VALEURS, UNE_VALEUR,  libelleErreur):
         """Initialise un combo avec une liste de valeur et avec la position de la valeur correspondante trouvé dans Settings
@@ -175,7 +182,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         ###############
         # Sauvegarde 
         ###############
-        CHEMIN_GPKG, CHEMIN_GPKG_SAVE = self.sauvergardeGPKG(REPERTOIRE_GPKG, MonParcellaire_SAV, FREQUENCE_SAUVEGARDE)
-                   
+        CHEMIN_GPKG, _, _, _ = self.sauvergardeGPKGs(REPERTOIRE_GPKG, MonParcellaire_SAV, FREQUENCE_SAUVEGARDE)
+        ###############
+        # Jointure 
+        ###############                   
+        
         self.ecrireSettings()        
         my_print( self.tr("Fin Vérifier répertoire et GPKG", T_OK))

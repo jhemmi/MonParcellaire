@@ -77,6 +77,7 @@ EXT_geojson=".geojson"
 
 # NOM du GPKG et de ses tables 
 MonParcellaire_GPKG="MonParcellaire" + EXT_gpkg
+MesFondsDeCarte_GPKG="MesFondsDeCarte" + EXT_gpkg
 GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"
