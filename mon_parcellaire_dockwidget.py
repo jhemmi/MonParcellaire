@@ -97,11 +97,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         s.setValue("MonParcellaire/FrequenceSauvegarde", self.FrequenceSauvegarde_comboBox.currentText())
 #        libItineraire = "QGIS" if self.QGIS_radioButton.isChecked() else "QN"
 #        s.setValue("MonParcellaire/LibItineraire", libItineraire)
-        my_print( "Settings sauvegardées")
+        #my_print( "Settings sauvegardées")
         return
 
     def lireSettings( self):
-        my_print( "Avant Settings lus")
         s = QgsSettings( APPLI_NOM)
         CHOIX_TOUT_VOIR = s.value("MonParcellaire/Tout_voir", "NO")
         self.Voir_checkBox.setChecked( Qt.Checked) if CHOIX_TOUT_VOIR == "YES" else self.Voir_checkBox.setChecked( Qt.Unchecked)
@@ -110,10 +109,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         FREQUENCE_SAUVEGARDE = s.value("MonParcellaire/FrequenceSauvegarde", LISTE_FREQUENCE_SAUVEGARDE[0])
         # Choisir library calcul itineraire
         #LIB_ITINERAIRE = s.value("MonParcellaire/LibItineraire", "QGIS")
-        my_print( "Settings lus {}".format( REPERTOIRE_GPKG))
+        #my_print( "Settings lus {}".format( REPERTOIRE_GPKG))
         return CHOIX_TOUT_VOIR, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE #, LIB_ITINERAIRE
     
-    def nommage_vecteur( self, Repertoire, nomVecteur, Extension=EXT_geojson, doitExister="Oui"):
+    def nommageVecteur( self, Repertoire, nomVecteur, Extension=EXT_geojson, doitExister="Oui"):
         """ Calcule le nom du vecteur et vérifie si le chemin au vecteur existe
         Rend le nom """
         # Assert
@@ -124,7 +123,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             erreur_vecteur( Repertoire,  nomVecteur + Extension)
         return chemin_complet
     
-    def nommages_gpkg( self, Repertoire, nomTable, nomGPKG=MonParcellaire_GPKG, doitExister="Oui"):
+    def nommagesGPKG( self, Repertoire, nomTable, nomGPKG=MonParcellaire_GPKG, doitExister="Oui"):
         """ Calcule le nom de table et vérifie si le chemin au GPKG existe
         Rend le nom du gpkg, un libelle et le nom pour ouvrir avec QGIS API"""
         # Assert
@@ -141,7 +140,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         if not os.path.isdir( REPERTOIRE_SAUVEGARDE):
             os.mkdir( REPERTOIRE_SAUVEGARDE)
         # Déterminer les noms des gpkg pour les copier
-        CHEMIN_GPKG, _, cheminCompletTable = self.nommages_gpkg( repertoireGPKG, nomTable, nomCourtGPKG)  
+        CHEMIN_GPKG, _, cheminCompletTable = self.nommagesGPKG( repertoireGPKG, nomTable, nomCourtGPKG)  
         dateMaintenant = datetime.now()
         if frequence == LISTE_FREQUENCE_SAUVEGARDE[0]: # prochain run
             dateFormatee=dateMaintenant.strftime("%Y%m%d%H%M")
@@ -186,11 +185,15 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         
     def fusionnerJointure(self, repertoireGPKG, cheminCompletTable, nomJointure=MonParcellaire_JOI):
         """ Recherche de la jointure"""
-        ###CHEMIN_GPKG, libelle, CHEMIN_JOINTURE_GPKG = self.nommages_gpkg( repertoireGPKG, nomJointure, nomJointure, "Non pre existance")  
+        ###CHEMIN_GPKG, libelle, CHEMIN_JOINTURE_GPKG = self.nommagesGPKG( repertoireGPKG, nomJointure, nomJointure, "Non pre existance")  
         monProjet = QgsProject.instance()
-        my_print( monProjet.fileName)
+        if monProjet.fileName() == None or monProjet.fileName() == "":
+            my_print( "Projet en cours de création")
+        else:
+            my_print( "Projet {}".format(monProjet.fileName()))
+            my_print( "Projet {}".format(monProjet.fileInfo()))
         # Déterminer le nom de la jointure qui doit exister
-        CHEMIN_JOINTURE = self.nommage_vecteur( repertoireGPKG, nomJointure, EXT_csv)
+        CHEMIN_JOINTURE = self.nommageVecteur( repertoireGPKG, nomJointure, EXT_csv)
         # TODO: Faire la jointure par attribut
         parcelle =  QgsVectorLayer(cheminCompletTable, MonParcellaire_PAR, 'ogr')
         monProjet.addMapLayer(parcelle)
@@ -203,16 +206,21 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 my_print( "Erreur pour délimiteur {0} Nom du csv {1}".format( delimiteur, nomCsv))
                 continue
             break
+        my_print( "OK délimiteur est {0} Nom du csv {1}".format( delimiteur, nomCsv))
         monProjet.addMapLayer(csv)
         # Jointure
+        # TODO: récupérer les champs de jointure
         champVecteur='nom'
         champCsv='nom'
-        joinObjet = QgsVectorLayerJoinInfo()
-        joinObjet.joinLayerId = csv.id()
-        joinObjet.joinFieldName = champCsv
-        joinObjet.targetFieldName = champVecteur
-        joinObjet.memoryCache = True
-        parcelle.addJoin(joinObjet)
+        maJointure=QgsVectorLayerJoinInfo()
+        maJointure.setJoinFieldName(champCsv)
+        maJointure.setTargetFieldName(champVecteur)
+        maJointure.setUsingMemoryCache(False)
+        maJointure.setPrefix("jhemmi_")
+        maJointure.setJoinLayer(csv)
+        # TODO: récupérer les champs de jointure
+        maJointure.setJoinFieldNamesSubset(['cépage', 'cadastre'])
+        parcelle.addJoin(maJointure)
         return CHEMIN_JOINTURE
         
     def slotVerifierRepertoireGPKGJointure( self):
