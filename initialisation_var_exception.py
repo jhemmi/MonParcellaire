@@ -25,7 +25,7 @@ if MonParcellaire_PROD in [ "TEST",  "HE"]: #, "HE", "FR"]:
 else:
     MonParcellaire_TRACE="NO"
     
-MonParcellaire_EPSG="32631" # L93
+MonParcellaire_EPSG="32631" # faire un dict ou L93
 # Nom des flags accompagnant les messages
 MonParcellaire_LOG="MonParcellaire"
 T_INF="Information"
@@ -69,6 +69,7 @@ SEP_DATE=SEP_T # ou "/" pour Zoho
 EXT_gpkg=".gpkg"
 EXT_zip=".zip"
 EXT_csv=".csv"
+DELIMITEUR_CONNUS=[',', ";", "\t"]
 EXT_json=".json"
 EXT_txt=".txt"
 EXT_qml=".qml"
@@ -77,16 +78,17 @@ EXT_geojson=".geojson"
 
 # NOM du GPKG et de ses tables 
 MonParcellaire_GPKG="MonParcellaire" + EXT_gpkg
-MesFondsDeCarte_GPKG="MesFondsDePlan" + EXT_gpkg
+MesFondsDePlan_GPKG="MesFondsDePlan" + EXT_gpkg
 GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
+# Autres noms
 MonParcellaire_JOI="jointure"
 MonParcellaire_PROJET="projet_MonParcellaire.qgs"
 # REPERTOIRE SAUVEGARDE et MODELE
 MonParcellaire_SAV="MonParcellaire_SAUVEGARDE" # Repertoire
-MonParcellaire_MOD="MonParcellaire_MODELE" # Repertoire des modele gpkg, projet, QML
+#MonParcellaire_MOD="MonParcellaire_MODELE" # Repertoire des modele gpkg, projet, QML
 
 # Attributs clé des tables
 if MonParcellaire_PROD == "FR":
@@ -102,7 +104,7 @@ else:
 ATTR_FID='fid'
 
 # NOMAGES FIXES
-LISTE_FREQUENCE_SAUVEGARDE=[ "Chaque démarrage", "Par jour",  "Par semaine"]
+LISTE_FREQUENCE_SAUVEGARDE=[ "Chaque démarrage", "Par jour",  "Par semaine",  "Par mois"]
 # Attention pas de séparateur "_" dans la liste ci dessous
 #PREMIER_PREFIXES_SOLO="SOLO"
 #LISTE_PREFIXES=[ "SOLO | DUO | TRIO | QUATUOR | QUINTET" , "A | B | C | D | E","Camille | Léo | Pauline | Mickael", \

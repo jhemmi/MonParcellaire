@@ -28,15 +28,15 @@ import shutil # pour la copie de fichier
 from datetime import datetime
 from qgis.gui import ( QgsMessageBar)
 from qgis.core import (
-  QgsApplication, QgsSettings, QgsProject, QgsWkbTypes, QgsVectorFileWriter, QgsCoordinateReferenceSystem, 
-  QgsFeature, QgsFields, QgsField
+   QgsSettings, QgsProject, QgsVectorLayer, QgsVectorLayerJoinInfo 
+  #QgsApplication, QgsWkbTypes, QgsVectorFileWriter, QgsCoordinateReferenceSystem, QgsFeature, QgsFields, QgsField
 )
 
 
 from PyQt5.QtCore import (Qt) #, QFileInfo)  
 from PyQt5.QtWidgets import (QDialogButtonBox, QFileDialog, QSizePolicy) # QGridLayout QDialog 
 from qgis.PyQt import QtWidgets, uic # QtGui
-from qgis.PyQt.QtCore import ( pyqtSignal, QVariant)
+from qgis.PyQt.QtCore import ( pyqtSignal) #, QVariant)
 
 try:
     import pandas as pd
@@ -81,6 +81,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 #        self.MultiPoint_checkBox.stateChanged.connect( self.slotBasculeMultiPoints)
 
         CHOIX_TOUT_VOIR, REPERTOIRE_GPKG,  FREQUENCE_SAUVEGARDE = self.lireSettings()
+        
         self.slotInitCombo( self.FrequenceSauvegarde_comboBox, LISTE_FREQUENCE_SAUVEGARDE, FREQUENCE_SAUVEGARDE,  "des fréquences de sauvegarde")
 
     def closeEvent(self, event):
@@ -96,16 +97,20 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         s.setValue("MonParcellaire/FrequenceSauvegarde", self.FrequenceSauvegarde_comboBox.currentText())
 #        libItineraire = "QGIS" if self.QGIS_radioButton.isChecked() else "QN"
 #        s.setValue("MonParcellaire/LibItineraire", libItineraire)
-        #my_print( "Settings sauvegardées")
+        my_print( "Settings sauvegardées")
         return
 
     def lireSettings( self):
+        my_print( "Avant Settings lus")
         s = QgsSettings( APPLI_NOM)
         CHOIX_TOUT_VOIR = s.value("MonParcellaire/Tout_voir", "NO")
+        self.Voir_checkBox.setChecked( Qt.Checked) if CHOIX_TOUT_VOIR == "YES" else self.Voir_checkBox.setChecked( Qt.Unchecked)
         REPERTOIRE_GPKG = s.value( "MonParcellaire/repertoireGPKG", "/media/jean/DATA/GIS/DATA/DATA_MP")
+        self.Repertoire_lineEdit.setText( REPERTOIRE_GPKG )
         FREQUENCE_SAUVEGARDE = s.value("MonParcellaire/FrequenceSauvegarde", LISTE_FREQUENCE_SAUVEGARDE[0])
         # Choisir library calcul itineraire
         #LIB_ITINERAIRE = s.value("MonParcellaire/LibItineraire", "QGIS")
+        my_print( "Settings lus {}".format( REPERTOIRE_GPKG))
         return CHOIX_TOUT_VOIR, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE #, LIB_ITINERAIRE
     
     def nommage_vecteur( self, Repertoire, nomVecteur, Extension=EXT_geojson, doitExister="Oui"):
@@ -119,40 +124,38 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             erreur_vecteur( Repertoire,  nomVecteur + Extension)
         return chemin_complet
     
-    def nommages_gpkg( self, Repertoire, nomVecteur, nomGPKG=MonParcellaire_GPKG, doitExister="Oui"):
-        """ Calcule le nom du vecteur et vérifie si le chemin au vecteur existe
-        Rend le nom du gpkg, le nom pour ouvrir avec QGIS API"""
+    def nommages_gpkg( self, Repertoire, nomTable, nomGPKG=MonParcellaire_GPKG, doitExister="Oui"):
+        """ Calcule le nom de table et vérifie si le chemin au GPKG existe
+        Rend le nom du gpkg, un libelle et le nom pour ouvrir avec QGIS API"""
         # Assert
         if not os.path.isdir( Repertoire):
             erreur_repertoire( Repertoire)
         CHEMIN_GPKG = os.path.join( Repertoire, nomGPKG)
         if not os.path.isfile( CHEMIN_GPKG) and doitExister == "Oui":
             erreur_gpkg( nomGPKG,  CHEMIN_GPKG)
-        return CHEMIN_GPKG, "layer='{}'".format(nomVecteur), CHEMIN_GPKG + GPKG_LAYERNAME + nomVecteur
+        return CHEMIN_GPKG, "layer='{}'".format(nomTable), CHEMIN_GPKG + GPKG_LAYERNAME + nomTable
 
-    def sauvergardeGPKGs(self, repertoireGPKG, frequence, suiteSauvegarde):
-        """ Deux GPKG sont sauvés selon la fréquence et si nécessaire"""
+    def sauvergardeGPKG(self, repertoireGPKG, nomCourtGPKG, frequence, suiteSauvegarde, nomTable="xxx"):
+        """ GPKG est sauvés selon la fréquence et si nécessaire"""
         REPERTOIRE_SAUVEGARDE = os.path.join( repertoireGPKG, suiteSauvegarde)
         if not os.path.isdir( REPERTOIRE_SAUVEGARDE):
             os.mkdir( REPERTOIRE_SAUVEGARDE)
         # Déterminer les noms des gpkg pour les copier
-        CHEMIN_GPKG, _,  _ = self.nommages_gpkg( repertoireGPKG, "xxx")  
-        CHEMIN_GPKG_RASTER, _,  _ = self.nommages_gpkg( repertoireGPKG, "xxx", MesFondsDeCarte_GPKG)
+        CHEMIN_GPKG, _, cheminCompletTable = self.nommages_gpkg( repertoireGPKG, nomTable, nomCourtGPKG)  
         dateMaintenant = datetime.now()
         if frequence == LISTE_FREQUENCE_SAUVEGARDE[0]: # prochain run
             dateFormatee=dateMaintenant.strftime("%Y%m%d%H%M")
         elif frequence == LISTE_FREQUENCE_SAUVEGARDE[1]: # par jour
             dateFormatee=dateMaintenant.strftime("%Y%m%d")
-        else: # par semaine
-            assert( frequence == LISTE_FREQUENCE_SAUVEGARDE[2])
+        elif frequence == LISTE_FREQUENCE_SAUVEGARDE[2]: # par semaine
             dateFormatee=dateMaintenant.strftime("%Y%mSemaine%U")
-        CHEMIN_GPKG_VECTEUR_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  MonParcellaire_GPKG) + "_SAUVEGARDE_" + dateFormatee
-        if not os.path.isfile( CHEMIN_GPKG_VECTEUR_SAVE):
-            shutil.copy( CHEMIN_GPKG, CHEMIN_GPKG_VECTEUR_SAVE)
-        CHEMIN_GPKG_RASTER_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  MesFondsDeCarte_GPKG) + "_SAUVEGARDE_" + dateFormatee
-        if not os.path.isfile( CHEMIN_GPKG_RASTER_SAVE):
-            shutil.copy( CHEMIN_GPKG_RASTER, CHEMIN_GPKG_RASTER_SAVE)
-        return CHEMIN_GPKG, CHEMIN_GPKG_RASTER, CHEMIN_GPKG_VECTEUR_SAVE, CHEMIN_GPKG_RASTER_SAVE
+        else: # par mois
+            assert( frequence == LISTE_FREQUENCE_SAUVEGARDE[3])
+            dateFormatee=dateMaintenant.strftime("%Y%m")
+        CHEMIN_GPKG_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  nomCourtGPKG) + "_SAUVEGARDE_" + dateFormatee
+        if not os.path.isfile( CHEMIN_GPKG_SAVE):
+            shutil.copy( CHEMIN_GPKG, CHEMIN_GPKG_SAVE)
+        return CHEMIN_GPKG, cheminCompletTable
 
     def slotInitCombo( self, comboAInitialiser, LISTE_VALEURS, UNE_VALEUR,  libelleErreur):
         """Initialise un combo avec une liste de valeur et avec la position de la valeur correspondante trouvé dans Settings
@@ -181,13 +184,36 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.Repertoire_lineEdit.setText( dirName )
         return
         
-    def fusionnerJointure(self, repertoireGPKG, frequence, nomJointure=MonParcellaire_JOI):
+    def fusionnerJointure(self, repertoireGPKG, cheminCompletTable, nomJointure=MonParcellaire_JOI):
         """ Recherche de la jointure"""
-        CHEMIN_GPKG, libelle, CHEMIN_JOINTURE_GPKG = self.nommages_gpkg( repertoireGPKG, nomJointure, nomJointure, "Non pre existance")  
+        ###CHEMIN_GPKG, libelle, CHEMIN_JOINTURE_GPKG = self.nommages_gpkg( repertoireGPKG, nomJointure, nomJointure, "Non pre existance")  
+        monProjet = QgsProject.instance()
+        my_print( monProjet.fileName)
         # Déterminer le nom de la jointure qui doit exister
         CHEMIN_JOINTURE = self.nommage_vecteur( repertoireGPKG, nomJointure, EXT_csv)
         # TODO: Faire la jointure par attribut
-        return CHEMIN_JOINTURE, CHEMIN_JOINTURE_GPKG
+        parcelle =  QgsVectorLayer(cheminCompletTable, MonParcellaire_PAR, 'ogr')
+        monProjet.addMapLayer(parcelle)
+        # Nommage csv et recherche du delimiteur
+        for delimiteur in DELIMITEUR_CONNUS:
+            nomCsv="file:///{1}?delimiter={0}".format( delimiteur, CHEMIN_JOINTURE)
+            try:
+                csv = QgsVectorLayer(nomCsv, MonParcellaire_JOI, 'delimitedtext')
+            except:
+                my_print( "Erreur pour délimiteur {0} Nom du csv {1}".format( delimiteur, nomCsv))
+                continue
+            break
+        monProjet.addMapLayer(csv)
+        # Jointure
+        champVecteur='nom'
+        champCsv='nom'
+        joinObjet = QgsVectorLayerJoinInfo()
+        joinObjet.joinLayerId = csv.id()
+        joinObjet.joinFieldName = champCsv
+        joinObjet.targetFieldName = champVecteur
+        joinObjet.memoryCache = True
+        parcelle.addJoin(joinObjet)
+        return CHEMIN_JOINTURE
         
     def slotVerifierRepertoireGPKGJointure( self):
         """ Gestion la sauvegarde du GPKG : trois cas de frequences de sauvegarde, 
@@ -198,13 +224,15 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Utiliser les dernières saisies
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
         FREQUENCE_SAUVEGARDE = self.FrequenceSauvegarde_comboBox.currentText()
+        self.ecrireSettings()        
         ###############
-        # Sauvegarde 
+        # Sauvegardes 
         ###############
-        CHEMIN_GPKG, _, _, _ = self.sauvergardeGPKGs(REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, MonParcellaire_SAV)
+        CHEMIN_VECTEUR_GPKG, cheminCompletTable = self.sauvergardeGPKG( REPERTOIRE_GPKG, MonParcellaire_GPKG, FREQUENCE_SAUVEGARDE, MonParcellaire_SAV, MonParcellaire_PAR)
+        CHEMIN_RASTER_GPKG, _ = self.sauvergardeGPKG( REPERTOIRE_GPKG, MesFondsDePlan_GPKG, LISTE_FREQUENCE_SAUVEGARDE[3], MonParcellaire_SAV)
         ###############
         # Jointure 
         ###############                   
-        CHEMIN_JOINTURE, CHEMIN_JOINTURE_GPKG = self.fusionnerJointure( REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE)
+        CHEMIN_JOINTURE = self.fusionnerJointure( REPERTOIRE_GPKG, cheminCompletTable)
         self.ecrireSettings()        
-        my_print( self.tr("Fin Vérifier répertoire et GPKG", T_OK))
+        my_print( self.tr("Fin Vérifier répertoire et GPKG Jointure OK {}".format(CHEMIN_JOINTURE), T_OK))
