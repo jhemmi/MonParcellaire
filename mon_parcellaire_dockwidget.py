@@ -32,9 +32,9 @@ from qgis.core import (
   #QgsApplication, QgsWkbTypes, QgsVectorFileWriter, QgsCoordinateReferenceSystem, QgsFeature, QgsFields, QgsField
 )
 
-
-from PyQt5.QtCore import (Qt) #, QFileInfo)  
-from PyQt5.QtWidgets import (QDialogButtonBox, QFileDialog, QSizePolicy) # QGridLayout QDialog 
+from PyQt5.QtCore import ( Qt, QUrl) #, QFileInfo)
+from PyQt5.QtGui import ( QDesktopServices)
+from PyQt5.QtWidgets import ( QDialogButtonBox, QFileDialog, QSizePolicy) # QGridLayout QDialog 
 from qgis.PyQt import QtWidgets, uic # QtGui
 from qgis.PyQt.QtCore import ( pyqtSignal) #, QVariant)
 
@@ -80,13 +80,31 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)  
 #        self.MultiPoint_checkBox.stateChanged.connect( self.slotBasculeMultiPoints)
 
-        CHOIX_TOUT_VOIR, REPERTOIRE_GPKG,  FREQUENCE_SAUVEGARDE = self.lireSettings()
-        
-        self.slotInitCombo( self.FrequenceSauvegarde_comboBox, LISTE_FREQUENCE_SAUVEGARDE, FREQUENCE_SAUVEGARDE,  "des fréquences de sauvegarde")
+        CHOIX_TOUT_VOIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
+            ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
+
+        self.slotInitialiserCombo( self.FrequenceSauvegarde_comboBox, LISTE_FREQUENCE_SAUVEGARDE, FREQUENCE_SAUVEGARDE,  "des fréquences de sauvegarde")
+        self.slotInitialiserCombo( self.AttributJointure_comboBox, MonParcellaireListeAttribut, ATTRIBUT_JOINTURE,  "attribut pour jointure")
+        # Liste AttributsAJoindre
+        self.slotInitialiserListeMultiple( self.AttributsAJoindre_listWidget, MonParcellaireListeAttribut, LISTE_ATTRIBUTS_A_JOINDRE,  "attributs à joindre")
+
+        # Appel à aide ou contrib
+        self.Aide_bouton.pressed.connect(self.slot_AIDE_demander)
+        self.Contribuer_bouton.pressed.connect(self.slot_AIDE_demander_contribution)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
+        
+    def slot_AIDE_demander_contribution( self):
+        """ Pointer vers page de TODO: paiement en ligne """ 
+        help_url = QUrl("https://www.ma-sentinelle.eu/contact")
+        QDesktopServices.openUrl(help_url)
+    
+    def slot_AIDE_demander(self):
+        """ Help html qui pointe vers gitHub""" 
+        help_url = QUrl("https://github.com/jhemmi/MonParcellaire/wiki")
+        QDesktopServices.openUrl(help_url)
 
     def ecrireSettings(self):
         """On écrit dans settings les saisies"""
@@ -95,8 +113,18 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         s.setValue("MonParcellaire/Tout_voir", choixToutVoir)
         s.setValue("MonParcellaire/repertoireGPKG", self.Repertoire_lineEdit.text())
         s.setValue("MonParcellaire/FrequenceSauvegarde", self.FrequenceSauvegarde_comboBox.currentText())
-#        libItineraire = "QGIS" if self.QGIS_radioButton.isChecked() else "QN"
-#        s.setValue("MonParcellaire/LibItineraire", libItineraire)
+        choixJointure = "YES" if self.Jointure_checkBox.isChecked() else "NO"
+        s.setValue("MonParcellaire/PresenceJointure", choixJointure)
+        s.setValue("MonParcellaire/AttributJointure", self.AttributJointure_comboBox.currentText())
+        # Multivalues
+        items=self.AttributsAJoindre_listWidget.selectedItems()
+        listeAJoindre = ""
+        for item in range(len(items)):
+            if item == 0:
+                listeAJoindre=str(self.AttributsAJoindre_listWidget.selectedItems()[item].text())
+            else:
+                listeAJoindre=listeAJoindre + SEP_CONFIG + str(self.AttributsAJoindre_listWidget.selectedItems()[item].text())
+        s.setValue("MonParcellaire/AttributsAJoindre", listeAJoindre)
         #my_print( "Settings sauvegardées")
         return
 
@@ -104,13 +132,18 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         s = QgsSettings( APPLI_NOM)
         CHOIX_TOUT_VOIR = s.value("MonParcellaire/Tout_voir", "NO")
         self.Voir_checkBox.setChecked( Qt.Checked) if CHOIX_TOUT_VOIR == "YES" else self.Voir_checkBox.setChecked( Qt.Unchecked)
+        CHOIX_JOINTURE = s.value("MonParcellaire/PresenceJointure", "NO")
+        self.Jointure_checkBox.setChecked( Qt.Checked) if CHOIX_JOINTURE == "YES" else self.Jointure_checkBox.setChecked( Qt.Unchecked)
+
         REPERTOIRE_GPKG = s.value( "MonParcellaire/repertoireGPKG", "/media/jean/DATA/GIS/DATA/DATA_MP")
         self.Repertoire_lineEdit.setText( REPERTOIRE_GPKG )
         FREQUENCE_SAUVEGARDE = s.value("MonParcellaire/FrequenceSauvegarde", LISTE_FREQUENCE_SAUVEGARDE[0])
-        # Choisir library calcul itineraire
-        #LIB_ITINERAIRE = s.value("MonParcellaire/LibItineraire", "QGIS")
-        #my_print( "Settings lus {}".format( REPERTOIRE_GPKG))
-        return CHOIX_TOUT_VOIR, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE #, LIB_ITINERAIRE
+        ATTRIBUT_JOINTURE = s.value("MonParcellaire/AttributJointure", MonParcellaireNomAttribut)
+        PreparelisteAttributAJoindre = s.value("MonParcellaire/AttributsAJoindre", MonParcellaireListeAttribut[1])
+        my_print( "Settings lus {}".format( PreparelisteAttributAJoindre))
+        LISTE_ATTRIBUTS_A_JOINDRE=PreparelisteAttributAJoindre.split( SEP_CONFIG)
+        my_print( "Settings lus {}".format( LISTE_ATTRIBUTS_A_JOINDRE))
+        return CHOIX_TOUT_VOIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE
     
     def nommageVecteur( self, Repertoire, nomVecteur, Extension=EXT_geojson, doitExister="Oui"):
         """ Calcule le nom du vecteur et vérifie si le chemin au vecteur existe
@@ -156,7 +189,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             shutil.copy( CHEMIN_GPKG, CHEMIN_GPKG_SAVE)
         return CHEMIN_GPKG, cheminCompletTable
 
-    def slotInitCombo( self, comboAInitialiser, LISTE_VALEURS, UNE_VALEUR,  libelleErreur):
+    def slotInitialiserCombo( self, comboAInitialiser, LISTE_VALEURS, UNE_VALEUR,  libelleErreur):
         """Initialise un combo avec une liste de valeur et avec la position de la valeur correspondante trouvé dans Settings
         """
         comboAInitialiser.setCurrentIndex( 0)
@@ -171,7 +204,23 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 if ( valeur == UNE_VALEUR):
                     comboAInitialiser.setCurrentIndex( idx)
                     break
-                    
+
+    def slotInitialiserListeMultiple( self, listWidget, LISTE_VALEURS_POSSIBLE, LISTE_VALEURS,  libelleErreur):
+        """Initialise unne liste de valeur et avec la liste des valeurs correspondantes trouvés dans Settings
+        """
+        if len( LISTE_VALEURS_POSSIBLE) == 0:
+            #listeAInitialiser.clear( )
+            my_print( self.tr("Pas de liste {0} pré défini".format( libelleErreur), T_WAR,  "BAR", self))
+            return
+        if len( LISTE_VALEURS) == 0:
+            my_print( self.tr("Pas de liste {0} à sélectionner".format( libelleErreur), T_WAR,  "BAR", self))
+        else:
+            listWidget.addItems( LISTE_VALEURS_POSSIBLE)
+            for i in LISTE_VALEURS:
+                matching_items = listWidget.findItems(i, Qt.MatchExactly)
+                for item in matching_items:
+                    item.setSelected(True)
+                   
     def slotLectureRepertoireGPKG(self):
         # Répertoire
         s = QgsSettings( APPLI_NOM)
@@ -202,6 +251,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             nomCsv="file:///{1}?delimiter={0}".format( delimiteur, CHEMIN_JOINTURE)
             try:
                 csv = QgsVectorLayer(nomCsv, MonParcellaire_JOI, 'delimitedtext')
+                # TODO: ouverture Pandas
+                
             except:
                 my_print( "Erreur pour délimiteur {0} Nom du csv {1}".format( delimiteur, nomCsv))
                 continue
@@ -209,14 +260,13 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         my_print( "OK délimiteur est {0} Nom du csv {1}".format( delimiteur, nomCsv))
         monProjet.addMapLayer(csv)
         # Jointure
-        # TODO: récupérer les champs de jointure
-        champVecteur='nom'
-        champCsv='nom'
+        champVecteur=MonParcellaireNomAttribut
+        champCsv=MonParcellaireListeAttribut[0]
         maJointure=QgsVectorLayerJoinInfo()
         maJointure.setJoinFieldName(champCsv)
         maJointure.setTargetFieldName(champVecteur)
         maJointure.setUsingMemoryCache(False)
-        maJointure.setPrefix("jhemmi_")
+        maJointure.setPrefix("")
         maJointure.setJoinLayer(csv)
         # TODO: récupérer les champs de jointure
         maJointure.setJoinFieldNamesSubset(['cépage', 'cadastre'])

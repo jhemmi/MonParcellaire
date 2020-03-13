@@ -18,7 +18,7 @@ from qgis.core import (
 #import subprocess
 
 # TRACES Selon le mode test ou prod
-MonParcellaire_PROD="HE" # HE ou TEST
+MonParcellaire_PROD="TEST" # HE ou TEST
 MonParcellaire_TIMESTAMP="NO"
 if MonParcellaire_PROD in [ "TEST",  "HE"]: #, "HE", "FR"]:
     MonParcellaire_TRACE="YES"
@@ -64,7 +64,8 @@ SEP_BLANC=" "
 SEP_COTE="'"  # Attention dans nom parcelles 
 SEP_TIRET=SEP_T
 SEP_DATE=SEP_T # ou "/" pour Zoho
-
+SEP_TILDE="~"
+SEP_CONFIG=SEP_PIPE+SEP_PIPE+SEP_TILDE+SEP_PIPE+SEP_PIPE
 # Extensions
 EXT_gpkg=".gpkg"
 EXT_zip=".zip"
@@ -83,6 +84,8 @@ GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
+MonParcellaireNomAttribut='nom'
+MonParcellaireListeAttribut=['nom','tu tu','cépage', 'cadastre', "toto"]
 # Autres noms
 MonParcellaire_JOI="jointure"
 MonParcellaire_PROJET="projet_MonParcellaire.qgs"
