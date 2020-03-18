@@ -12,7 +12,7 @@
 #import os
 # import sys
 from qgis.core import (
-  Qgis,  QgsVectorLayer, QgsMessageLog,  
+  Qgis, QgsMessageLog,  #QgsVectorLayer
 )
 #import glob
 #import subprocess
@@ -70,11 +70,12 @@ SEP_CONFIG=SEP_PIPE+SEP_PIPE+SEP_TILDE+SEP_PIPE+SEP_PIPE
 EXT_gpkg=".gpkg"
 EXT_zip=".zip"
 EXT_csv=".csv"
-DELIMITEUR_CONNUS=[',', ";", "\t"]
-EXT_json=".json"
 EXT_txt=".txt"
+EXT_tsv=".tsv"
+DELIMITEURS_CONNUS=[';', ",", "\t"]
+EXTENSIONS_CONNUES=[EXT_txt, EXT_csv, EXT_tsv]
+EXT_json=".json"
 EXT_qml=".qml"
-#EXT_tsv=".txt"
 EXT_geojson=".geojson"
 
 # NOM du GPKG et de ses tables 
@@ -114,7 +115,7 @@ LISTE_FREQUENCE_SAUVEGARDE=[ "Chaque démarrage", "Par jour",  "Par semaine",  "
 #    "BERLINGO | KANGOO | C4 | MERCEDES", "NORD | SUD | EST | OUEST", \
 #    "Yvette | Léa | Magda | Jean", "Pivoine | Violette | Rose | Agapanthe"]
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V0.0.1"  
+APPLI_VERSION="V0.9"  
 # Suivi des versions
 
 # Exceptions
@@ -161,7 +162,7 @@ def erreur_gpkg( CHEMIN_REP,  NOM_GPKG, correction=Verif_mon_parcellaire):
     aText="Pas de GPKG à traiter - nom de gpkg {0} - répertoire recherché {1})".format(NOM_GPKG, CHEMIN_REP)
     raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
 def erreur_jointures( CHEMIN_REP,  NOM_JOINTURE, correction=Pas_verif_mais_maintenance):
-    aText="Pas de parcelles en correspondance à point d'accés - nom jointure finale {0}".format(NOM_JOINTURE)
+    aText="Pas de jointure {0}".format(NOM_JOINTURE)
     raise MonParcellaireErreurData( "{0} || CORRECTION : {1}".format(aText, correction))
 def erreur_vecteur( CHEMIN_REP,  NOM_VECTEUR, correction=Verif_mon_parcellaire):
     aText="Pas de vecteur à traiter - nom du vecteur {0} - répertoire recherché {1}".format(NOM_VECTEUR, CHEMIN_REP)
@@ -235,37 +236,37 @@ def my_print( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX
             
 
 
-def ouvre_vecteur( Repertoire, Nom_vecteur, Libelle, mon_dialogue=None, Extension=EXT_geojson):
-    """ Ouvre le vecteur, vérifie sa validité
-    Rend le vecteur et son nom
-    """
-    # Retrouve nom
-    chemin_complet = nommage_vecteur( Repertoire, Nom_vecteur, Extension)
-    vecteur = QgsVectorLayer( chemin_complet, Nom_vecteur, "ogr") 
-    if not vecteur.isValid():
-        aText="Vecteur {0} non valide ...".format(Libelle)
-        if mon_dialogue != None:
-            my_print( aText, T_ERR, T_BAR, mon_dialogue)
-        else: # vers LOG
-            my_print( aText, T_ERR)
-        erreur_vecteur( Repertoire,  Nom_vecteur)
-    return vecteur, chemin_complet
-        
-    
-def ouvre_gpkg( Repertoire, Nom_vecteur, Libelle, Nom_gpkg=MonParcellaire_GPKG, mon_dialogue=None):
-    """ Ouvre le vecteur dans son gpkg, vérifie sa validité
-    Rend le vecteur QGIS et son nom
-    """
-    # Retrouve nom du vecteur dans gpkg
-    _, _, chemin_complet = nommages_gpkg( Repertoire, Nom_vecteur, Nom_gpkg)
-    #my_print( "Chemin du vecteur GPKG".format( chemin_complet),  T_INF)
-    vecteur = QgsVectorLayer( chemin_complet, Nom_vecteur, "ogr")  
-    if not vecteur.isValid():
-        aText="Vecteur {0} non valide ...".format(Libelle)
-        if mon_dialogue != None:
-            my_print( aText, T_ERR, T_BAR, mon_dialogue)
-        else: # vers LOG
-            my_print( aText, T_ERR)
-        erreur_gpkg( Repertoire,  Nom_vecteur)
-    return vecteur, chemin_complet
-
+####def ouvre_vecteur( Repertoire, Nom_vecteur, Libelle, mon_dialogue=None, Extension=EXT_geojson):
+####    """ Ouvre le vecteur, vérifie sa validité
+####    Rend le vecteur et son nom
+####    """
+####    # Retrouve nom
+####    chemin_complet = nommage_vecteur( Repertoire, Nom_vecteur, Extension)
+####    vecteur = QgsVectorLayer( chemin_complet, Nom_vecteur, "ogr") 
+####    if not vecteur.isValid():
+####        aText="Vecteur {0} non valide ...".format(Libelle)
+####        if mon_dialogue != None:
+####            my_print( aText, T_ERR, T_BAR, mon_dialogue)
+####        else: # vers LOG
+####            my_print( aText, T_ERR)
+####        erreur_vecteur( Repertoire,  Nom_vecteur)
+####    return vecteur, chemin_complet
+####        
+####    
+####def ouvre_gpkg( Repertoire, Nom_vecteur, Libelle, Nom_gpkg=MonParcellaire_GPKG, mon_dialogue=None):
+####    """ Ouvre le vecteur dans son gpkg, vérifie sa validité
+####    Rend le vecteur QGIS et son nom
+####    """
+####    # Retrouve nom du vecteur dans gpkg
+####    _, _, chemin_complet = nommages_gpkg( Repertoire, Nom_vecteur, Nom_gpkg)
+####    #my_print( "Chemin du vecteur GPKG".format( chemin_complet),  T_INF)
+####    vecteur = QgsVectorLayer( chemin_complet, Nom_vecteur, "ogr")  
+####    if not vecteur.isValid():
+####        aText="Vecteur {0} non valide ...".format(Libelle)
+####        if mon_dialogue != None:
+####            my_print( aText, T_ERR, T_BAR, mon_dialogue)
+####        else: # vers LOG
+####            my_print( aText, T_ERR)
+####        erreur_gpkg( Repertoire,  Nom_vecteur)
+####    return vecteur, chemin_complet
+####

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>387</width>
-    <height>333</height>
+    <height>344</height>
    </rect>
   </property>
   <property name="font">
@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Mon Parcellaire V0.0.2 -  jhemmi.eu</string>
+   <string>Mon Parcellaire V0.9 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -116,29 +116,11 @@
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
-         <widget class="QCheckBox" name="Voir_checkBox">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>230</y>
-            <width>141</width>
-            <height>23</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>Toujours voir</string>
-          </property>
-         </widget>
          <widget class="QDialogButtonBox" name="Prepare_buttonBox">
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>200</y>
+            <y>240</y>
             <width>201</width>
             <height>25</height>
            </rect>
@@ -191,11 +173,11 @@
            <rect>
             <x>10</x>
             <y>60</y>
-            <width>341</width>
-            <height>121</height>
+            <width>380</width>
+            <height>171</height>
            </rect>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_2">
+          <layout class="QVBoxLayout" name="verticalLayout_Jointure">
            <item>
             <widget class="QCheckBox" name="Jointure_checkBox">
              <property name="font">
@@ -204,7 +186,25 @@
               </font>
              </property>
              <property name="text">
-              <string>Données externes (déposé dans le référentiel)</string>
+              <string>Importez des données externes</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_Jointure">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Déposez votre jointure dans le référentiel </string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -212,6 +212,9 @@
             <layout class="QHBoxLayout" name="attributJointure_horizontalLayout">
              <item>
               <widget class="QLabel" name="label_AttributJointure">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="font">
                 <font>
                  <pointsize>10</pointsize>
@@ -227,6 +230,9 @@
              </item>
              <item>
               <widget class="QComboBox" name="AttributJointure_comboBox">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -246,6 +252,9 @@
             <layout class="QHBoxLayout" name="attributs_horizontalLayout">
              <item>
               <widget class="QLabel" name="label_AttributsAJoindre">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="font">
                 <font>
                  <pointsize>10</pointsize>
@@ -274,6 +283,9 @@
              </item>
              <item>
               <widget class="QListWidget" name="AttributsAJoindre_listWidget">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="autoFillBackground">
                 <bool>false</bool>
                </property>
@@ -292,9 +304,9 @@
          <widget class="QComboBox" name="FrequenceSauvegarde_comboBox">
           <property name="geometry">
            <rect>
-            <x>200</x>
+            <x>180</x>
             <y>30</y>
-            <width>151</width>
+            <width>181</width>
             <height>21</height>
            </rect>
           </property>

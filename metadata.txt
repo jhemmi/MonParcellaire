@@ -4,9 +4,9 @@
 
 [general]
 name=MonParcellaire
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.4
 description=Manage your parcels
-version=0.1
+version=0.9
 author=jhemmi.eu
 email=jean@jhemmi.eu
 
@@ -20,10 +20,10 @@ repository=https://github.com/jhemmi/MonParcellaire
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-# changelog=
+changelog=V0.9 GPKGs jointure et impression  
 
 # Tags are comma separated with spaces allowed
-tags=python parcels parcellaire
+tags=parcels parcellaire OpenData python	
 
 homepage=https://github.com/jhemmi/MonParcellaire/wiki
 category=Plugins

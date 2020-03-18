@@ -1,3 +1,5 @@
-nom,cépage,cadastre
-NG15,NG,A018
-GA02,GA,A019
+nom;cépage;cadastre;commentaire
+NG15;NG;A018; 
+GA02;GA;A019; 
+JU02;JU;A020;oh
+NG16;NG;A07;arraché
