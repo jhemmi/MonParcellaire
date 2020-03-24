@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>387</width>
-    <height>344</height>
+    <width>404</width>
+    <height>348</height>
    </rect>
   </property>
   <property name="font">
@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Mon Parcellaire V0.9 -  jhemmi.eu</string>
+   <string>Mon Parcellaire V0.95 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -38,7 +38,7 @@
         </property>
         <widget class="QWidget" name="tab_Parametres">
          <attribute name="title">
-          <string>⚙️</string>
+          <string>✔️</string>
          </attribute>
          <widget class="QLabel" name="label_Referentiel">
           <property name="geometry">
