@@ -125,76 +125,66 @@ class MonParcellaireException( BaseException):
     def __str__(self):
         return repr(self.value)
 # Exemple    
-class MonParcellaireErreurVecteur( MonParcellaireException):
-    pass
+
 class MonParcellaireErreurData( MonParcellaireException):
     pass
-class MonParcellaireErreurSaisie( MonParcellaireException):
-    pass
 class MonParcellairePasRepertoire( MonParcellaireException):
-    pass
-class MonParcellaireErreurTraitement( MonParcellaireException):
     pass
 class MonParcellaireErreurMethodo( MonParcellaireException):
     pass
 
 # Texte des messages
-Verif_mon_parcellaire="Avez-vous activer la préparation de Mon Parcellaire ? Vérifiez dans l'onglet paramètre de l'extension Mon Parcellaire si le chemin est correct"
 NOM_APPS_VENDANGE="CoopViti"
-Verif_apps_vendanges="Ce fichier ~MonParcellaire/jointure.csv a été crée par votre application {0}.".format( NOM_APPS_VENDANGE)
-Verif_apps_repertoire = Verif_apps_vendanges + " Vérifier si il se trouve dans le bon répertoire ?"
 NOM_SIG_VENDANGE="QGIS Projet Référentiel Mon Tom"
-Verif_sig_vendanges="sous {0}, vous pouvez rajouter la(es) parcelle(s) manquante(s) dans le référentiel GPKG parcelles".format( NOM_SIG_VENDANGE)
-Verif_vecteur_destination="Vérifier les propriétes du vecteur dans le GPKG MonParcellaire"
+VerificationReferentielMonParcellaire="Avez-vous paramétré le chemin vers le référentiel Mon Parcellaire ? \
+    Vérifiez dans l'onglet paramètre de l'extension Mon Parcellaire si le chemin est correct"
 Maintenance="Contacter la maintenance jhemmi.eu"
 Maintenance_GPKG="{0}, en fournissant votre GPKG de référence ~MonParcellaire/MonParcellaire.gpkg.".format(Maintenance)
-Maintenance_STYLE="{0}, en fournissant une liste répertoire ~MonParcellaire/MonParcellaire_STYLES_SELECTION.".format(Maintenance)
+VerificationVersionQGIS="Votre version de QGIS n'inclut pas ce module. Sous Windows, utilisez \
+    QGIS 3.10.0 ou 3.12.0 qui contiennent ce module."
 Pas_verif_mais_maintenance=Maintenance_GPKG + \
     "En cas d'urgence, vous pouvez sortir de QGIS, sauver le GPKG ~MonParcellaire/MonParcellaire.gpkg pour l'envoyer à jhemmi.eu, \
         recréer votre référentiel GPKG à partir de la dernière sauvegarde présente dans ~MonParcellaire/MonParcellaire_SAUVEGARDE "
-Yourself="Modifiez votre saisie et relancer le découpage"
+
 # REPERTOIRE
-def erreur_repertoire( CHEMIN_REP, correction=Verif_mon_parcellaire):
+def erreurRepertoire( CHEMIN_REP, correction=VerificationReferentielMonParcellaire):
     aText="Nom de répertoire {0} n'existe pas".format( CHEMIN_REP)
     raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1}".format(aText, correction))
 # FICHIER    
-def erreur_gpkg( CHEMIN_REP,  NOM_GPKG, correction=Verif_mon_parcellaire):
+def erreurGPKG( CHEMIN_REP, NOM_GPKG, correction=VerificationReferentielMonParcellaire):
     aText="Pas de GPKG à traiter - nom de gpkg {0} - répertoire recherché {1})".format(NOM_GPKG, CHEMIN_REP)
     raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
-def erreur_jointures( CHEMIN_REP,  NOM_JOINTURE, correction=Pas_verif_mais_maintenance):
-    aText="Pas de jointure {0}".format(NOM_JOINTURE)
+def erreurJointures( CHEMIN_REP,  NOM_JOINTURE, LISTE_EXTENSIONS, correction=VerificationReferentielMonParcellaire):
+    aText="Pas de jointure {0} avec une des extensions {1}".format(NOM_JOINTURE, LISTE_EXTENSIONS)
     raise MonParcellaireErreurData( "{0} || CORRECTION : {1}".format(aText, correction))
-def erreur_vecteur( CHEMIN_REP,  NOM_VECTEUR, correction=Verif_mon_parcellaire):
-    aText="Pas de vecteur à traiter - nom du vecteur {0} - répertoire recherché {1}".format(NOM_VECTEUR, CHEMIN_REP)
+def erreurVecteur( CHEMIN_REP,  NOM_VECTEUR, correction=VerificationReferentielMonParcellaire):
+    aText="Pas de vecteur {0} dans le répertoire recherché {1}".format(NOM_VECTEUR, CHEMIN_REP)
     raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
-def erreur_ecrire_vecteur( aText, correction=Maintenance):
-    raise MonParcellaireErreurData( "{0} || CORRECTION : {1}".format(aText, correction))
+#def erreur_ecrire_vecteur( aText, correction=Maintenance):
+#    raise MonParcellaireErreurData( "{0} || CORRECTION : {1}".format(aText, correction))
 
-def erreur_style( CHEMIN_REP,  NOM_STYLE, correction=Maintenance_STYLE):
-    aText="Pas de style pour la couche {0} - répertoire recherché {1}".format(NOM_STYLE, CHEMIN_REP)
-    raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1}".format(aText, correction))
-# TSV
-def erreur_table( CHEMIN_REP,  fichier, correction=Verif_apps_repertoire):
-    aText="La table {0} n'existe pas dans ce répertoire {1}".format( fichier, CHEMIN_REP, NOM_APPS_VENDANGE)
-    raise MonParcellaireErreurData( "{0} || CORRECTION : {1}".format(aText, correction))
 #Traitement/Processing
-def erreur_alg_traitement( NOM_ALGO, NOM_LIB, correction=Maintenance):
-    aText="L'algorithme {0} n'est pas disponible. Vérifier que Traitement est bien activé puis vérifier dans le paramétrage de Traitement que le fournisseur {1}".format(NOM_ALGO, NOM_LIB) + \
-        " est bien activé"
-    raise MonParcellaireErreurMethodo( "{0} || CORRECTION : {1}".format(aText, correction + " en précisant les noms du fournisseur et de l'algo problématiques"))
-def erreur_traitement( NOM_ALGO, correction=Pas_verif_mais_maintenance):
-    aText="L'algorithme {0} n'a pas pu s'exécuter correctement. Vérifier le message d'erreur dans le journal des messages (onglet Traitement)".\
-        format(NOM_ALGO)
-    raise MonParcellaireErreurMethodo( "{0} || CORRECTION : {1}".format(aText, correction + " en fournissant votre GPKG et le nom de l'algo problématique"))
-def erreur_import( module, correction=Pas_verif_mais_maintenance):
-    aText="L'import de {0} n'est pas disponible.".format(module)
-    raise MonParcellaireErreurMethodo( "{0} || CORRECTION : {1}".format(aText, correction))
-def erreur_fermer_projet_QGIS( libelle_traitement, correction="Fermez le projet sans quitter QGIS3 qui reste nécessaire pour activer ce traitement"):
-    aText="Le traitement de {0} préfére qu'aucun projet QGIS ({1}) ne soit ouvert.".format( libelle_traitement,  "nom_projet")
-    MonConseil = "{0} || CORRECTION : {1}".format(aText, correction)
-    raise MonParcellaireErreurMethodo( MonConseil)
+#def erreur_alg_traitement( NOM_ALGO, NOM_LIB, correction=Maintenance):
+#    aText="L'algorithme {0} n'est pas disponible. Vérifier que Traitement est bien activé puis vérifier dans le paramétrage de Traitement que le fournisseur {1}".format(NOM_ALGO, NOM_LIB) + \
+#        " est bien activé"
+#    raise MonParcellaireErreurMethodo( "{0} || CORRECTION : {1}".format(aText, correction + " en précisant les noms du fournisseur et de l'algo problématiques"))
+#def erreur_traitement( NOM_ALGO, correction=Pas_verif_mais_maintenance):
+#    aText="L'algorithme {0} n'a pas pu s'exécuter correctement. Vérifier le message d'erreur dans le journal des messages (onglet Traitement)".\
+#        format(NOM_ALGO)
+#    raise MonParcellaireErreurMethodo( "{0} || CORRECTION : {1}".format(aText, correction + " en fournissant votre GPKG et le nom de l'algo problématique"))
+def erreurImportPandas( module, correction=VerificationVersionQGIS):
+    aText="Le module {0} n'est pas présent ou actif dans QGIS.".format(module)
+    monPrint( "{0} || CORRECTION : {1}".format(aText, correction))
+    return
+def erreurImport( module, correction=Maintenance):
+    aText="Le module {0} n'est pas présent ou actif dans QGIS. Reprendre le document d'installation".format(module)
+    raise MonParcellaireErreurMethodo( "{0} || Si vous restez sans solution : {1}".format(aText, correction))
+#def erreur_fermer_projet_QGIS( libelle_traitement, correction="Fermez le projet sans quitter QGIS3 qui reste nécessaire pour activer ce traitement"):
+#    aText="Le traitement de {0} préfére qu'aucun projet QGIS ({1}) ne soit ouvert.".format( libelle_traitement,  "nom_projet")
+#    MonConseil = "{0} || CORRECTION : {1}".format(aText, correction)
+#    raise MonParcellaireErreurMethodo( MonConseil)
 
-def my_print( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX="MonParcellaire"):
+def monPrint( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX="MonParcellaire"):
     """ Mon print part vers LOG, il decore selon le level (prefixe, emoi et mis en correspondance avec gravité) 
         entete et pied pour encadrement
         en Option il peut aller vers BAR (log aussi) ou sortie STANDARD"""
@@ -246,10 +236,10 @@ def my_print( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX
 ####    if not vecteur.isValid():
 ####        aText="Vecteur {0} non valide ...".format(Libelle)
 ####        if mon_dialogue != None:
-####            my_print( aText, T_ERR, T_BAR, mon_dialogue)
+####            monPrint( aText, T_ERR, T_BAR, mon_dialogue)
 ####        else: # vers LOG
-####            my_print( aText, T_ERR)
-####        erreur_vecteur( Repertoire,  Nom_vecteur)
+####            monPrint( aText, T_ERR)
+####        erreurVecteur( Repertoire,  Nom_vecteur)
 ####    return vecteur, chemin_complet
 ####        
 ####    
@@ -259,14 +249,14 @@ def my_print( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX
 ####    """
 ####    # Retrouve nom du vecteur dans gpkg
 ####    _, _, chemin_complet = nommages_gpkg( Repertoire, Nom_vecteur, Nom_gpkg)
-####    #my_print( "Chemin du vecteur GPKG".format( chemin_complet),  T_INF)
+####    #monPrint( "Chemin du vecteur GPKG".format( chemin_complet),  T_INF)
 ####    vecteur = QgsVectorLayer( chemin_complet, Nom_vecteur, "ogr")  
 ####    if not vecteur.isValid():
 ####        aText="Vecteur {0} non valide ...".format(Libelle)
 ####        if mon_dialogue != None:
-####            my_print( aText, T_ERR, T_BAR, mon_dialogue)
+####            monPrint( aText, T_ERR, T_BAR, mon_dialogue)
 ####        else: # vers LOG
-####            my_print( aText, T_ERR)
-####        erreur_gpkg( Repertoire,  Nom_vecteur)
+####            monPrint( aText, T_ERR)
+####        erreurGPKG( Repertoire,  Nom_vecteur)
 ####    return vecteur, chemin_complet
 ####

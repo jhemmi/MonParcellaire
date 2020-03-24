@@ -15,5 +15,6 @@ data/*gpkg-wal
 scripts/
 .eric6project/
 MonParcellaire.e4p
+README.md
 # A vérifier
 resources.qrc
