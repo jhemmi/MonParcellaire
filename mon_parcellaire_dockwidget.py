@@ -109,8 +109,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         event.accept()
         
     def slotDemanderContribution( self):
-        """ Pointer vers page de TODO: paiement en ligne Paypal ou Stripe ou projet d'évolution contributif""" 
-        help_url = QUrl("https://www.ma-sentinelle.eu/contact")
+        """ Pointer vers page paiement en ligne Paypal ou Stripe ou projet d'évolution contributif""" 
+        help_url = QUrl("https://www.ma-sentinelle.eu/contributions")
         QDesktopServices.openUrl(help_url)
     
     def slotDemanderAide(self):
