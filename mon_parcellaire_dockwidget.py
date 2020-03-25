@@ -267,12 +267,15 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Répertoire
         s = QgsSettings( APPLI_NOM)
         TOM_REPERTOIRE = s.value( "MonTomParcellaire/Répertoire_gpkg", "Arretez vous au répertoire")
-        dirName = QFileDialog.getExistingDirectory( self, self.tr("Choisir le répertoire de votre GPKG"),
+        nomRepertoire = QFileDialog.getExistingDirectory( self, self.tr("Choisir le répertoire de votre GPKG"),
                      TOM_REPERTOIRE, QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks);
-        if len( dirName) == 0:
+        if len( nomRepertoire) == 0:
             return
-        self.Repertoire_lineEdit.setText( dirName )
-        self.ecrireSettings()        
+        if not os.path.isdir( nomRepertoire):
+            return
+        self.Repertoire_lineEdit.setText( nomRepertoire )
+        self.ecrireSettings()
+        self.slotBasculeJointure()       
         return
         
     def fusionnerJointure(self, repertoireGPKG, cheminCompletParcelle, nomJointure=MonParcellaire_JOI):
