@@ -272,6 +272,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         if len( dirName) == 0:
             return
         self.Repertoire_lineEdit.setText( dirName )
+        self.ecrireSettings()        
         return
         
     def fusionnerJointure(self, repertoireGPKG, cheminCompletParcelle, nomJointure=MonParcellaire_JOI):
@@ -287,7 +288,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         root = monProjet.layerTreeRoot()
         # Création du groupe jointure_date
         dateMaintenant = datetime.now()
-        nomGroupe=MonParcellaire_JOI + " du " + dateMaintenant.strftime("%d %b à %H h %M:%S")
+        nomGroupe=MonParcellaire_JOI + " du " + dateMaintenant.strftime("%d %b à %Hh%M:%S")
         temporaireGroupe = QgsLayerTreeGroup( nomGroupe)
         # Positionner en haut de root
         root.addChildNode(temporaireGroupe)
@@ -364,7 +365,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 erreurJointures( repertoireGPKG, nomJointure)
             return delimiteur, dfJointure, None
         else:
-            monPrint( "Pas de Pandas")
+            #monPrint( "Pas de Pandas")
             for delimiteur in DELIMITEURS_CONNUS:
                 nomCsv="file:///{1}?delimiter={0}".format( delimiteur, CHEMIN_JOINTURE)
                 try:
@@ -394,10 +395,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     nomColonnesUniques.append( col)
                     #monPrint("Colonne {0} est unique".format(col))
         else:
-            monPrint( "Pas de Pandas")
             _, layer, _ = self.rechercherDelimiteurJointure( CHEMIN_JOINTURE)
             for field in layer.fields():
-                monPrint("Champ du vecteur{0} a pour type {1}".format( field.name(), field.typeName()))
+                monPrint("Pas de Pandas : champ du vecteur {0} a pour type {1}".format( field.name(), field.typeName()))
                 nomColonnes.append( field.name())
             # Sans Pandas : mode dégradé pas de recherche des uniques
             nomColonnesUniques = nomColonnes

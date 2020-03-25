@@ -109,13 +109,9 @@ ATTR_FID='fid'
 
 # NOMAGES FIXES
 LISTE_FREQUENCE_SAUVEGARDE=[ "Chaque démarrage", "Par jour",  "Par semaine",  "Par mois"]
-# Attention pas de séparateur "_" dans la liste ci dessous
-#PREMIER_PREFIXES_SOLO="SOLO"
-#LISTE_PREFIXES=[ "SOLO | DUO | TRIO | QUATUOR | QUINTET" , "A | B | C | D | E","Camille | Léo | Pauline | Mickael", \
-#    "BERLINGO | KANGOO | C4 | MERCEDES", "NORD | SUD | EST | OUEST", \
-#    "Yvette | Léa | Magda | Jean", "Pivoine | Violette | Rose | Agapanthe"]
+
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V0.9"  
+APPLI_VERSION="V0.98"  
 # Suivi des versions
 
 # Exceptions
@@ -224,39 +220,3 @@ def monPrint( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX
         else:
             print( chaine)
             
-
-
-####def ouvre_vecteur( Repertoire, Nom_vecteur, Libelle, mon_dialogue=None, Extension=EXT_geojson):
-####    """ Ouvre le vecteur, vérifie sa validité
-####    Rend le vecteur et son nom
-####    """
-####    # Retrouve nom
-####    chemin_complet = nommage_vecteur( Repertoire, Nom_vecteur, Extension)
-####    vecteur = QgsVectorLayer( chemin_complet, Nom_vecteur, "ogr") 
-####    if not vecteur.isValid():
-####        aText="Vecteur {0} non valide ...".format(Libelle)
-####        if mon_dialogue != None:
-####            monPrint( aText, T_ERR, T_BAR, mon_dialogue)
-####        else: # vers LOG
-####            monPrint( aText, T_ERR)
-####        erreurVecteur( Repertoire,  Nom_vecteur)
-####    return vecteur, chemin_complet
-####        
-####    
-####def ouvre_gpkg( Repertoire, Nom_vecteur, Libelle, Nom_gpkg=MonParcellaire_GPKG, mon_dialogue=None):
-####    """ Ouvre le vecteur dans son gpkg, vérifie sa validité
-####    Rend le vecteur QGIS et son nom
-####    """
-####    # Retrouve nom du vecteur dans gpkg
-####    _, _, chemin_complet = nommages_gpkg( Repertoire, Nom_vecteur, Nom_gpkg)
-####    #monPrint( "Chemin du vecteur GPKG".format( chemin_complet),  T_INF)
-####    vecteur = QgsVectorLayer( chemin_complet, Nom_vecteur, "ogr")  
-####    if not vecteur.isValid():
-####        aText="Vecteur {0} non valide ...".format(Libelle)
-####        if mon_dialogue != None:
-####            monPrint( aText, T_ERR, T_BAR, mon_dialogue)
-####        else: # vers LOG
-####            monPrint( aText, T_ERR)
-####        erreurGPKG( Repertoire,  Nom_vecteur)
-####    return vecteur, chemin_complet
-####
