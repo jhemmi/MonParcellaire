@@ -111,7 +111,7 @@ ATTR_FID='fid'
 LISTE_FREQUENCE_SAUVEGARDE=[ "Chaque démarrage", "Par jour",  "Par semaine",  "Par mois"]
 
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V0.98"  
+APPLI_VERSION="V1.0"  
 # Suivi des versions
 
 # Exceptions

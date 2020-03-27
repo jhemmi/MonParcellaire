@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Mon Parcellaire V0.98 - Beta test -  jhemmi.eu</string>
+   <string>Mon Parcellaire V1.0 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
