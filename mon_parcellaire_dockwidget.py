@@ -148,8 +148,12 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         #self.Voir_checkBox.setChecked( Qt.Checked) if CHOIX_TOUT_VOIR == "YES" else self.Voir_checkBox.setChecked( Qt.Unchecked)
         CHOIX_JOINTURE = s.value("MonParcellaire/PresenceJointure", "NO")
         self.Jointure_checkBox.setChecked( Qt.Checked) if CHOIX_JOINTURE == "YES" else self.Jointure_checkBox.setChecked( Qt.Unchecked)
-
-        REPERTOIRE_GPKG = s.value( "MonParcellaire/repertoireGPKG", os.path.join( self.plugin_dir, "data"))
+        referentiel_plugin=os.path.join( self.plugin_dir, "data")
+        REPERTOIRE_GPKG = s.value( "MonParcellaire/repertoireGPKG", referentiel_plugin)
+        if not os.path.isdir( REPERTOIRE_GPKG): # n'existe plus
+            monPrint( "Répertoire {0} n'existant plus, retour au choix du référentiel du plugin {1}".\
+                format( REPERTOIRE_GPKG, referentiel_plugin), T_WAR)
+            REPERTOIRE_GPKG = referentiel_plugin
         self.Repertoire_lineEdit.setText( REPERTOIRE_GPKG )
         FREQUENCE_SAUVEGARDE = s.value("MonParcellaire/FrequenceSauvegarde", LISTE_FREQUENCE_SAUVEGARDE[0])
         ATTRIBUT_JOINTURE = s.value("MonParcellaire/AttributJointure", "Pas de jointure")
@@ -262,13 +266,13 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 matching_items = listWidget.findItems(i, Qt.MatchExactly)
                 for item in matching_items:
                     item.setSelected(True)
-                   
+        
     def slotLectureRepertoireGPKG(self):
-        # Répertoire
+        # Choisir le répertoire
         s = QgsSettings( APPLI_NOM)
-        TOM_REPERTOIRE = s.value( "MonTomParcellaire/Répertoire_gpkg", "Arretez vous au répertoire")
+        REPERTOIRE_GPKG = s.value( "MonParcellaire/repertoireGPKG", os.path.join( self.plugin_dir, "data"))
         nomRepertoire = QFileDialog.getExistingDirectory( self, self.tr("Choisir le répertoire de votre GPKG"),
-                     TOM_REPERTOIRE, QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks);
+                     REPERTOIRE_GPKG, QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks);
         if len( nomRepertoire) == 0:
             return
         if not os.path.isdir( nomRepertoire):

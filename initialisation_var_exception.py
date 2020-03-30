@@ -86,26 +86,12 @@ GPKG_LAYERNAME = SEP_PIPE + "layername="
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
 MonParcellaireNomAttribut='nom'
-MonParcellaireListeAttribut=['nom','tu tu','cépage', 'cadastre', "toto"]
 # Autres noms
 MonParcellaire_JOI="jointure"
 MonParcellaire_PROJET="projet_MonParcellaire.qgs"
 # REPERTOIRE SAUVEGARDE et MODELE
 MonParcellaire_SAV="MonParcellaire_SAUVEGARDE" # Repertoire
 #MonParcellaire_MOD="MonParcellaire_MODELE" # Repertoire des modele gpkg, projet, QML
-
-# Attributs clé des tables
-if MonParcellaire_PROD == "FR":
-    ATTR_NOM_PARCELLE='name' 
-    ATTR_LISTE_PARCELLE='Vignes'
-    ATTR_DIRECTION='direction'
-   # Préciser
-else:
-    #ATTR_MonParcellaire_PARCELLE='CODE_VIGNE'  # HE
-    ATTR_NOM_PARCELLE='CODE_VIGNE' 
-    ATTR_LISTE_PARCELLE='Vignes' 
-    ATTR_DIRECTION=None
-ATTR_FID='fid'
 
 # NOMAGES FIXES
 LISTE_FREQUENCE_SAUVEGARDE=[ "Chaque démarrage", "Par jour",  "Par semaine",  "Par mois"]
