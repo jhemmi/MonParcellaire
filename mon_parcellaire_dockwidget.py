@@ -76,15 +76,14 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.plugin_dir = os.path.dirname(__file__) 
         
         print( "** Démarrage de MonParcellaire {0}".format(APPLI_VERSION))
+        CHOIX_TOUT_VOIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
+            ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
         # Slot boutons 
         self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotVerifierRepertoireGPKGJointure)
         self.Prepare_buttonBox.button( QDialogButtonBox.Save ).pressed.connect(self.ecrireSettings)
         # Slot toolbouton 
         self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)  
         self.Jointure_checkBox.stateChanged.connect( self.slotBasculeJointure)
-
-        CHOIX_TOUT_VOIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
-            ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
 
         # Cas des combo
         self.initialiserCombo( self.FrequenceSauvegarde_comboBox, LISTE_FREQUENCE_SAUVEGARDE, FREQUENCE_SAUVEGARDE,  "des fréquences de sauvegarde")
