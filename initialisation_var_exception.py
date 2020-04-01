@@ -97,7 +97,7 @@ MonParcellaire_SAV="MonParcellaire_SAUVEGARDE" # Repertoire
 LISTE_FREQUENCE_SAUVEGARDE=[ "Chaque démarrage", "Par jour",  "Par semaine",  "Par mois"]
 
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V1.0"  
+APPLI_VERSION="V1.1"  
 # Suivi des versions
 
 # Exceptions

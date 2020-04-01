@@ -4,6 +4,7 @@ __pycache__/
 *.py~
 
 # temporairement JH
+MonParcellaire.gif
 Ui_mon_parcellaire_dockwidget_base.py
 *.zip
 Makefile
