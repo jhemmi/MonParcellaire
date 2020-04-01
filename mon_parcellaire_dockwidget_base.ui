@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>404</width>
+    <width>389</width>
     <height>429</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Mon Parcellaire V1.0 -  jhemmi.eu</string>
+   <string>Mon Parcellaire V1.1 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -45,7 +45,7 @@
            <rect>
             <x>11</x>
             <y>10</y>
-            <width>111</width>
+            <width>71</width>
             <height>17</height>
            </rect>
           </property>
@@ -67,7 +67,7 @@
            </font>
           </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Le référentiel est un &lt;span style=&quot; font-weight:600;&quot;&gt;répertoire&lt;/span&gt; de votre choix qui contient toutes vos données Mon Parcellaire : les deux GPKG (Mon Parcellaire et MesFondsDePlan), le GeoPDF. Il héberge aussi votre jointure et le répertoire de sauvegarde.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Par exemple, nommez C:/SIG/MonParcellaire ou /home/user/GIS/MP &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Dans la version initiale, il pointe vers le répertoire &amp;quot;data&amp;quot; de l'extension. Utilisez ce modèle pour importer vos données (parcelles, jointure, observations, vos rasters....). &lt;/p&gt;&lt;p&gt;Quand vous avez pris la main sur ces données, copiez tout le répertoire data dans le répertoire de votre choix et changez le nom du Référentiel dans l'extension.  &lt;/p&gt;&lt;p&gt;Si votre projet n'est pas dans le GPKG (QGIS &amp;lt;3.10) , pensez aussi à la sauvegarder dans votre référentiel. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Le référentiel est un &lt;span style=&quot; font-weight:600;&quot;&gt;répertoire&lt;/span&gt; de votre choix qui contient toutes vos données Mon Parcellaire : les deux GPKG (Mon Parcellaire et MesFondsDePlan), le GeoPDF. Il héberge aussi votre jointure et le répertoire de sauvegarde.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Par exemple, nommez C:/SIG/MonParcellaire ou /home/user/GIS/MP &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Par défaut, il pointe vers le répertoire &amp;quot;data&amp;quot; de l'extension. Utilisez ce modèle pour importer vos données (parcelles, jointure, observations, vos rasters....). &lt;/p&gt;&lt;p&gt;Quand vous avez pris la main sur ces données, copiez tout le répertoire data dans le répertoire de votre choix et modifiez le chemin vers le Référentiel. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Si votre projet n'est pas dans le GPKG (QGIS &amp;lt;3.10) , pensez aussi à le sauvegarder dans votre référentiel. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Référentiel</string>
@@ -79,7 +79,7 @@
          <widget class="QLineEdit" name="Repertoire_lineEdit">
           <property name="geometry">
            <rect>
-            <x>140</x>
+            <x>120</x>
             <y>10</y>
             <width>211</width>
             <height>20</height>
@@ -110,7 +110,7 @@
            <enum>Qt::NoFocus</enum>
           </property>
           <property name="toolTip">
-           <string>Chemin vers votre référentiel (par exemple C:/SIG/TOM)</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Chemin vers votre référentiel (par exemple &lt;span style=&quot; font-style:italic;&quot;&gt;C:/SIG/MonParcellaire&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="styleSheet">
            <string notr="true"/>
@@ -134,7 +134,7 @@
            </font>
           </property>
           <property name="toolTip">
-           <string>Préparer votre référentiel en calculant un tour SOLO. Mon Tom Parcellaire vérifie les sauvegarde, les relations parcelle-points d'accés. Il croise votre liste à visiter avec le référentiel pour identifier d'éventuels parcelles manquantes dans le référentiel ou doubles dans votre liste.</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enregistrer permet de sauver vos choix sans exécuter de traitement.&lt;/p&gt;&lt;p&gt;Ok lance une sauvegarde et si vous l'avez choisie, une importation des données externes (jointure).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="standardButtons">
            <set>QDialogButtonBox::Ok|QDialogButtonBox::Save</set>
@@ -146,7 +146,7 @@
          <widget class="QToolButton" name="Repertoire_toolButton">
           <property name="geometry">
            <rect>
-            <x>350</x>
+            <x>90</x>
             <y>10</y>
             <width>26</width>
             <height>20</height>
@@ -176,7 +176,7 @@
            <rect>
             <x>10</x>
             <y>60</y>
-            <width>380</width>
+            <width>321</width>
             <height>231</height>
            </rect>
           </property>
@@ -204,7 +204,7 @@
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Vos données externes sont à exporter dans un fichier nommé &lt;span style=&quot; font-weight:600;&quot;&gt;jointure&lt;/span&gt;. Vous créer un fichier texte (csv, txt, tsv) dont tous les champs sont séparés par une virgule, un point-virgule ou une tabulation. &lt;/p&gt;&lt;p&gt;Vous exportez ces données dans le répertoire Référentiel de Mon Parcellaire.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Mon Parcellaire prend en charge la reconnaissance de ces différents formats et séparateurs. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Vos données externes sont à exporter dans un fichier nommé &lt;span style=&quot; font-weight:600;&quot;&gt;jointure&lt;/span&gt;. Vous créez un fichier texte (csv, txt, tsv) dont tous les champs sont séparés par une virgule, un point-virgule ou une tabulation. &lt;/p&gt;&lt;p&gt;Vous exportez ces données dans le répertoire Référentiel de Mon Parcellaire.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Mon Parcellaire prend en charge la reconnaissance de ces différents formats et séparateurs. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Déposez votre jointure dans le référentiel </string>
@@ -227,7 +227,7 @@
                 </font>
                </property>
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L'attribut pour la jointure est le nom du champ dans votre jointure qui sert de lien avec l'attribut &lt;span style=&quot; font-weight:600;&quot;&gt;&amp;quot;nom&amp;quot;&lt;/span&gt; de votre référentiel &lt;span style=&quot; font-weight:600;&quot;&gt;&amp;quot;parcelles&amp;quot;&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;Ces attributs doivent être uniques dans vos &lt;span style=&quot; font-weight:600;&quot;&gt;parcelles&lt;/span&gt; comme dans la &lt;span style=&quot; font-weight:600;&quot;&gt;jointure&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L'attribut pour la jointure est le nom du champ dans votre jointure qui sert de lien avec l'attribut &lt;span style=&quot; font-weight:600;&quot;&gt;&amp;quot;nom&amp;quot;&lt;/span&gt; de votre référentiel &lt;span style=&quot; font-weight:600;&quot;&gt;&amp;quot;parcelles&amp;quot;&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;Dans le référentiel exemple, l'attribut de jointure se nomme &amp;quot;nom dans jointure&amp;quot;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Ces attributs doivent être uniques dans vos &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;parcelles&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt; comme dans la &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;jointure&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
                 <string>Attribut pour la jointure</string>
@@ -316,9 +316,9 @@
          <widget class="QComboBox" name="FrequenceSauvegarde_comboBox">
           <property name="geometry">
            <rect>
-            <x>220</x>
+            <x>190</x>
             <y>30</y>
-            <width>151</width>
+            <width>141</width>
             <height>21</height>
            </rect>
           </property>
@@ -339,7 +339,7 @@
            <rect>
             <x>10</x>
             <y>30</y>
-            <width>191</width>
+            <width>171</width>
             <height>18</height>
            </rect>
           </property>
@@ -438,7 +438,7 @@
            </font>
           </property>
           <property name="text">
-           <string>- Publier vos cartes en géopdf</string>
+           <string>- Publier vos cartes en géopdf ou en atlas</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -469,7 +469,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>140</y>
+            <y>160</y>
             <width>341</width>
             <height>21</height>
            </rect>
@@ -490,7 +490,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>170</y>
+            <y>190</y>
             <width>301</width>
             <height>31</height>
            </rect>
@@ -520,7 +520,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>220</y>
+            <y>240</y>
             <width>111</width>
             <height>21</height>
            </rect>
@@ -532,7 +532,7 @@
            </font>
           </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; color:#00aa00;&quot;&gt;Vous aussi contribuez à l'extension qui vous garantit de garder la maîtrise de vos mesures Physiocap. Le capteur vous permet de prendre possession de vos mesures. L'extension vous autorise à rester maître de leurs utilisations.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; color:#00aa00;&quot;&gt;Vous aussi contribuez à l'extension qui vous garantit de garder la maîtrise de vos données de parcellaire et vous donne accès au Services de jhemmi.eu pour les données Open Data de votre zone.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Contributeur : </string>
@@ -542,7 +542,7 @@
           <property name="geometry">
            <rect>
             <x>120</x>
-            <y>220</y>
+            <y>240</y>
             <width>171</width>
             <height>21</height>
            </rect>
@@ -561,7 +561,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>110</y>
+            <y>130</y>
             <width>211</width>
             <height>21</height>
            </rect>
@@ -570,9 +570,6 @@
            <font>
             <pointsize>11</pointsize>
            </font>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#00aa00;&quot;&gt;Vous pouvez agir et soutenir l'extension. Sa maintenance et ses évolutions dépendent de vous. Contribuez, maintenant.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="autoFillBackground">
            <bool>false</bool>
