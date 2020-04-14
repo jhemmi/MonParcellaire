@@ -11,6 +11,3 @@ Simple et concret.
 ![1](https://github.com/jhemmi/MonParcellaire/blob/master/MonPacellaire.gif)
 
 Retrouvez tous les usages dans d'autres vidéos dans le ![wiki](https://github.com/jhemmi/MonParcellaire/wiki)
-wiki
-
-
