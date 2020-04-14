@@ -6,6 +6,8 @@ Modifier, compléter, publier vos cartes.
 Les services jhemmi.eu pour extraire les données OpenData pour "Mon Parcellaire".
 Ouverture à QField pour utiliser vos données sur le terrain.
 
+Pour une présentation générale, visitez [Mon Parcellaire](https://www.ma-sentinelle.eu/Services/mon-parcellaire)
+
 Simple et concret.
 
 ![1](https://github.com/jhemmi/MonParcellaire/blob/master/MonPacellaire.gif)
