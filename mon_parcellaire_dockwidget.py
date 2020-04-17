@@ -81,6 +81,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Slot boutons 
         self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotVerifierRepertoireGPKGJointure)
         self.Prepare_buttonBox.button( QDialogButtonBox.Save ).pressed.connect(self.ecrireSettings)
+        self.TestButton.pressed.connect(self.lireSignets)
+
         # Slot toolbouton 
         self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)  
         self.Jointure_checkBox.stateChanged.connect( self.slotBasculeJointure)
@@ -183,13 +185,14 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             erreurGPKG( nomGPKG,  CHEMIN_GPKG)
         return CHEMIN_GPKG, "layer='{}'".format(nomTable), CHEMIN_GPKG + GPKG_LAYERNAME + nomTable
 
-    def sauvergardeGPKG(self, repertoireGPKG, nomCourtGPKG, frequence, suiteSauvegarde, nomTable="xxx"):
-        """ GPKG est sauvés selon la fréquence et si nécessaire"""
-        REPERTOIRE_SAUVEGARDE = os.path.join( repertoireGPKG, suiteSauvegarde)
+    def sauvergardeSelonFrequence(self, repertoireASauver, nomCourt, frequence, suiteSauvegarde, nomTable="xxx"):
+        """ fichier (y compris GPKG) est sauvés selon la fréquence et si nécessaire
+            nommage detaillé selon la fréquence"""
+        REPERTOIRE_SAUVEGARDE = os.path.join( repertoireASauver, suiteSauvegarde)
         if not os.path.isdir( REPERTOIRE_SAUVEGARDE):
             os.mkdir( REPERTOIRE_SAUVEGARDE)
         # Déterminer les noms des gpkg pour les copier
-        CHEMIN_GPKG, _, cheminCompletTable = self.nommagesGPKG( repertoireGPKG, nomTable, nomCourtGPKG)  
+        CHEMIN_GPKG, _, cheminCompletTable = self.nommagesGPKG( repertoireASauver, nomTable, nomCourt)  
         dateMaintenant = datetime.now()
         if frequence == LISTE_FREQUENCE_SAUVEGARDE[0]: # prochain run
             dateFormatee=dateMaintenant.strftime("%Y%m%d%H%M")
@@ -200,7 +203,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         else: # par mois
             assert( frequence == LISTE_FREQUENCE_SAUVEGARDE[3])
             dateFormatee=dateMaintenant.strftime("%Y%m")
-        CHEMIN_GPKG_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  nomCourtGPKG) + "_SAUVEGARDE_" + dateFormatee
+        CHEMIN_GPKG_SAVE = os.path.join( REPERTOIRE_SAUVEGARDE,  nomCourt) + "_SAUVEGARDE_" + dateFormatee
         if not os.path.isfile( CHEMIN_GPKG_SAVE):
             shutil.copy( CHEMIN_GPKG, CHEMIN_GPKG_SAVE)
         return CHEMIN_GPKG, cheminCompletTable
@@ -357,6 +360,42 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         #monPrint("Extension jointure {}".format( extension))
         return CHEMIN_JOINTURE
 
+    def lireSignets(self):
+        import xml.etree.ElementTree as ET
+        
+        referentielPlugin=os.path.join( self.plugin_dir, "data")
+        mesSignets=os.path.join( referentielPlugin, "signets"+EXT_xml)
+        mesSignetsCSV=os.path.join( referentielPlugin, "signets"+EXT_csv)
+        if not os.path.isfile( mesSignets):
+            print("Pas de signets {}".format(mesSignets))
+            return
+
+        root = ET.parse(mesSignets).getroot()
+        if root.tag != "qgis_bookmarks":
+            print("Signets non QGIS")
+            return
+
+        tags = {"tags":[]}
+        for bookmark in root.iter('bookmark'):
+#            name = bookmark.find('name').text
+#            xmin = bookmark.find('xmin').text
+#            monPrint( "Name et xmin : {0} {0} ".format( name,  xmin))
+            tag = {}
+            tag["name"] = bookmark.find('name').text
+            xmin = bookmark.find('xmin').text
+            ymin = bookmark.find('ymin').text
+            xmax = bookmark.find('xmax').text
+            ymax = bookmark.find('ymax').text
+            WKT = "MultiPolygon ((({0} {1}, {2} {1}, {2} {3}, {0} {3}, {0} {1})))".\
+                format( xmin, ymin, xmax, ymax)
+            tag["WKT"] = WKT
+
+            tags["tags"]. append(tag)
+        df_signets = pd.DataFrame(tags["tags"])
+        monPrint( "Signet : {}".format( df_signets.head()))
+        print( df_signets.head())        
+        df_signets.to_csv( mesSignetsCSV, sep=';')
+                
     def rechercherDelimiteurJointure( self, CHEMIN_JOINTURE, mode="Pandas"):
         """ Traite les différents cas de délimiteurs avec pandas ou QGIS"""
         if VERSION_PANDAS != None and mode == "Pandas":
@@ -423,8 +462,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         ###############
         # Sauvegardes 
         ###############
-        CHEMIN_VECTEUR_GPKG, cheminCompletParcelle = self.sauvergardeGPKG( REPERTOIRE_GPKG, MonParcellaire_GPKG, FREQUENCE_SAUVEGARDE, MonParcellaire_SAV, MonParcellaire_PAR)
-        CHEMIN_RASTER_GPKG, _ = self.sauvergardeGPKG( REPERTOIRE_GPKG, MesFondsDePlan_GPKG, LISTE_FREQUENCE_SAUVEGARDE[3], MonParcellaire_SAV)
+        CHEMIN_VECTEUR_GPKG, cheminCompletParcelle = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MonParcellaire_GPKG, FREQUENCE_SAUVEGARDE, MonParcellaire_SAV, MonParcellaire_PAR)
+        CHEMIN_RASTER_GPKG, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MesFondsDePlan_GPKG, LISTE_FREQUENCE_SAUVEGARDE[3], MonParcellaire_SAV)
+        CHEMIN_PROJET, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MonParcellaire_PROJET, LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV)
         ###############
         # Jointure 
         ###############                   
@@ -432,7 +472,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             CHEMIN_JOINTURE,  attributsAJoindreOrdonne = \
                 self.fusionnerJointure( REPERTOIRE_GPKG, cheminCompletParcelle)
             nomJointure = os.path.basename( CHEMIN_JOINTURE)
-            monPrint( self.tr("Fin : vérification répertoire, sauvegarde GPKG et jointure {0} pour des attributs {1}".\
+            REPERTOIRE_JOINTURE= os.path.dirname( CHEMIN_JOINTURE)
+            _, _ = self.sauvergardeSelonFrequence( REPERTOIRE_JOINTURE, nomJointure, LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV)
+            monPrint( self.tr("Fin : vérification répertoire, sauvegarde GPKGs et jointure {0} pour des attributs {1}".\
                 format(nomJointure, attributsAJoindreOrdonne)), T_OK)
         else:
             monPrint( self.tr("Fin : vérification répertoire et sauvegarde GPKG"), T_OK)

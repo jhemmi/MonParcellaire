@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Mon Parcellaire V1.1 -  jhemmi.eu</string>
+   <string>Mon Parcellaire V1.2.5 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -582,6 +582,22 @@
           </property>
           <property name="flat">
            <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="TestButton">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>240</y>
+            <width>21</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>.</string>
           </property>
          </widget>
         </widget>

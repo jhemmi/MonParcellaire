@@ -27,7 +27,11 @@ else:
     
 MonParcellaire_EPSG="32631" # faire un dict ou L93
 # Nom des flags accompagnant les messages
-MonParcellaire_LOG="MonParcellaire"
+APPLI_NOM="MonParcellaire"
+APPLI_VERSION="V1.2.5"  
+# Suivi des versions dans metadata.txt
+
+MonParcellaire_LOG=APPLI_NOM
 T_INF="Information"
 T_ERR="Erreur"
 T_OK="Succes"
@@ -76,10 +80,11 @@ DELIMITEURS_CONNUS=[';', ",", "\t"]
 EXTENSIONS_CONNUES=[EXT_txt, EXT_csv, EXT_tsv]
 EXT_json=".json"
 EXT_qml=".qml"
+EXT_xml=".xml"
 EXT_geojson=".geojson"
 
 # NOM du GPKG et de ses tables 
-MonParcellaire_GPKG="MonParcellaire" + EXT_gpkg
+MonParcellaire_GPKG=APPLI_NOM + EXT_gpkg
 MesFondsDePlan_GPKG="MesFondsDePlan" + EXT_gpkg
 GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
@@ -88,17 +93,12 @@ MonParcellaire_PAR="parcelles"
 MonParcellaireNomAttribut='nom'
 # Autres noms
 MonParcellaire_JOI="jointure"
-MonParcellaire_PROJET="projet_MonParcellaire.qgs"
+MonParcellaire_PROJET=APPLI_NOM+".qgz"
 # REPERTOIRE SAUVEGARDE et MODELE
-MonParcellaire_SAV="MonParcellaire_SAUVEGARDE" # Repertoire
-#MonParcellaire_MOD="MonParcellaire_MODELE" # Repertoire des modele gpkg, projet, QML
+MonParcellaire_SAV=APPLI_NOM+"_SAUVEGARDE" # Repertoire
 
 # NOMAGES FIXES
 LISTE_FREQUENCE_SAUVEGARDE=[ "Chaque démarrage", "Par jour",  "Par semaine",  "Par mois"]
-
-APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V1.1"  
-# Suivi des versions
 
 # Exceptions
 class MonParcellaireException( BaseException):

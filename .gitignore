@@ -13,6 +13,9 @@ i18n/
 data/MonParcellaire_SAUVEGARDE
 data/*gpkg-shm
 data/*gpkg-wal
+data/signet*
+data/exemple_signet*
+MonPacellaire.gif
 scripts/
 .eric6project/
 MonParcellaire.e4p
