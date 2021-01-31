@@ -6,7 +6,7 @@
 name=MonParcellaire
 qgisMinimumVersion=3.4
 description=Manage your parcels
-version=1.2.5
+version=1.2.6
 author=jhemmi.eu
 email=jean@jhemmi.eu
 
@@ -20,8 +20,10 @@ repository=https://github.com/jhemmi/MonParcellaire
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-#changelog=V1.1 GPKGs jointure geoPDF & impression & documents
-changelog=V1.2.5 Sauvegarde jointure et projet
+changelog=
+  V1.2.6 IEA & gestion des encodages de jointure
+  V1.2.5 Sauvegarde jointure et projet
+  V1.1 GPKGs jointure & impression & documents
 
 # Tags are comma separated with spaces allowed
 tags=parcels parcellaire OpenSource OpenData python	

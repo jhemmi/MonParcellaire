@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Mon Parcellaire V1.2.5 -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V1.2.6 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -45,7 +45,7 @@
            <rect>
             <x>11</x>
             <y>10</y>
-            <width>71</width>
+            <width>91</width>
             <height>17</height>
            </rect>
           </property>
@@ -79,7 +79,7 @@
          <widget class="QLineEdit" name="Repertoire_lineEdit">
           <property name="geometry">
            <rect>
-            <x>120</x>
+            <x>140</x>
             <y>10</y>
             <width>211</width>
             <height>20</height>
@@ -146,7 +146,7 @@
          <widget class="QToolButton" name="Repertoire_toolButton">
           <property name="geometry">
            <rect>
-            <x>90</x>
+            <x>110</x>
             <y>10</y>
             <width>26</width>
             <height>20</height>
@@ -176,7 +176,7 @@
            <rect>
             <x>10</x>
             <y>60</y>
-            <width>321</width>
+            <width>341</width>
             <height>231</height>
            </rect>
           </property>
@@ -287,7 +287,7 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>80</width>
+                 <width>60</width>
                  <height>20</height>
                 </size>
                </property>
@@ -316,7 +316,7 @@
          <widget class="QComboBox" name="FrequenceSauvegarde_comboBox">
           <property name="geometry">
            <rect>
-            <x>190</x>
+            <x>210</x>
             <y>30</y>
             <width>141</width>
             <height>21</height>
@@ -339,7 +339,7 @@
            <rect>
             <x>10</x>
             <y>30</y>
-            <width>171</width>
+            <width>191</width>
             <height>18</height>
            </rect>
           </property>
@@ -438,7 +438,7 @@
            </font>
           </property>
           <property name="text">
-           <string>- Publier vos cartes en géopdf ou en atlas</string>
+           <string>- Publier un atlas de  vos parcelles</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

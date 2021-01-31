@@ -25,10 +25,10 @@ if MonParcellaire_PROD in [ "TEST",  "HE"]: #, "HE", "FR"]:
 else:
     MonParcellaire_TRACE="NO"
     
-MonParcellaire_EPSG="32631" # faire un dict ou L93
+#MonParcellaire_EPSG="2154" # faire un dict ou L93
 # Nom des flags accompagnant les messages
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V1.2.5"  
+APPLI_VERSION="V1.2.6"  
 # Suivi des versions dans metadata.txt
 
 MonParcellaire_LOG=APPLI_NOM
@@ -53,7 +53,7 @@ U_STOP          =u"\U0001F6AB"
 E_STOP          ="🔥" 
 E_INTERDIT      ="🛑"
 E_CLAP          ="🎬"
-E_PANDA         ="🐼"
+E_PANDAS        ="🐼"
 E_PETALE        ="🥀"
 E_FLEUR         ="🌼"
 
@@ -86,13 +86,14 @@ EXT_geojson=".geojson"
 # NOM du GPKG et de ses tables 
 MonParcellaire_GPKG=APPLI_NOM + EXT_gpkg
 MesFondsDePlan_GPKG="MesFondsDePlan" + EXT_gpkg
+MesIAE_GPKG="MesIEA" + EXT_gpkg
 GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
 MonParcellaireNomAttribut='nom'
 # Autres noms
-MonParcellaire_JOI="jointure"
+MonParcellaire_JOI="jointure" # EN join between
 MonParcellaire_PROJET=APPLI_NOM+".qgz"
 # REPERTOIRE SAUVEGARDE et MODELE
 MonParcellaire_SAV=APPLI_NOM+"_SAUVEGARDE" # Repertoire
@@ -118,15 +119,18 @@ class MonParcellaireErreurMethodo( MonParcellaireException):
 # Texte des messages
 NOM_APPS_VENDANGE="CoopViti"
 NOM_SIG_VENDANGE="QGIS Projet Référentiel Mon Tom"
-VerificationReferentielMonParcellaire="Avez-vous paramétré le chemin vers le référentiel Mon Parcellaire ? \
-    Vérifiez dans l'onglet paramètre de l'extension Mon Parcellaire si le chemin est correct"
+VerificationReferentielMonParcellaire="Avez-vous paramétré le chemin vers le référentiel Mon Parcellaire ? \n\
+    Vérifiez dans l'onglet {0} si le chemin vers le référentiel est correct. \n\
+    Avez-vous déposer une jointure d'extension {1} dans ce référentiel ? \n\
+    Son encodage est de l'UTF-8 ? \n\
+    La jointure a-t-elle un délimiteur".format( E_OK, EXTENSIONS_CONNUES,  tuple( DELIMITEURS_CONNUS))
 Maintenance="Contacter la maintenance jhemmi.eu"
 Maintenance_GPKG="{0}, en fournissant votre GPKG de référence ~MonParcellaire/MonParcellaire.gpkg.".format(Maintenance)
 VerificationVersionQGIS="Votre version de QGIS n'inclut pas ce module. Sous Windows, utilisez \
-    QGIS 3.10.0 ou 3.12.0 qui contiennent ce module."
-Pas_verif_mais_maintenance=Maintenance_GPKG + \
-    "En cas d'urgence, vous pouvez sortir de QGIS, sauver le GPKG ~MonParcellaire/MonParcellaire.gpkg pour l'envoyer à jhemmi.eu, \
-        recréer votre référentiel GPKG à partir de la dernière sauvegarde présente dans ~MonParcellaire/MonParcellaire_SAUVEGARDE "
+    QGIS 3.10.x ou 3.12.y qui contiennent ce module."
+#Pas_verif_mais_maintenance=Maintenance_GPKG + \
+#    "En cas d'urgence, vous pouvez sortir de QGIS, sauver le GPKG ~MonParcellaire/MonParcellaire.gpkg pour l'envoyer à jhemmi.eu, \
+#    sinon recréer votre référentiel GPKG à partir de la dernière sauvegarde présente dans ~MonParcellaire/MonParcellaire_SAUVEGARDE "
 
 # REPERTOIRE
 def erreurRepertoire( CHEMIN_REP, correction=VerificationReferentielMonParcellaire):
@@ -136,9 +140,14 @@ def erreurRepertoire( CHEMIN_REP, correction=VerificationReferentielMonParcellai
 def erreurGPKG( CHEMIN_REP, NOM_GPKG, correction=VerificationReferentielMonParcellaire):
     aText="Pas de GPKG à traiter - nom de gpkg {0} - répertoire recherché {1})".format(NOM_GPKG, CHEMIN_REP)
     raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
-def erreurJointures( CHEMIN_REP,  NOM_JOINTURE, LISTE_EXTENSIONS, correction=VerificationReferentielMonParcellaire):
-    aText="Pas de jointure {0} avec une des extensions {1}".format(NOM_JOINTURE, LISTE_EXTENSIONS)
+def erreurJointuresExtensions( LISTE_EXTENSIONS=EXTENSIONS_CONNUES, correction=VerificationReferentielMonParcellaire):
+    aText="Aucun jointure avec aucune des extensions {}".format( LISTE_EXTENSIONS)
     raise MonParcellaireErreurData( "{0} || CORRECTION : {1}".format(aText, correction))
+def erreurJointureDelimeteurs( NOM_JOINTURE, LISTE_DELIMITEURS=DELIMITEURS_CONNUS, correction=VerificationReferentielMonParcellaire):
+    aText="La jointure {0} n'a aucun des délimiteurs connus {1}. ".format(NOM_JOINTURE, LISTE_DELIMITEURS)
+    aText=aText+"Supprimez ou créez de nouveau cette jointure".format(NOM_JOINTURE)
+    monPrint( "{0} || AUTRES CORRECTIONS : \n{1} parmi {2} ?".format(aText, correction,  LISTE_DELIMITEURS),  T_ERR)
+    return
 def erreurVecteur( CHEMIN_REP,  NOM_VECTEUR, correction=VerificationReferentielMonParcellaire):
     aText="Pas de vecteur {0} dans le répertoire recherché {1}".format(NOM_VECTEUR, CHEMIN_REP)
     raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
@@ -154,7 +163,7 @@ def erreurVecteur( CHEMIN_REP,  NOM_VECTEUR, correction=VerificationReferentielM
 #    aText="L'algorithme {0} n'a pas pu s'exécuter correctement. Vérifier le message d'erreur dans le journal des messages (onglet Traitement)".\
 #        format(NOM_ALGO)
 #    raise MonParcellaireErreurMethodo( "{0} || CORRECTION : {1}".format(aText, correction + " en fournissant votre GPKG et le nom de l'algo problématique"))
-def erreurImportPandas( module, correction=VerificationVersionQGIS):
+def erreurImportVersion( module, correction=VerificationVersionQGIS):
     aText="Le module {0} n'est pas présent ou actif dans QGIS.".format(module)
     monPrint( "{0} || CORRECTION : {1}".format(aText, correction))
     return

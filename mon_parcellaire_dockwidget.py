@@ -46,7 +46,11 @@ try:
 #    print("Drivers fiona : {0}".format(fiona.supported_drivers))
 except:
     VERSION_PANDAS=None
-    erreurImportPandas("Pandas")
+    erreurImportVersion("pandas")
+try:
+    import chardet
+except:
+    erreurImportVersion("chardet")
 #try:
 #    import processing
 #    from processing import ( QgsProcessingException) # algorithmHelp
@@ -75,11 +79,11 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.plugin_dir = os.path.dirname(__file__) 
         
-        print( "** Démarrage de MonParcellaire {0}".format(APPLI_VERSION))
+        #print( "** Démarrage de MonParcellaire {0}".format(APPLI_VERSION))
         CHOIX_TOUT_VOIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
         # Slot boutons 
-        self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotVerifierRepertoireGPKGJointure)
+        self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotTraiterRepertoireGPKGJointure)
         self.Prepare_buttonBox.button( QDialogButtonBox.Save ).pressed.connect(self.ecrireSettings)
         self.TestButton.pressed.connect(self.lireSignets)
 
@@ -89,9 +93,11 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         # Cas des combo
         self.initialiserCombo( self.FrequenceSauvegarde_comboBox, LISTE_FREQUENCE_SAUVEGARDE, FREQUENCE_SAUVEGARDE,  "des fréquences de sauvegarde")
+        CHEMIN_JOINTURE = None
         if CHOIX_JOINTURE == "YES":
             # Déterminer le nom de la jointure
             CHEMIN_JOINTURE = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
+        if CHEMIN_JOINTURE != None:
             nomColonnes, nomColonnesUniques = self.lireAttributsJointure( CHEMIN_JOINTURE)
         else:
             nomColonnes=['Pas de jointure']
@@ -100,7 +106,13 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.initialiserCombo( self.AttributJointure_comboBox, nomColonnesUniques, ATTRIBUT_JOINTURE,  "attribut pour jointure")
         # Liste AttributsAJoindre
         self.initialiserListeMultiple( self.AttributsAJoindre_listWidget, nomColonnes, LISTE_ATTRIBUTS_A_JOINDRE,  "attributs à joindre")
-
+        # Cas où jointure est attendu mais n'existe pas (ou plus)
+        if CHOIX_JOINTURE == "YES" and CHEMIN_JOINTURE == None:
+            self.Jointure_checkBox.setChecked( Qt.Unchecked)
+            CHOIX_JOINTURE == "NO"
+        else:
+            self.Jointure_checkBox.setChecked( Qt.Checked)
+            
         # Appel à aide ou contrib
         self.Aide_bouton.pressed.connect(self.slotDemanderAide)
         self.Contribuer_bouton.pressed.connect(self.slotDemanderContribution)
@@ -146,7 +158,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def lireSettings( self):
         s = QgsSettings( APPLI_NOM)
         CHOIX_TOUT_VOIR = s.value("MonParcellaire/Tout_voir", "NO")
-        #self.Voir_checkBox.setChecked( Qt.Checked) if CHOIX_TOUT_VOIR == "YES" else self.Voir_checkBox.setChecked( Qt.Unchecked)
         CHOIX_JOINTURE = s.value("MonParcellaire/PresenceJointure", "NO")
         self.Jointure_checkBox.setChecked( Qt.Checked) if CHOIX_JOINTURE == "YES" else self.Jointure_checkBox.setChecked( Qt.Unchecked)
         referentiel_plugin=os.path.join( self.plugin_dir, "data")
@@ -160,7 +171,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         ATTRIBUT_JOINTURE = s.value("MonParcellaire/AttributJointure", "Pas de jointure")
         PreparelisteAttributAJoindre = s.value("MonParcellaire/AttributsAJoindre", "Pas de jointure")
         LISTE_ATTRIBUTS_A_JOINDRE=PreparelisteAttributAJoindre.split( SEP_CONFIG)
-        #monPrint( "Settings lus {}".format( LISTE_ATTRIBUTS_A_JOINDRE))
+        #monPrint( "Settings lus jointure {} pour attributs {}".format( CHOIX_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE))
         return CHOIX_TOUT_VOIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE
     
     def nommageVecteur( self, Repertoire, nomVecteur, Extension=EXT_geojson, doitExister="Oui"):
@@ -174,25 +185,31 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             erreurVecteur( Repertoire,  nomVecteur + Extension)
         return chemin_complet
     
-    def nommagesGPKG( self, Repertoire, nomTable, nomGPKG=MonParcellaire_GPKG, doitExister="Oui"):
+    def nommagesGPKG( self, Repertoire, nomTable, nomGPKG=MonParcellaire_GPKG, presenceAttendu=False):
         """ Calcule le nom de table et vérifie si le chemin au GPKG existe
         Rend le nom du gpkg, un libelle et le nom pour ouvrir avec QGIS API"""
         # Assert
         if not os.path.isdir( Repertoire):
             erreurRepertoire( Repertoire)
         CHEMIN_GPKG = os.path.join( Repertoire, nomGPKG)
-        if not os.path.isfile( CHEMIN_GPKG) and doitExister == "Oui":
-            erreurGPKG( nomGPKG,  CHEMIN_GPKG)
+        if not os.path.isfile( CHEMIN_GPKG):
+            if presenceAttendu:
+                erreurGPKG( nomGPKG,  CHEMIN_GPKG)
+            return None, None, None
+        #print( "nommageGPKG", CHEMIN_GPKG, "layer='{}'".format(nomTable), CHEMIN_GPKG + GPKG_LAYERNAME + nomTable)
         return CHEMIN_GPKG, "layer='{}'".format(nomTable), CHEMIN_GPKG + GPKG_LAYERNAME + nomTable
 
-    def sauvergardeSelonFrequence(self, repertoireASauver, nomCourt, frequence, suiteSauvegarde, nomTable="xxx"):
-        """ fichier (y compris GPKG) est sauvés selon la fréquence et si nécessaire
+    def sauvergardeSelonFrequence(self, repertoireASauver, nomCourt, frequence, suiteSauvegarde, presenceAttendue=False, nomTable="xxx"):
+        """ Fichier (y compris GPKG) est sauvés selon la fréquence et si nécessaire
             nommage detaillé selon la fréquence"""
         REPERTOIRE_SAUVEGARDE = os.path.join( repertoireASauver, suiteSauvegarde)
         if not os.path.isdir( REPERTOIRE_SAUVEGARDE):
             os.mkdir( REPERTOIRE_SAUVEGARDE)
         # Déterminer les noms des gpkg pour les copier
-        CHEMIN_GPKG, _, cheminCompletTable = self.nommagesGPKG( repertoireASauver, nomTable, nomCourt)  
+        CHEMIN_GPKG, _, cheminCompletTable = self.nommagesGPKG( repertoireASauver, nomTable, nomCourt, presenceAttendue)  
+        if CHEMIN_GPKG == None:
+            monPrint( "Pas de sauvegarde pour {0}".format( nomCourt), T_WAR)            
+            return None, None
         dateMaintenant = datetime.now()
         if frequence == LISTE_FREQUENCE_SAUVEGARDE[0]: # prochain run
             dateFormatee=dateMaintenant.strftime("%Y%m%d%H%M")
@@ -212,21 +229,24 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """ 
         Bascule le choix jointure et acces aux listes d'attribut à joindre
         """
+        CHEMIN_JOINTURE=None
         if self.Jointure_checkBox.isChecked():
+            _, _, REPERTOIRE_GPKG, _, \
+            ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
+            CHEMIN_JOINTURE = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
+        if CHEMIN_JOINTURE != None and self.Jointure_checkBox.isChecked():
             self.AttributJointure_comboBox.setEnabled( True)
             self.AttributsAJoindre_listWidget.setEnabled( True)
             self.label_Jointure.setEnabled( True)
             self.label_AttributJointure.setEnabled( True)
             self.label_AttributsAJoindre.setEnabled( True)
-            _, _, REPERTOIRE_GPKG, _, \
-            ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
-            CHEMIN_JOINTURE = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
             nomColonnes, nomColonnesUniques = self.lireAttributsJointure( CHEMIN_JOINTURE)
             # Attributs pour la joindre
             self.initialiserCombo( self.AttributJointure_comboBox, nomColonnesUniques, ATTRIBUT_JOINTURE,  "attribut pour jointure")
             # Liste AttributsAJoindre
             self.initialiserListeMultiple( self.AttributsAJoindre_listWidget, nomColonnes, LISTE_ATTRIBUTS_A_JOINDRE,  "attributs à joindre")
         else:
+            self.Jointure_checkBox.setChecked( Qt.Unchecked)
             self.AttributJointure_comboBox.setEnabled( False)
             self.AttributsAJoindre_listWidget.setEnabled( False)
             self.label_Jointure.setEnabled( False)
@@ -284,15 +304,15 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.slotBasculeJointure()       
         return
         
-    def fusionnerJointure(self, repertoireGPKG, cheminCompletParcelle, nomJointure=MonParcellaire_JOI):
-        """ Selon les tables déja ouverte dans le projet : ouverture si necessaire des diffirents cas de délimiteurs
+    def fusionnerJointure(self, cheminCompletParcelle, jointureChoisie):
+        """ Selon les tables déja ouverte dans le projet : ouverture si necessaire des différents cas de délimiteurs
             Jointure par QGIS """
         # Vérification du projet ouverte
         monProjet = QgsProject.instance()
         if monProjet.fileName() == None or monProjet.fileName() == "":
             monPrint( "Projet en cours de création",  T_WAR)
         else:
-            monPrint( "Projet {}".format(monProjet.fileName()))
+            monPrint( "Projet ouvert {}".format(monProjet.fileName()))
 
         root = monProjet.layerTreeRoot()
         # Création du groupe jointure_date
@@ -310,11 +330,11 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         monProjet.addMapLayer(parcelle, False)
         nouveauGroupe.addLayer( parcelle)
       
-        # Déterminer le nom de la jointure (plusieurs extensions)
-        CHEMIN_JOINTURE = self.rechercherExtensionJointure( repertoireGPKG)
-        delimiteur, csv, nomCsv = self.rechercherDelimiteurJointure( CHEMIN_JOINTURE, "No Pandas")
+        # Recherche delimiteur
+        delimiteur, csv, nomCsv = self.rechercherDelimiteurJointure( jointureChoisie, "No Pandas")
+        nomCourtJointure = os.path.basename( jointureChoisie)
 
-        monPrint( "Délimiteur jointure {0} Nom de la jointure {1}".format( delimiteur, nomCsv))
+        monPrint( "Délimiteur identifié {0} pour {1}".format( delimiteur, nomCourtJointure), T_OK)
         monProjet.addMapLayer(csv, False)
         nouveauGroupe.addLayer( csv)
 
@@ -324,8 +344,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         for positionAttribut in range(len(attributsSelectionnes)):
             attributsAJoindre.append( str(self.AttributsAJoindre_listWidget.selectedItems()[positionAttribut].text()))
         #monPrint( "Attributs à joindre {}".format( attributsAJoindre))
-        # Liste des champ dans csv
-        nomColonnes, _ = self.lireAttributsJointure( CHEMIN_JOINTURE)
+        # Liste des champs dans csv
+        nomColonnes, _ = self.lireAttributsJointure( jointureChoisie)
         attributsAJoindreOrdonne = []
         for col in nomColonnes:
             if col in attributsAJoindre:
@@ -344,10 +364,12 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Récupérer les champs de jointure
         maJointure.setJoinFieldNamesSubset( attributsAJoindreOrdonne)
         parcelle.addJoin( maJointure)
-        return CHEMIN_JOINTURE, attributsAJoindreOrdonne
+        return jointureChoisie, attributsAJoindreOrdonne
 
     def rechercherExtensionJointure( self, repertoireGPKG):
-        """ Traite les différents cas d'extensions"""
+        """ Traite les différents cas d'extensions
+            Rend la première jointure disponbile et la transforme en UTF-8 si necessaire
+            ou None si il n'est existe aucune"""
         if not os.path.isdir (repertoireGPKG):
             erreurRepertoire( repertoireGPKG)
         for extension in EXTENSIONS_CONNUES:
@@ -356,9 +378,26 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if os.path.isfile( CHEMIN_JOINTURE):
                 break
         if not os.path.isfile( CHEMIN_JOINTURE):
-            erreurJointures( repertoireGPKG, MonParcellaire_JOI, EXTENSIONS_CONNUES)
-        #monPrint("Extension jointure {}".format( extension))
-        return CHEMIN_JOINTURE
+            monWarning = "Aucune jointure disponible parmi {0}. Déposez la jointure dans votre référentiel : répertoire {1}".\
+                format( EXTENSIONS_CONNUES, repertoireGPKG)
+            monPrint( monWarning , T_WAR,  "BAR", self)
+            monPrint( monWarning , T_WAR)
+            return None
+        # Détection encodage
+        monFile = open(CHEMIN_JOINTURE, "rb")
+        rawdata = monFile.read()
+        detection = chardet.detect(rawdata)
+        monFile.close()
+        if detection['encoding'] == 'utf-8':
+            CHEMIN_JOINTURE_UTF=CHEMIN_JOINTURE
+        else:
+            CHEMIN_JOINTURE_UTF= os.path.join( repertoireGPKG, MonParcellaire_JOI + "_UTF-8" + extension)
+            monFile_UTF=open(CHEMIN_JOINTURE_UTF, "wb")
+            monPrint( "Encodage {0} pour cette jointure pris en charge par Mon Parcellaire".format( detection['encoding']), T_OK)
+            dataUTF=rawdata.decode(detection['encoding']).encode("utf-8")
+            monFile_UTF.write( dataUTF)
+            monFile_UTF.close()
+        return CHEMIN_JOINTURE_UTF
 
     def lireSignets(self):
         import xml.etree.ElementTree as ET
@@ -399,27 +438,32 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def rechercherDelimiteurJointure( self, CHEMIN_JOINTURE, mode="Pandas"):
         """ Traite les différents cas de délimiteurs avec pandas ou QGIS"""
         if VERSION_PANDAS != None and mode == "Pandas":
+            lesDelimiteurs=" "
             for delimiteur in DELIMITEURS_CONNUS:
+                if delimiteur !='\t':
+                    lesDelimiteurs=lesDelimiteurs+delimiteur+ " "
+                else:
+                    lesDelimiteurs=lesDelimiteurs+"TABULATION "
                 try:
-                    dfJointure = pd.read_csv( CHEMIN_JOINTURE,  sep="{}".format(delimiteur))
+                    dfJointure = pd.read_csv( CHEMIN_JOINTURE,  sep="{}".format(delimiteur)) #, encoding=detection['encoding'])
                 except:
-                    monPrint( "Erreur le délimiteur {0} ne convient pas au csv {1}".format( delimiteur, CHEMIN_JOINTURE))
+                    monPrint( 'Délimiteur "{0}" ne convient pas au csv {1}'.format( delimiteur, CHEMIN_JOINTURE))
                     continue
-                break            
+                break           
             if dfJointure.empty:
-                erreurJointures( repertoireGPKG, nomJointure)
-            return delimiteur, dfJointure, None
+                erreurJointureDelimeteurs( CHEMIN_JOINTURE, lesDelimiteurs)
+                return None, None, None
+            return delimiteur, dfJointure, None 
         else:
-            #monPrint( "Pas de Pandas")
             for delimiteur in DELIMITEURS_CONNUS:
                 nomCsv="file:///{1}?delimiter={0}".format( delimiteur, CHEMIN_JOINTURE)
                 try:
                     csv = QgsVectorLayer(nomCsv, MonParcellaire_JOI, 'delimitedtext')               
                 except:
-                    monPrint( "Erreur le délimiteur {0} ne convient pas au csv {1}".format( delimiteur, nomCsv))
+                    monPrint( "Délimiteur {0} ne convient pas au csv {1}".format( delimiteur, nomCsv))
                     continue
                 break
-                
+            #TODO: attraper erreur ?    
             return delimiteur, csv, nomCsv
             
     def lireAttributsJointure(self, CHEMIN_JOINTURE):
@@ -428,7 +472,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         nomColonnesUniques=[]
         if VERSION_PANDAS != None:
             _, dfJointure, _ = self.rechercherDelimiteurJointure( CHEMIN_JOINTURE)
-            #listeColonnes=dfJointure.columns.tolist()
+            if dfJointure.empty:
+                return nomColonnes, nomColonnesUniques
+                    
             #monPrint("Liste des colonnes {}".format( listeColonnes))        
             for col in dfJointure.columns:                
                 if col != MonParcellaireNomAttribut:
@@ -441,14 +487,20 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     #monPrint("Colonne {0} est unique".format(col))
         else:
             _, layer, _ = self.rechercherDelimiteurJointure( CHEMIN_JOINTURE)
+            #TEST: à vérifier
+            if layer == None:
+                return nomColonnes, nomColonnesUniques
             for field in layer.fields():
-                monPrint("Pas de Pandas : champ du vecteur {0} a pour type {1}".format( field.name(), field.typeName()))
+                monPrint("Pas de {2} : champ du vecteur {0} a pour type {1}".format( field.name(), field.typeName(), E_PANDAS))
                 nomColonnes.append( field.name())
             # Sans Pandas : mode dégradé pas de recherche des uniques
             nomColonnesUniques = nomColonnes
+        if nomColonnesUniques == []:
+            monPrint("Aucun colonne de cette jointure n'est unique: jointure impossible", T_ERR)
+            #TODO: Décocher le choix de jointure
         return nomColonnes, nomColonnesUniques
         
-    def slotVerifierRepertoireGPKGJointure( self):
+    def slotTraiterRepertoireGPKGJointure( self):
         """ Gestion la sauvegarde du GPKG : trois cas de frequences de sauvegarde, 
             Gestion de la jointure    
         """
@@ -462,19 +514,32 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         ###############
         # Sauvegardes 
         ###############
-        CHEMIN_VECTEUR_GPKG, cheminCompletParcelle = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MonParcellaire_GPKG, FREQUENCE_SAUVEGARDE, MonParcellaire_SAV, MonParcellaire_PAR)
-        CHEMIN_RASTER_GPKG, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MesFondsDePlan_GPKG, LISTE_FREQUENCE_SAUVEGARDE[3], MonParcellaire_SAV)
-        CHEMIN_PROJET, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MonParcellaire_PROJET, LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV)
+        presenceObligatoire= True
+        CHEMIN_VECTEUR_GPKG, cheminCompletParcelle = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MonParcellaire_GPKG, \
+            FREQUENCE_SAUVEGARDE, MonParcellaire_SAV, presenceObligatoire, MonParcellaire_PAR)
+        CHEMIN_RASTER_GPKG, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MesFondsDePlan_GPKG, \
+            LISTE_FREQUENCE_SAUVEGARDE[3], MonParcellaire_SAV)
+        CHEMIN_IEA_GPKG, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MesIAE_GPKG, \
+            LISTE_FREQUENCE_SAUVEGARDE[3], MonParcellaire_SAV)
+        #TODO : sauver tous les projets
+        CHEMIN_PROJET, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MonParcellaire_PROJET, \
+            LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV)
         ###############
         # Jointure 
         ###############                   
         if CHOIX_JOINTURE == "YES":
-            CHEMIN_JOINTURE,  attributsAJoindreOrdonne = \
-                self.fusionnerJointure( REPERTOIRE_GPKG, cheminCompletParcelle)
-            nomJointure = os.path.basename( CHEMIN_JOINTURE)
-            REPERTOIRE_JOINTURE= os.path.dirname( CHEMIN_JOINTURE)
-            _, _ = self.sauvergardeSelonFrequence( REPERTOIRE_JOINTURE, nomJointure, LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV)
-            monPrint( self.tr("Fin : vérification répertoire, sauvegarde GPKGs et jointure {0} pour des attributs {1}".\
-                format(nomJointure, attributsAJoindreOrdonne)), T_OK)
+            # Déterminer le nom de la jointure (plusieurs extensions)
+            jointureChoisie = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
+            if jointureChoisie != None:
+                CHEMIN_JOINTURE,  attributsAJoindreOrdonne = \
+                    self.fusionnerJointure( cheminCompletParcelle, jointureChoisie)
+                nomCourtJointure = os.path.basename( CHEMIN_JOINTURE)
+                REPERTOIRE_JOINTURE= os.path.dirname( CHEMIN_JOINTURE)
+                _, _ = self.sauvergardeSelonFrequence( REPERTOIRE_JOINTURE, nomCourtJointure, \
+                    LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV,  presenceObligatoire)
+                monPrint( self.tr("Fin : vérification répertoire, sauvegarde GPKGs et jointure {0} pour des attributs {1}".\
+                    format(nomCourtJointure, attributsAJoindreOrdonne)), T_OK)
+            else:
+                monPrint( self.tr("Fin : vérification répertoire - pas de jointure et sauvegarde GPKGs"), T_OK)
         else:
-            monPrint( self.tr("Fin : vérification répertoire et sauvegarde GPKG"), T_OK)
+            monPrint( self.tr("Fin : vérification répertoire et sauvegarde GPKGs"), T_OK)
