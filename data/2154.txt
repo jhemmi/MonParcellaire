@@ -1,2 +1,2 @@
-SRC:WGS 84 / UTM zone 31N
-EPSG:32631
+RGF93 / Lambert-93
+EPSG:2154
