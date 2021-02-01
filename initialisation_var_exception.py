@@ -86,7 +86,7 @@ EXT_geojson=".geojson"
 # NOM du GPKG et de ses tables 
 MonParcellaire_GPKG=APPLI_NOM + EXT_gpkg
 MesFondsDePlan_GPKG="MesFondsDePlan" + EXT_gpkg
-MesIAE_GPKG="MesIEA" + EXT_gpkg
+MesIAE_GPKG="MesIAE" + EXT_gpkg
 GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"

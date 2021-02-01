@@ -103,7 +103,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             nomColonnes=['Pas de jointure']
             nomColonnesUniques=['Pas de jointure']
         # Attributs pour la joindre
-        self.initialiserCombo( self.AttributJointure_comboBox, nomColonnesUniques, ATTRIBUT_JOINTURE,  "attribut pour jointure")
+        self.initialiserCombo( self.AttributJointure_comboBox, nomColonnesUniques, ATTRIBUT_JOINTURE)
         # Liste AttributsAJoindre
         self.initialiserListeMultiple( self.AttributsAJoindre_listWidget, nomColonnes, LISTE_ATTRIBUTS_A_JOINDRE,  "attributs à joindre")
         # Cas où jointure est attendu mais n'existe pas (ou plus)
@@ -242,7 +242,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.label_AttributsAJoindre.setEnabled( True)
             nomColonnes, nomColonnesUniques = self.lireAttributsJointure( CHEMIN_JOINTURE)
             # Attributs pour la joindre
-            self.initialiserCombo( self.AttributJointure_comboBox, nomColonnesUniques, ATTRIBUT_JOINTURE,  "attribut pour jointure")
+            self.initialiserCombo( self.AttributJointure_comboBox, nomColonnesUniques, ATTRIBUT_JOINTURE)
             # Liste AttributsAJoindre
             self.initialiserListeMultiple( self.AttributsAJoindre_listWidget, nomColonnes, LISTE_ATTRIBUTS_A_JOINDRE,  "attributs à joindre")
         else:
@@ -252,16 +252,17 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.label_Jointure.setEnabled( False)
             self.label_AttributJointure.setEnabled( False)
             self.label_AttributsAJoindre.setEnabled( False)
-            self.initialiserCombo( self.AttributJointure_comboBox, ["Pas de jointure"], "Pas de jointure",  "attribut pour jointure")
+            self.initialiserCombo( self.AttributJointure_comboBox, ["Pas de jointure"], "Pas de jointure")
             self.initialiserListeMultiple( self.AttributsAJoindre_listWidget, ["Pas de jointure"], ["Pas de jointure"], "attributs à joindre")
             
-    def initialiserCombo( self, comboAInitialiser, LISTE_VALEURS, UNE_VALEUR,  libelleErreur):
+    def initialiserCombo( self, comboAInitialiser, LISTE_VALEURS, UNE_VALEUR,  libelleErreur=None):
         """Initialise un combo avec une liste de valeur et avec la position de la valeur correspondante trouvé dans Settings
         """
         comboAInitialiser.setCurrentIndex( 0)
         if len( LISTE_VALEURS) == 0:
-            comboAInitialiser.clear( )
-            monPrint( self.tr("Pas de liste {0} pré défini".format( libelleErreur)), T_WAR,  "BAR", self)
+            comboAInitialiser.clear()
+            if libelleErreur != None:
+                monPrint( self.tr("Pas de liste {0} pré défini".format( libelleErreur)), T_WAR,  "BAR", self)
         else:
             comboAInitialiser.clear( )
             comboAInitialiser.addItems( LISTE_VALEURS )
@@ -496,8 +497,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             # Sans Pandas : mode dégradé pas de recherche des uniques
             nomColonnesUniques = nomColonnes
         if nomColonnesUniques == []:
-            monPrint("Aucun colonne de cette jointure n'est unique: jointure impossible", T_ERR)
-            #TODO: Décocher le choix de jointure
+            monPrint("Aucun attribut de cette jointure n'est unique: jointure impossible", T_ERR)
+            monPrint("Aucun attribut de cette jointure n'est unique: jointure impossible", T_ERR,  T_BAR,  self)
+            # Décocher le choix de jointure
+            self.Jointure_checkBox.setChecked( Qt.Unchecked)
         return nomColonnes, nomColonnesUniques
         
     def slotTraiterRepertoireGPKGJointure( self):
