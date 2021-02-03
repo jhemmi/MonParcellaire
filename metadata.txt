@@ -21,6 +21,7 @@ repository=https://github.com/jhemmi/MonParcellaire
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
+  V1.3.0 Sauvegarde projets
   V1.2.6 Gestion des cas d'encodages de jointure, modele referentiel en L93 et mesIEA.gpkg
   V1.2.5 Sauvegarde jointure et projet
   V1.1 GPKGs jointure & impression & documents

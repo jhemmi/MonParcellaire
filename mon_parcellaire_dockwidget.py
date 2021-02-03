@@ -24,6 +24,7 @@
 from .initialisation_var_exception import *
 
 import os
+import glob
 import shutil # pour la copie de fichier
 from datetime import datetime
 from qgis.gui import ( QgsMessageBar)
@@ -523,10 +524,15 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         CHEMIN_RASTER_GPKG, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MesFondsDePlan_GPKG, \
             LISTE_FREQUENCE_SAUVEGARDE[3], MonParcellaire_SAV)
         CHEMIN_IEA_GPKG, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MesIAE_GPKG, \
-            LISTE_FREQUENCE_SAUVEGARDE[3], MonParcellaire_SAV)
-        #TODO : sauver tous les projets
-        CHEMIN_PROJET, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, MonParcellaire_PROJET, \
-            LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV)
+            FREQUENCE_SAUVEGARDE, MonParcellaire_SAV)
+        # Sauver tous les projets
+        nomProjetRecherches = os.path.join( REPERTOIRE_GPKG, '*'+EXT_qgz)
+        listeProjetTriee = sorted(glob.glob( nomProjetRecherches))
+        monPrint( self.tr("Liste des projets {0}".format(listeProjetTriee)))
+        for monProjet in listeProjetTriee:
+            nomCourtprojet = os.path.basename( monProjet)
+            _, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, nomCourtprojet, \
+                FREQUENCE_SAUVEGARDE, MonParcellaire_SAV)
         ###############
         # Jointure 
         ###############                   

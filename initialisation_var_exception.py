@@ -28,7 +28,7 @@ else:
 #MonParcellaire_EPSG="2154" # faire un dict ou L93
 # Nom des flags accompagnant les messages
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V1.2.6"  
+APPLI_VERSION="V1.3.0"  
 # Suivi des versions dans metadata.txt
 
 MonParcellaire_LOG=APPLI_NOM
@@ -72,6 +72,7 @@ SEP_TILDE="~"
 SEP_CONFIG=SEP_PIPE+SEP_PIPE+SEP_TILDE+SEP_PIPE+SEP_PIPE
 # Extensions
 EXT_gpkg=".gpkg"
+EXT_qgz=".qgz"
 EXT_zip=".zip"
 EXT_csv=".csv"
 EXT_txt=".txt"
@@ -94,7 +95,7 @@ MonParcellaire_PAR="parcelles"
 MonParcellaireNomAttribut='nom'
 # Autres noms
 MonParcellaire_JOI="jointure" # EN join between
-MonParcellaire_PROJET=APPLI_NOM+".qgz"
+MonParcellaire_PROJET=APPLI_NOM+EXT_qgz
 # REPERTOIRE SAUVEGARDE et MODELE
 MonParcellaire_SAV=APPLI_NOM+"_SAUVEGARDE" # Repertoire
 
