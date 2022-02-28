@@ -6,7 +6,7 @@
 name=MonParcellaire
 qgisMinimumVersion=3.4
 description=Manage your parcels
-version=1.2.6
+version=2.0
 author=jhemmi.eu
 email=jean@jhemmi.eu
 
@@ -21,6 +21,8 @@ repository=https://github.com/jhemmi/MonParcellaire
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
+  V2.0 GPKG for QGIS HUB Project
+  V1.5.0 CENTIPEDE : Identification des rangs (ou interrangs)
   V1.3.0 Sauvegarde projets
   V1.2.6 Gestion des cas d'encodages de jointure, modele referentiel en L93 et mesIEA.gpkg
   V1.2.5 Sauvegarde jointure et projet

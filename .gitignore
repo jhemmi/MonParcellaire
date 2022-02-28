@@ -4,13 +4,12 @@ __pycache__/
 *.py~
 
 # temporairement JH
-MonParcellaire.gif
-Ui_mon_parcellaire_dockwidget_base.py
 *.zip
 Makefile
 test/
 i18n/
 data_32631/
+data_2154/
 data/MonParcellaire_SAUVEGARDE
 data/*gpkg-shm
 data/*gpkg-wal
