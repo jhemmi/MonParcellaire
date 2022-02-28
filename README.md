@@ -10,6 +10,6 @@ Pour une présentation générale, visitez [Mon Parcellaire](https://www.ma-sent
 
 Simple et concret.
 
-![1](https://github.com/jhemmi/MonParcellaire/blob/master/MonPacellaire.gif)
+![1](https://github.com/jhemmi/MonParcellaire/blob/master/MonParcellaire.gif)
 
 Retrouvez tous les usages dans d'autres vidéos dans le ![wiki](https://github.com/jhemmi/MonParcellaire/wiki)
