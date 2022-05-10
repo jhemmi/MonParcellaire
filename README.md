@@ -8,8 +8,6 @@ Ouverture à QField pour utiliser vos données sur le terrain.
 
 Pour une présentation générale, visitez [Mon Parcellaire](https://www.ma-sentinelle.eu/Services/mon-parcellaire)
 
-Simple et concret.
-
-![1](https://github.com/jhemmi/MonParcellaire/blob/master/MonParcellaire.gif)
+Simple et concret ![1](https://github.com/jhemmi/MonParcellaire/blob/master/icon.png)
 
 Retrouvez tous les usages dans d'autres vidéos dans le ![wiki](https://github.com/jhemmi/MonParcellaire/wiki)
