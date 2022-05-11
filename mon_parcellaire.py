@@ -68,7 +68,7 @@ class MonParcellaire:
         self.toolbar = self.iface.addToolBar(u'MonParcellaire')
         self.toolbar.setObjectName(u'MonParcellaire')
 
-        print("** INITIALIZING MonParcellaire")
+        #print("** INITIALIZING MonParcellaire")
         self.pluginIsActive = False
         self.dockwidget = None
 
