@@ -22,6 +22,8 @@
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
+##import inspect
+##import warnings
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
     """Load MonParcellaire class from file MonParcellaire.
@@ -29,6 +31,14 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    #
+    # Avoid import warning on load
+##    __spec__ = None
+##    __package__ = __path__
+#    print("ABOUT no warning on import __package__ = {} __spec__ = {}".format( __package__, __spec__))
     from .mon_parcellaire import MonParcellaire
+##    print( "Is a module ? {}".format( inspect.ismodule( __path__)))
+##    print(warnings.filterwarnings)
+##    warnings.filterwarnings(
+##        action='ignore',
+##        category=ImportWarning)    
     return MonParcellaire(iface)

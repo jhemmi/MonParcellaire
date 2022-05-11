@@ -30,7 +30,7 @@ from .resources import *
 # Import the code for the DockWidget
 from .mon_parcellaire_dockwidget import MonParcellaireDockWidget
 import os.path
-
+import os
 
 class MonParcellaire:
     """QGIS Plugin Implementation."""
@@ -68,8 +68,7 @@ class MonParcellaire:
         self.toolbar = self.iface.addToolBar(u'MonParcellaire')
         self.toolbar.setObjectName(u'MonParcellaire')
 
-        #print "** INITIALIZING MonParcellaire"
-
+        print("** INITIALIZING MonParcellaire")
         self.pluginIsActive = False
         self.dockwidget = None
 
