@@ -25,7 +25,7 @@ else:
 #MonParcellaire_EPSG="2154" # faire un dict ou L93
 # Nom des flags accompagnant les messages
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V1.4.98"  
+APPLI_VERSION="V2.0"  
 APPLI_NOM_VERSION=APPLI_NOM + " (" +  APPLI_VERSION + ")"
 # Suivi des versions dans metadata.txt
 
