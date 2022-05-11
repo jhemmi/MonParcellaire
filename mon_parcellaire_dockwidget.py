@@ -40,7 +40,8 @@ try:
     import processing
     if MonParcellaire_TRACE=="YES": dir( processing)
     from processing import ( QgsProcessingException) # algorithmHelp
-    print("Processing : {0} ".format( dir( QgsProcessingException.__traceback__)))
+    if MonParcellaire_TRACE=="YES": 
+        print("Processing : {0} ".format( dir( QgsProcessingException.__traceback__)))
 except:
     erreurImport("Processing")
     

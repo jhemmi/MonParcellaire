@@ -22,8 +22,7 @@ elif MonParcellaire_PROD=="TERMINAL":
     MonParcellaire_TRACE="TERMINAL"
 else:
     MonParcellaire_TRACE="NO"
-#MonParcellaire_EPSG="2154" # faire un dict ou L93
-# Nom des flags accompagnant les messages
+
 APPLI_NOM="MonParcellaire"
 APPLI_VERSION="V2.0"  
 APPLI_NOM_VERSION=APPLI_NOM + " (" +  APPLI_VERSION + ")"
@@ -355,7 +354,8 @@ except:
 try:
     import pandas as pd
     VERSION_PANDAS=pd.__version__
-    print("Version pandas : {0}. Option sans warning".format( VERSION_PANDAS))
+    if MonParcellaire_TRACE=="YES": 
+        print("Version pandas : {0}. Option sans warning".format( VERSION_PANDAS))
     pd.set_option('mode.chained_assignment',None)
     from pandas.io.json import json_normalize
     if MonParcellaire_TRACE=="YES": dir(json_normalize)
