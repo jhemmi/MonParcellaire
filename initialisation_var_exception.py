@@ -13,8 +13,13 @@
 from qgis.core import ( Qgis, QgsMessageLog )
 # La suite des import est en fin de ce module
 
+import tempfile 
+
+TRACE_TEMP="OK"
+FICHIER_TEMP_TRACE="à créer"
+fichier_temp=None
 # TRACES Selon le mode test ou prod
-MonParcellaire_PROD="TERMINAL" # HE ou TEST
+MonParcellaire_PROD="TEST" ##"TERMINAL" # HE ou TEST
 MonParcellaire_TIMESTAMP="NO"
 if MonParcellaire_PROD in [ "TEST",  "HE"]: #, "HE", "FR"]:
     MonParcellaire_TRACE="YES"
@@ -241,11 +246,19 @@ def erreurCoherenceDF( parcelle, ligne, correction=Maintenance):
     aText="Dataframe pour la ligne {0} de la parcelle {1} n'est pas cohérente".format(ligne, parcelle)
     raise MonParcellaireErreurMethodo( "{0} || {1}".format(aText, correction))
 
+
 def monPrint( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX="MonParcellaire"):
     """ Mon print part vers LOG, il decore selon le level (prefixe, emoi et mis en correspondance avec gravité) 
         entete et pied pour encadrement
         en Option il peut aller vers BAR (log aussi) ou sortie STANDARD"""
-
+    global FICHIER_TEMP_TRACE
+    if TRACE_TEMP == "OK":
+        if FICHIER_TEMP_TRACE == "à créer":
+            fichier_temp = tempfile.NamedTemporaryFile( prefix='MP_', delete=False,  mode="w") 
+            print(fichier_temp) 
+            print(fichier_temp.name)
+        fichier_temp.write( aText)         
+        fichier_temp.close()  
     if MonParcellaire_TRACE == "NO" and level == "Sans_niveau":
         return # Pas de trace et petit level
     chaine = ""

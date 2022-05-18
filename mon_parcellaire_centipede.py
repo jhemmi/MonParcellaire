@@ -127,6 +127,7 @@ def dfPoints2Alignement( IDLigne, dfPoint, pointDebut=None, pointFin=None, epais
                     distanceCinquante = 50 - pourcentageDedans
             syntheseDemiDroiTes.append( {"IDs" : idDeuxFidS, "Premier": idPremierFID, "Dernier": idDernierFID, \
                 "nombreDedans": pointsDedans,  "pourcentageDedans": pourcentageDedans, "ratio50Distance" :distanceCinquante})
+            # TODO: test pour allonge plutôt ?
             if MonParcellaire_TRACE == "TERMINAL":
                 dfProspect = pd.DataFrame( [[ idDeuxFidS, idPremierFID, idDernierFID, IDLigne, metriqueProspect[ "épaisseur"], metriqueProspect[ "MAX_hrms"], \
                     metriqueProspect[ "distance"], metriqueProspect[ "azimuthD"], metriqueProspect[ "orientation"], \
