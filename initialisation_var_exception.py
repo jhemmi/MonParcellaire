@@ -13,10 +13,9 @@
 from qgis.core import ( Qgis, QgsMessageLog )
 # La suite des import est en fin de ce module
 
-import tempfile 
-
-TRACE_TEMP="OK"
-FICHIER_TEMP_TRACE="à créer"
+#import tempfile 
+#TRACE_TEMP="OK"
+#FICHIER_TEMP_TRACE="à créer"
 # TRACES Selon le mode test ou prod
 MonParcellaire_PROD="TEST" ##"TERMINAL" # HE ou TEST
 MonParcellaire_TIMESTAMP="NO"
@@ -31,7 +30,7 @@ APPLI_NOM="MonParcellaire"
 APPLI_VERSION="V2.0"  
 APPLI_NOM_VERSION=APPLI_NOM + " (" +  APPLI_VERSION + ")"
 # Suivi des versions dans metadata.txt
-
+PARTIE_CENTIPEDE="NO"   # "YES" utilise pyproj et geopandas
 # EPSG pour pyProj ou QGIS
 ID_SOURCE_CRS      =4326
 SUFFIXE_SOURCE_CRS ="_WGS84"
@@ -250,14 +249,14 @@ def monPrint( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX
     """ Mon print part vers LOG, il decore selon le level (prefixe, emoi et mis en correspondance avec gravité) 
         entete et pied pour encadrement
         en Option il peut aller vers BAR (log aussi) ou sortie STANDARD"""
-    global FICHIER_TEMP_TRACE
-    if TRACE_TEMP == "OK":
-        if FICHIER_TEMP_TRACE == "à créer":
-            fichier_temp = tempfile.NamedTemporaryFile( prefix='MP_', delete=False,  mode="w") 
-            print(fichier_temp) 
-            print(fichier_temp.name)
-        fichier_temp.write( aText)         
-        fichier_temp.close()  
+#    global FICHIER_TEMP_TRACE
+#    if TRACE_TEMP == "OK":
+#        if FICHIER_TEMP_TRACE == "à créer":
+#            fichier_temp = tempfile.NamedTemporaryFile( prefix='MP_', delete=False,  mode="w") 
+#            print(fichier_temp) 
+#            print(fichier_temp.name)
+#        fichier_temp.write( aText)         
+#        fichier_temp.close()  
     if MonParcellaire_TRACE == "NO" and level == "Sans_niveau":
         return # Pas de trace et petit level
     chaine = ""
@@ -380,19 +379,20 @@ try:
     if MonParcellaire_TRACE=="YES": dir( json)
 except:
     erreurImport("json")
-try:
-    #import geopandas as gpd
-    from geopandas import datasets, GeoDataFrame, read_file,  __version__ as gpdVersion    
-    from geopandas.tools import sjoin
-    if MonParcellaire_TRACE=="YES": 
-        print("Version geopandas : {0} ".format( gpdVersion))
-        dir( datasets)
-        dir(GeoDataFrame)
-        dir(read_file)
-        dir(sjoin)
-except:
-    VERSION_GEOPANDAS=None
-    if MonParcellaire_TRACE=="YES": print("geopandas non disponible (pour information, mais sans conséquence)")
+if PARTIE_CENTIPEDE == "YES":
+    try:
+        #import geopandas as gpd
+        from geopandas import datasets, GeoDataFrame, read_file,  __version__ as gpdVersion    
+        from geopandas.tools import sjoin
+        if MonParcellaire_TRACE=="YES": 
+            print("Version geopandas : {0} ".format( gpdVersion))
+            dir( datasets)
+            dir(GeoDataFrame)
+            dir(read_file)
+            dir(sjoin)
+    except:
+        VERSION_GEOPANDAS=None
+        if MonParcellaire_TRACE=="YES": print("geopandas non disponible (pour information, mais sans conséquence)")
 try:
     import chardet
     if MonParcellaire_TRACE=="YES": print("Version chardet : {0} ".format( chardet.__version__))
@@ -414,10 +414,11 @@ try:
 except:
     erreurImport("shutil")
 
-from pyproj import Proj, transform , __version__ as v_pyproj
-if MonParcellaire_TRACE=="YES": print("Version pyproj {} et transformateur {}".format( v_pyproj, transform))
-PYPROJ_SOURCE_CRS      = Proj(init='epsg:4326') #+str(ID_SOURCE_CRS))
-PYPROJ_DESTINATION_CRS = Proj(init='epsg:2154') #+str(ID_DESTINATION_CRS))
+if PARTIE_CENTIPEDE == "YES":
+    from pyproj import Proj, transform , __version__ as v_pyproj
+    if MonParcellaire_TRACE=="YES": print("Version pyproj {} et transformateur {}".format( v_pyproj, transform))
+    PYPROJ_SOURCE_CRS      = Proj(init='epsg:4326') #+str(ID_SOURCE_CRS))
+    PYPROJ_DESTINATION_CRS = Proj(init='epsg:2154') #+str(ID_DESTINATION_CRS))
 
 ## N'est plus utile mais contient une creation de multipolygone
 
