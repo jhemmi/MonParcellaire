@@ -17,7 +17,6 @@ import tempfile
 
 TRACE_TEMP="OK"
 FICHIER_TEMP_TRACE="à créer"
-fichier_temp=None
 # TRACES Selon le mode test ou prod
 MonParcellaire_PROD="TEST" ##"TERMINAL" # HE ou TEST
 MonParcellaire_TIMESTAMP="NO"
@@ -416,7 +415,7 @@ except:
     erreurImport("shutil")
 
 from pyproj import Proj, transform , __version__ as v_pyproj
-if MonParcellaire_TRACE=="TERMINAL": print("Version pyproj {} et transformateur {}".format( v_pyproj, transform))
+if MonParcellaire_TRACE=="YES": print("Version pyproj {} et transformateur {}".format( v_pyproj, transform))
 PYPROJ_SOURCE_CRS      = Proj(init='epsg:4326') #+str(ID_SOURCE_CRS))
 PYPROJ_DESTINATION_CRS = Proj(init='epsg:2154') #+str(ID_DESTINATION_CRS))
 
