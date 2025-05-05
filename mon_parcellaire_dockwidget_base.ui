@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string notr="true">Mon Parcellaire V2.1 -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V3.34.0 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -31,7 +31,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <property name="movable">
          <bool>true</bool>
@@ -356,6 +356,134 @@
           </property>
          </widget>
         </widget>
+        <widget class="QWidget" name="tab_Orientation">
+         <attribute name="title">
+          <string>Orientations</string>
+         </attribute>
+         <widget class="QLabel" name="label_chemin_orientation">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>301</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Chemin de vos orientations valides</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QToolButton" name="Orientation_toolButton">
+          <property name="geometry">
+           <rect>
+            <x>300</x>
+            <y>50</y>
+            <width>26</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="Orientation_lineEdit">
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>50</y>
+            <width>261</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Ubuntu</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="cursor">
+           <cursorShape>ArrowCursor</cursorShape>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choisir la couche des dernières orientations validées qui sert de modèle pour les orientations de la couche parcelles. &lt;/p&gt;&lt;p&gt;Chemin dans votre référentiel (par exemple &lt;span style=&quot; font-style:italic;&quot;&gt;C:/SIG/MonParcellaire&lt;/span&gt;) et &amp;quot;dernières_orientations_validées.geojson&amp;quot; &lt;/p&gt;&lt;p&gt;Cette couche doit contenir un champ &lt;span style=&quot; font-weight:600;&quot;&gt;orientation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Activer la création d'une couche parcelles_orientées en cliquant sur OK&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>dernières_orientations_validées.geojson</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QDialogButtonBox" name="Orientation_buttonBox">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>80</y>
+            <width>168</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="standardButtons">
+           <set>QDialogButtonBox::Ok</set>
+          </property>
+         </widget>
+        </widget>
         <widget class="QWidget" name="tab_Apropos">
          <attribute name="title">
           <string>A propos</string>
@@ -490,7 +618,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>190</y>
+            <y>180</y>
             <width>341</width>
             <height>51</height>
            </rect>
@@ -527,6 +655,7 @@
           </property>
           <property name="font">
            <font>
+            <pointsize>10</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -590,14 +719,14 @@
           </property>
           <property name="geometry">
            <rect>
-            <x>290</x>
+            <x>300</x>
             <y>210</y>
-            <width>51</width>
+            <width>41</width>
             <height>25</height>
            </rect>
           </property>
           <property name="text">
-           <string>.</string>
+           <string>T.</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_Traces">
@@ -642,27 +771,6 @@
            </font>
           </property>
          </widget>
-         <widget class="QLabel" name="label_extension_6">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>110</y>
-            <width>331</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>De traces Centipede à rangs centimétriques</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-         </widget>
          <zorder>label_extension</zorder>
          <zorder>label_extension_2</zorder>
          <zorder>label_extension_3</zorder>
@@ -675,7 +783,6 @@
          <zorder>TestButton</zorder>
          <zorder>label_Traces</zorder>
          <zorder>Traces_comboBox</zorder>
-         <zorder>label_extension_6</zorder>
          <zorder>Contribuer_bouton</zorder>
         </widget>
        </widget>
