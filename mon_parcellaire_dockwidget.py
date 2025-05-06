@@ -537,6 +537,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         nouveauGroupe.addLayer( mes_parcelles)
         monPrint( self.tr("Couche Mes Parcelles {}".format( uri)))
 
+#TODO: 3 appels processing et supprimer colonnes inutiles
 ###processing.run("native:renametablefield", 
 #{'INPUT':'delimitedtext://file:////home/j/Documents/DATA/MON_PARCELLAIRE/Export geometries
 # parcelles2025_Fronton_09-04-2025.csv?delimiter=,&wktField=geom',
