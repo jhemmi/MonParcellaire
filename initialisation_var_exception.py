@@ -27,7 +27,7 @@ else:
     MonParcellaire_TRACE="NO"
 
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V2.0"  
+APPLI_VERSION="V3.34"  
 APPLI_NOM_VERSION=APPLI_NOM + " (" +  APPLI_VERSION + ")"
 # Suivi des versions dans metadata.txt
 PARTIE_CENTIPEDE="NO"   # "YES" utilise pyproj et geopandas
@@ -109,7 +109,12 @@ GPKG_LAYERNAME = SEP_PIPE + "layername="
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
 MonParcellaireNomAttribut='nom'
+#Nommage dans Mes Parcelles
+MesParcellesNomAttribut='nom_parcelle'   # Il faut faire une copie en 'nom' comme MonParcellaireNomAttribut
+MesParcellesFiltreAttribut='code_usage'  # "VRC" pour vignes
+
 # Autres noms
+MonParcellaire_MP="Vignes de Mes Parcelles" 
 MonParcellaire_JOI="jointure" # EN join between
 MonParcellaire_PROJET=APPLI_NOM+EXT_qgz
 # REPERTOIRE SAUVEGARDE et MODELE

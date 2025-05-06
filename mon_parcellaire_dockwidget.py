@@ -68,7 +68,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.plugin_dir = os.path.dirname(__file__) 
         
         #print( "** Démarrage de MonParcellaire {0}".format(APPLI_VERSION))
-        CHOIX_TOUT_VOIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
+        CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHOIX_ORIENTATION, CHOIX_TERROIR, \
+            CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
         # Slot boutons 
         self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotTraiterRepertoireGPKGJointure)
@@ -76,8 +77,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.TestButton.pressed.connect(self.traiterCentipedePos)
 
         # Slot toolbouton 
-        self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)  
+        self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)
         self.Jointure_checkBox.stateChanged.connect( self.slotBasculeJointure)
+        self.Mes_Parcelles_toolButton.pressed.connect( self.slotLectureMesParcelles)
+        self.Mes_Parcelles_checkBox.stateChanged.connect( self.slotBasculeMesParcelles)
 
         # Cas des combo
         self.initialiserCombo( self.FrequenceSauvegarde_comboBox, LISTE_FREQUENCE_SAUVEGARDE, FREQUENCE_SAUVEGARDE,  "des fréquences de sauvegarde")
@@ -110,8 +113,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         event.accept()
         
     def slotDemanderContribution( self):
-        """ Pointer vers page paiement en ligne Paypal ou Stripe ou projet d'évolution contributif""" 
-        help_url = QUrl("https://www.ma-sentinelle.eu/contributions")
+        """ Pointer vers page paiement pour QGIS""" 
+        help_url = QUrl("https://qgis.org/funding/donate/")
         QDesktopServices.openUrl(help_url)
     
     def slotDemanderAide(self):
@@ -126,6 +129,13 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         s.setValue("MonParcellaire/Tout_voir", choixToutVoir)
         s.setValue("MonParcellaire/repertoireGPKG", self.Repertoire_lineEdit.text())
         s.setValue("MonParcellaire/FrequenceSauvegarde", self.FrequenceSauvegarde_comboBox.currentText())
+        choixMesParcelles= "YES" if self.Mes_Parcelles_checkBox.isChecked() else "NO"
+        s.setValue("MonParcellaire/ImportMesParcelles", choixMesParcelles)
+        s.setValue("MonParcellaire/nomMesParcelles", self.Repertoire_lineEdit.text())
+        choixOrientation= "YES" if self.Orientation_checkBox.isChecked() else "NO"
+        s.setValue("MonParcellaire/Orientation", choixOrientation)
+        choixTerroir= "YES" if self.Terroir_checkBox.isChecked() else "NO"
+        s.setValue("MonParcellaire/Terroir", choixTerroir)
         choixJointure = "YES" if self.Jointure_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/PresenceJointure", choixJointure)
         s.setValue("MonParcellaire/AttributJointure", self.AttributJointure_comboBox.currentText())
@@ -146,6 +156,13 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def lireSettings( self):
         s = QgsSettings( APPLI_NOM)
         CHOIX_TOUT_VOIR = s.value("MonParcellaire/Tout_voir", "NO")
+        CHOIX_MES_PARCELLES = s.value("MonParcellaire/ImportMesParcelles", "NO")
+        self.Mes_Parcelles_checkBox.setChecked( Qt.Checked) if CHOIX_MES_PARCELLES == "YES" else self.Mes_Parcelles_checkBox.setChecked( Qt.Unchecked)
+        NOM_CSV_MES_PARCELLES = s.value("MonParcellaire/nomMesParcelles", "Export geometries parcelles2025_Fronton.csv")
+        CHOIX_ORIENTATION = s.value("MonParcellaire/Orientation", "NO")
+        self.Orientation_checkBox.setChecked( Qt.Checked) if CHOIX_ORIENTATION == "YES" else self.Orientation_checkBox.setChecked( Qt.Unchecked)
+        CHOIX_TERROIR = s.value("MonParcellaire/Terroir", "NO")
+        self.Terroir_checkBox.setChecked( Qt.Checked) if CHOIX_TERROIR == "YES" else self.Terroir_checkBox.setChecked( Qt.Unchecked)
         CHOIX_JOINTURE = s.value("MonParcellaire/PresenceJointure", "NO")
         self.Jointure_checkBox.setChecked( Qt.Checked) if CHOIX_JOINTURE == "YES" else self.Jointure_checkBox.setChecked( Qt.Unchecked)
         referentiel_plugin=os.path.join( self.plugin_dir, "data")
@@ -160,7 +177,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         PreparelisteAttributAJoindre = s.value("MonParcellaire/AttributsAJoindre", "Pas de jointure")
         LISTE_ATTRIBUTS_A_JOINDRE=PreparelisteAttributAJoindre.split( SEP_CONFIG)
         #monPrint( "Settings lus jointure {} pour attributs {}".format( CHOIX_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE))
-        return CHOIX_TOUT_VOIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE
+        return CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHOIX_ORIENTATION, CHOIX_TERROIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, \
+			FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE
     
     def sauvergardeSelonFrequence(self, repertoireASauver, nomCourt, frequence, suiteSauvegarde, presenceAttendue=False, nomTable="xxx"):
         """ Fichier (y compris GPKG) est sauvés selon la fréquence et si nécessaire
@@ -187,13 +205,28 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             shutil.copy( CHEMIN_GPKG, CHEMIN_GPKG_SAVE)
         return CHEMIN_GPKG, cheminCompletTable
 
+
+    def slotBasculeMesParcelles( self):
+        """ 
+        Bascule le choix Mes Parcelles
+        """
+        CHEMIN_JOINTURE=None
+        if self.Mes_Parcelles_checkBox.isChecked():
+            #_, _, _,_, _, _,REPERTOIRE_GPKG, _, \
+            #ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
+            self.Mes_Parcelles_lineEdit.setEnabled( True)
+            self.Mes_Parcelles_toolButton.setEnabled( True)
+        else:
+            self.Mes_Parcelles_lineEdit.setEnabled( False)
+            self.Mes_Parcelles_toolButton.setEnabled( False)
+
     def slotBasculeJointure( self):
         """ 
         Bascule le choix jointure et acces aux listes d'attribut à joindre
         """
         CHEMIN_JOINTURE=None
         if self.Jointure_checkBox.isChecked():
-            _, _, REPERTOIRE_GPKG, _, \
+            _, _, _, _, _, _,REPERTOIRE_GPKG, _, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
             CHEMIN_JOINTURE = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
         if CHEMIN_JOINTURE != None and self.Jointure_checkBox.isChecked():
@@ -251,7 +284,25 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 matching_items = listWidget.findItems(i, Qt.MatchExactly)
                 for item in matching_items:
                     item.setSelected(True)
-        
+
+    def slotLectureMesParcelles(self):
+        # Choisir le CSV exporté de Mes Parcelles
+        s = QgsSettings( APPLI_NOM)
+        REPERTOIRE_GPKG = s.value( "MonParcellaire/repertoireGPKG", os.path.join( self.plugin_dir, "data"))
+        nomMesParcelles = s.value( "MonParcellaire/nomMesParcelles", "Export geometries parcelles2025_Fronton.csv")
+        #propositionNomCompletMesParcelles = os.path.join( REPERTOIRE_GPKG, nomMesParcelles)
+        nomCompletMesParcelles, _ = QFileDialog.getOpenFileName( self, self.tr("Choisir le CSV exporté de Mes Parcelles"),
+                     REPERTOIRE_GPKG, "CSV (*.csv)");
+
+        if len( nomCompletMesParcelles) == 0:
+            return
+        if not os.path.isfile( nomCompletMesParcelles):
+            return
+        self.Mes_Parcelles_lineEdit.setText( nomCompletMesParcelles)
+        self.ecrireSettings()
+        # TODO self.slotBasculeMesParcelles()       
+        return
+
     def slotLectureRepertoireGPKG(self):
         # Choisir le répertoire
         s = QgsSettings( APPLI_NOM)
@@ -267,9 +318,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.slotBasculeJointure()       
         return
         
-    def fusionnerJointure(self, cheminCompletParcelle, jointureChoisie):
-        """ Selon les tables déja ouverte dans le projet : ouverture si necessaire des différents cas de délimiteurs
-            Jointure par QGIS """
+    def ouvrirProjetETGroupe(self, nomDuGroupe):
+        """ Ouvrir projet et un groupe"""
+
         # Vérification du projet ouverte
         monProjet = QgsProject.instance()
         if monProjet.fileName() == None or monProjet.fileName() == "":
@@ -280,16 +331,23 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         root = monProjet.layerTreeRoot()
         # Création du groupe jointure_date
         dateMaintenant = datetime.now()
-        nomGroupe=MonParcellaire_JOI + " du " + dateMaintenant.strftime("%d %b à %Hh%M:%S")
+        nomGroupe=nomDuGroupe + " du " + dateMaintenant.strftime("%d %b à %Hh%M:%S")
         temporaireGroupe = QgsLayerTreeGroup( nomGroupe)
         # Positionner en haut de root
         root.addChildNode(temporaireGroupe)
         nouveauGroupe = temporaireGroupe.clone()
         root.insertChildNode(0, nouveauGroupe)
         root.removeChildNode(temporaireGroupe)
-        
+        return monProjet, nouveauGroupe
+
+
+    def fusionnerJointure(self, cheminCompletParcelle, jointureChoisie):
+        """ Selon les tables déja ouverte dans le projet : ouverture si necessaire des différents cas de délimiteurs
+            Jointure par QGIS """
+        # Vérification du projet ouverte
+        monProjet, nouveauGroupe = self.ouvrirProjetETGroupe( MonParcellaire_JOI)
         # Ouverture du vecteur parcelle
-        parcelle =  QgsVectorLayer(cheminCompletParcelle, MonParcellaire_PAR+SEP_U+MonParcellaire_JOI, 'ogr')
+        parcelle = QgsVectorLayer(cheminCompletParcelle, MonParcellaire_PAR+SEP_U+MonParcellaire_JOI, 'ogr')
         monProjet.addMapLayer(parcelle, False)
         nouveauGroupe.addLayer( parcelle)
       
@@ -465,6 +523,36 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.Jointure_checkBox.setChecked( Qt.Unchecked)
         return nomColonnes, nomColonnesUniques
         
+    def extraireVignesMesParcelles(self):
+        """ Ouvrir CSV Mes Parcelles et selectionnées les vignes. Renommer en nom le champ nom_parcelle"""
+
+        monProjet, nouveauGroupe = self.ouvrirProjetETGroupe( MonParcellaire_MP)
+        cheminCompletMesParcelle = self.Mes_Parcelles_lineEdit.text()
+        # Filtrer avant la jointure et creer le champ 'nom'
+        uri="file:///"+cheminCompletMesParcelle+"?delimiter={}&wktField={}".format(",","geom")
+        mes_parcelles = QgsVectorLayer(uri, \
+              MonParcellaire_PAR+SEP_U+MonParcellaire_MP, 'delimitedtext')
+#TODO: Forcer EPSG 2143
+        monProjet.addMapLayer(mes_parcelles, False)
+        nouveauGroupe.addLayer( mes_parcelles)
+        monPrint( self.tr("Couche Mes Parcelles {}".format( uri)))
+
+###processing.run("native:renametablefield", 
+#{'INPUT':'delimitedtext://file:////home/j/Documents/DATA/MON_PARCELLAIRE/Export geometries
+# parcelles2025_Fronton_09-04-2025.csv?delimiter=,&wktField=geom',
+# 'FIELD':'nom_parcelle','NEW_NAME':'nom','OUTPUT':'TEMPORARY_OUTPUT'})
+
+#### processing.run("qgis:selectbyattribute", 
+#{'INPUT':'memory://Polygon?crs=EPSG:2154&field=idexploitation:integer(0,0)&field=idparcelleculturale:integer(0,0)&field=idilot:integer(0,0)&field=pacage:integer(0,0)&field=raisonsociale:string(0,0)&field=refca:string(0,0)&field=millesime:integer(0,0)&field=num_ilot:integer(0,0)&field=nom_ilot:string(0,0)&field=surf_ilot:double(0,0)&field=pac:string(0,0)&field=code_insee:integer(0,0)&field=commune:string(0,0)&field=num_parcelle:integer(0,0)&field=nom:string(0,0)&field=surf_parcelle:double(0,0)&field=idculture:integer(0,0)&field=libelle_usage:string(0,0)&field=libelle_s2:string(0,0)&field=code_culture:string(0,0)&field=ichn:string(0,0)&field=bio:string(0,0)&field=conversion_bio:string(0,0)&field=annee_engagement_bio:string(0,0)&field=variete_cepage:string(0,0)&field=porte_greffe:string(0,0)&uid={755adf0b-e261-4601-99ad-05def0914425}',
+#'FIELD':'code_culture','OPERATOR':0,'VALUE':'VRC','METHOD':0})		
+
+#### processing.run("native:savefeatures", 
+#{'INPUT':QgsProcessingFeatureSourceDefinition('Polygon?crs=EPSG:2154&field=idexploitation:integer(0,0)&field=idparcelleculturale:integer(0,0)&field=idilot:integer(0,0)&field=pacage:integer(0,0)&field=raisonsociale:string(0,0)&field=refca:string(0,0)&field=millesime:integer(0,0)&field=num_ilot:integer(0,0)&field=nom_ilot:string(0,0)&field=surf_ilot:double(0,0)&field=pac:string(0,0)&field=code_insee:integer(0,0)&field=commune:string(0,0)&field=num_parcelle:integer(0,0)&field=nom:string(0,0)&field=surf_parcelle:double(0,0)&field=idculture:integer(0,0)&field=libelle_usage:string(0,0)&field=libelle_s2:string(0,0)&field=code_culture:string(0,0)&field=ichn:string(0,0)&field=bio:string(0,0)&field=conversion_bio:string(0,0)&field=annee_engagement_bio:string(0,0)&field=variete_cepage:string(0,0)&field=porte_greffe:string(0,0)&uid={755adf0b-e261-4601-99ad-05def0914425}', selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+#'OUTPUT':'/home/j/Documents/DATA/MON_PARCELLAIRE/mes_parcelles_25.geojson',
+#'LAYER_NAME':'','DATASOURCE_OPTIONS':'','LAYER_OPTIONS':'',
+#'ACTION_ON_EXISTING_FILE':0})
+        return mes_parcelles
+
     def slotTraiterRepertoireGPKGJointure( self):
         """ Gestion la sauvegarde du GPKG : trois cas de frequences de sauvegarde, 
             Gestion de la jointure    
@@ -475,6 +563,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
         FREQUENCE_SAUVEGARDE = self.FrequenceSauvegarde_comboBox.currentText()
         CHOIX_JOINTURE = "YES" if self.Jointure_checkBox.isChecked() else "NO"
+        CHOIX_MES_PARCELLES = "YES" if self.Mes_Parcelles_checkBox.isChecked() else "NO"
         self.ecrireSettings()        
         ###############
         # Sauvegardes 
@@ -501,6 +590,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             # Déterminer le nom de la jointure (plusieurs extensions)
             jointureChoisie = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
             if jointureChoisie != None:
+                if CHOIX_MES_PARCELLES == "YES":
+                    mes_parcelles = self.extraireVignesMesParcelles()
+
                 CHEMIN_JOINTURE,  attributsAJoindreOrdonne = \
                     self.fusionnerJointure( cheminCompletParcelle, jointureChoisie)
                 nomCourtJointure = os.path.basename( CHEMIN_JOINTURE)

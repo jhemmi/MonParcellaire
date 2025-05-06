@@ -356,51 +356,15 @@
           </property>
          </widget>
         </widget>
-        <widget class="QWidget" name="tab_Orientation">
+        <widget class="QWidget" name="tab_Synchronisation">
          <attribute name="title">
-          <string>Orientations</string>
+          <string>Synchronisations</string>
          </attribute>
-         <widget class="QLabel" name="label_chemin_orientation">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>20</y>
-            <width>301</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Chemin de vos orientations valides</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-         </widget>
          <widget class="QToolButton" name="Orientation_toolButton">
           <property name="geometry">
            <rect>
-            <x>300</x>
-            <y>50</y>
+            <x>10</x>
+            <y>140</y>
             <width>26</width>
             <height>20</height>
            </rect>
@@ -424,12 +388,79 @@
            <string>...</string>
           </property>
          </widget>
-         <widget class="QLineEdit" name="Orientation_lineEdit">
+         <widget class="QWidget" name="verticalLayoutWidget_2">
           <property name="geometry">
            <rect>
-            <x>30</x>
-            <y>50</y>
-            <width>261</width>
+            <x>10</x>
+            <y>240</y>
+            <width>351</width>
+            <height>108</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2"/>
+         </widget>
+         <widget class="QCheckBox" name="Mes_Parcelles_checkBox">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>10</y>
+            <width>349</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Importer Mes Parcelles</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_chemin_Mes_Parcelles">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>40</y>
+            <width>191</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string/>
+          </property>
+          <property name="text">
+           <string>CSV Mes Parcelles</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="Mes_Parcelles_lineEdit">
+          <property name="geometry">
+           <rect>
+            <x>50</x>
+            <y>60</y>
+            <width>300</width>
             <height>20</height>
            </rect>
           </property>
@@ -458,7 +489,89 @@
            <enum>Qt::NoFocus</enum>
           </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choisir la couche des dernières orientations validées qui sert de modèle pour les orientations de la couche parcelles. &lt;/p&gt;&lt;p&gt;Chemin dans votre référentiel (par exemple &lt;span style=&quot; font-style:italic;&quot;&gt;C:/SIG/MonParcellaire&lt;/span&gt;) et &amp;quot;dernières_orientations_validées.geojson&amp;quot; &lt;/p&gt;&lt;p&gt;Cette couche doit contenir un champ &lt;span style=&quot; font-weight:600;&quot;&gt;orientation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Activer la création d'une couche parcelles_orientées en cliquant sur OK&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choisir la couche des tous les ilots et parcelles de Mes Parcelles. &lt;/p&gt;&lt;p&gt;Le chemin vers votre référentiel (par exemple &lt;span style=&quot; font-style:italic;&quot;&gt;C:/SIG/MonParcellaire&lt;/span&gt;) ne doit pas être précisé. Le nom initial est &amp;quot;Export geometries parcelles2025_Fronton.csv&amp;quot; &lt;/p&gt;&lt;p&gt;Cette couche doit contenir les champs &lt;span style=&quot; font-weight:600;&quot;&gt;nom_parcelle&lt;/span&gt; et&lt;span style=&quot; font-weight:600;&quot;&gt; libelle_usage. &lt;/span&gt;Les vignes sont filtrées par le libelle_usage pour la valeur &lt;span style=&quot; font-weight:600;&quot;&gt;&amp;quot;vigne vinifère recolte en kg&amp;quot; &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>Export geometries parcelles2025_Fronton.csv</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_chemin_orientation">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>120</y>
+            <width>349</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Nom de vos orientations valides</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="Orientation_lineEdit">
+          <property name="geometry">
+           <rect>
+            <x>50</x>
+            <y>140</y>
+            <width>300</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Ubuntu</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="cursor">
+           <cursorShape>ArrowCursor</cursorShape>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choisir la couche des dernières orientations validées qui sert de modèle pour les orientations de la couche parcelles. &lt;/p&gt;&lt;p&gt;Le chemin vers votre référentiel (par exemple &lt;span style=&quot; font-style:italic;&quot;&gt;C:/SIG/MonParcellaire&lt;/span&gt;) ne doit pas être précisés. Le nom initial est &amp;quot;dernières_orientations_validées.geojson&amp;quot; &lt;/p&gt;&lt;p&gt;Cette couche doit contenir un champ &lt;span style=&quot; font-weight:600;&quot;&gt;orientation&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="styleSheet">
            <string notr="true"/>
@@ -470,17 +583,72 @@
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
-         <widget class="QDialogButtonBox" name="Orientation_buttonBox">
+         <widget class="QCheckBox" name="Orientation_checkBox">
           <property name="geometry">
            <rect>
-            <x>60</x>
-            <y>80</y>
-            <width>168</width>
+            <x>0</x>
+            <y>90</y>
+            <width>349</width>
             <height>25</height>
            </rect>
           </property>
-          <property name="standardButtons">
-           <set>QDialogButtonBox::Ok</set>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Orienter Mon Parcellaire</string>
+          </property>
+         </widget>
+         <widget class="QToolButton" name="Mes_Parcelles_toolButton">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>60</y>
+            <width>26</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="Terroir_checkBox">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>170</y>
+            <width>349</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string> Joindre les informations terroirs</string>
           </property>
          </widget>
         </widget>
@@ -635,7 +803,7 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Contribuez maintenant pour jhemmi.eu !</string>
+           <string>Contribuez maintenant pour QGIS !</string>
           </property>
           <property name="default">
            <bool>false</bool>
@@ -690,7 +858,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>130</y>
+            <y>140</y>
             <width>211</width>
             <height>21</height>
            </rect>
