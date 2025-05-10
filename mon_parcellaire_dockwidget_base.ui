@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>389</width>
-    <height>429</height>
+    <width>388</width>
+    <height>420</height>
    </rect>
   </property>
   <property name="font">
@@ -31,7 +31,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <property name="movable">
          <bool>true</bool>
@@ -631,11 +631,31 @@
            <string>...</string>
           </property>
          </widget>
-         <widget class="QCheckBox" name="Terroir_checkBox">
+         <widget class="QCheckBox" name="Suite_checkBox">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>170</y>
+            <width>349</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Affecter vignes suites</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="Terroir_checkBox">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>200</y>
             <width>349</width>
             <height>25</height>
            </rect>

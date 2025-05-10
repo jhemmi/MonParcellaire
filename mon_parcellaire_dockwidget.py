@@ -26,7 +26,8 @@ from .initialisation_var_exception import *
 #    projectionPourJointureSpatiale, choisirGeoJSONsInterieurExterieur, creerPointsLignesBrises) 
 
 from qgis.core import ( 
-   QgsSettings, QgsProject, QgsVectorLayer, QgsVectorLayerJoinInfo, QgsLayerTreeGroup)
+   QgsSettings, QgsProject, QgsVectorLayer, QgsVectorLayerJoinInfo, QgsLayerTreeGroup,QgsCoordinateReferenceSystem, \
+   QgsProcessingFeatureSourceDefinition, QgsFeatureRequest)
   #QgsApplication, QgsWkbTypes, QgsVectorFileWriter, QgsFeature, QgsFields, QgsField,
 
 from PyQt5.QtCore import ( Qt, QUrl) #, QFileInfo)
@@ -48,6 +49,55 @@ except:
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'mon_parcellaire_dockwidget_base.ui'))
     
+""" TRAITEMENTS ou PROCESSING"""
+def traitementSelectionnerVignes(source, champ_selection = 'code_culture', libelle='VRC'):
+    """ Selection"""
+    algo_name, algo_simplifie ="qgis:selectbyattribute",  "Filtrer vignes..."
+    resultat_selection = processing.run(algo_name, 
+        {'INPUT': source, 'FIELD': champ_selection, 'OPERATOR':0,'VALUE':libelle,'METHOD':0})
+    if resultat_selection == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreurTraitement(algo_name)
+    monPrint( "Sélection dans {0}".format( resultat_selection))
+
+def traitementSauver(source, sortie):
+    """ Sauver"""
+    algo_name, algo_simplifie ="native:savefeatures",  "Sauver vignes..."
+    result = processing.run(algo_name, 
+        {'INPUT': source , 'OUTPUT': sortie,'LAYER_NAME':'', \
+			'DATASOURCE_OPTIONS':'','LAYER_OPTIONS':'','ACTION_ON_EXISTING_FILE':0})
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreurTraitement(algo_name)
+    monPrint( "Sauver en {0}".format( result))
+    return result
+
+def traitementDupliquer_nom_parcelle(source, sortie):
+    algo_name, algo_simplifie ="native:fieldcalculator",  "Dupliquer nom_parcelles..."
+    result = processing.run(algo_name, 
+        {'INPUT': source , 'OUTPUT': sortie, \
+			'FIELD_NAME':MonParcellaireNomAttribut,'FIELD_TYPE':2,'FIELD_LENGTH':15,'FIELD_PRECISION':0,
+			'FORMULA':' "nom_parcelle" '})
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreurTraitement(algo_name)
+    monPrint( "Nom est dans {0}".format( result))
+    return result
+
+def traitementJointureLocalisation(source, jointure, sortie, libelle=""):
+    """ {'INPUT':source, 'JOIN':jointure,
+    'PREDICATE':[0,1,3,5],'JOIN_FIELDS':['nom'],'METHOD':0,'DISCARD_NONMATCHING':True,'PREFIX':'',
+    'OUTPUT':sortie} """
+    algo_name,  algo_simplifie ="qgis:joinattributesbylocation",  "Jointure par localisation ..."
+    # TODO: ? orientatio ou tion
+    result = processing.run(algo_name, 
+        {'INPUT': source, 'JOIN':jointure, 'PREDICATE':[0,1,3,5],'JOIN_FIELDS':['nom',  'orientatio'],'METHOD':0,'DISCARD_NONMATCHING':True,'PREFIX':'', 'OUTPUT': sortie})
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreur_traitement(algo_name)
+    return result
+
+
 class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
@@ -131,7 +181,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         s.setValue("MonParcellaire/FrequenceSauvegarde", self.FrequenceSauvegarde_comboBox.currentText())
         choixMesParcelles= "YES" if self.Mes_Parcelles_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/ImportMesParcelles", choixMesParcelles)
-        s.setValue("MonParcellaire/nomMesParcelles", self.Repertoire_lineEdit.text())
+        s.setValue("MonParcellaire/nomMesParcelles", self.Mes_Parcelles_lineEdit.text())
         choixOrientation= "YES" if self.Orientation_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/Orientation", choixOrientation)
         choixTerroir= "YES" if self.Terroir_checkBox.isChecked() else "NO"
@@ -159,6 +209,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         CHOIX_MES_PARCELLES = s.value("MonParcellaire/ImportMesParcelles", "NO")
         self.Mes_Parcelles_checkBox.setChecked( Qt.Checked) if CHOIX_MES_PARCELLES == "YES" else self.Mes_Parcelles_checkBox.setChecked( Qt.Unchecked)
         NOM_CSV_MES_PARCELLES = s.value("MonParcellaire/nomMesParcelles", "Export geometries parcelles2025_Fronton.csv")
+        self.Mes_Parcelles_lineEdit.setText( NOM_CSV_MES_PARCELLES )
         CHOIX_ORIENTATION = s.value("MonParcellaire/Orientation", "NO")
         self.Orientation_checkBox.setChecked( Qt.Checked) if CHOIX_ORIENTATION == "YES" else self.Orientation_checkBox.setChecked( Qt.Unchecked)
         CHOIX_TERROIR = s.value("MonParcellaire/Terroir", "NO")
@@ -345,19 +396,19 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """ Selon les tables déja ouverte dans le projet : ouverture si necessaire des différents cas de délimiteurs
             Jointure par QGIS """
         # Vérification du projet ouverte
-        monProjet, nouveauGroupe = self.ouvrirProjetETGroupe( MonParcellaire_JOI)
+        monProjet, nouveauGroupeJointure = self.ouvrirProjetETGroupe( MonParcellaire_JOI)
         # Ouverture du vecteur parcelle
         parcelle = QgsVectorLayer(cheminCompletParcelle, MonParcellaire_PAR+SEP_U+MonParcellaire_JOI, 'ogr')
         monProjet.addMapLayer(parcelle, False)
-        nouveauGroupe.addLayer( parcelle)
-      
+        nouveauGroupeJointure.addLayer( parcelle)
+        
         # Recherche delimiteur
         delimiteur, csv, nomCsv = self.rechercherDelimiteurJointure( jointureChoisie, "No Pandas")
         nomCourtJointure = os.path.basename( jointureChoisie)
 
         monPrint( "Délimiteur identifié {0} pour {1}".format( delimiteur, nomCourtJointure), T_OK)
         monProjet.addMapLayer(csv, False)
-        nouveauGroupe.addLayer( csv)
+        nouveauGroupeJointure.addLayer( csv)
 
         # Jointure
         attributsSelectionnes=self.AttributsAJoindre_listWidget.selectedItems()
@@ -512,7 +563,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if layer == None:
                 return nomColonnes, nomColonnesUniques
             for field in layer.fields():
-                monPrint("Pas de {2} : champ du vecteur {0} a pour type {1}".format( field.name(), field.typeName(), E_PANDAS))
+                #monPrint("Pas de {2} : champ du vecteur {0} a pour type {1}".format( field.name(), field.typeName(), E_PANDAS))
                 nomColonnes.append( field.name())
             # Sans Pandas : mode dégradé pas de recherche des uniques
             nomColonnesUniques = nomColonnes
@@ -524,34 +575,78 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         return nomColonnes, nomColonnesUniques
         
     def extraireVignesMesParcelles(self):
-        """ Ouvrir CSV Mes Parcelles et selectionnées les vignes. Renommer en nom le champ nom_parcelle"""
+        """ Ouvrir CSV Mes Parcelles
+        Renommer en nom le champ nom_parcelle
+        Selectionnées les vignes
+        """
 
-        monProjet, nouveauGroupe = self.ouvrirProjetETGroupe( MonParcellaire_MP)
+        REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
+        monProjet, nouveauGroupeMP = self.ouvrirProjetETGroupe( MonParcellaire_MP)
         cheminCompletMesParcelle = self.Mes_Parcelles_lineEdit.text()
-        # Filtrer avant la jointure et creer le champ 'nom'
         uri="file:///"+cheminCompletMesParcelle+"?delimiter={}&wktField={}".format(",","geom")
         mes_parcelles = QgsVectorLayer(uri, \
               MonParcellaire_PAR+SEP_U+MonParcellaire_MP, 'delimitedtext')
-#TODO: Forcer EPSG 2143
+
+        # Supprimer les colonnes inconnues
+        ne_pas_detruire = ["nom_parcelle", "raisonsociale"]
+        #with edit(mes_parcelles):
+        all_fields = mes_parcelles.fields().names()
+        #monPrint( "Champs {} dans Mes Parcelles".format( all_fields))
+
+        champs_a_detruire = [mes_parcelles.fields().indexFromName(f) for f in all_fields if f not in ne_pas_detruire]
+        monPrint( "Champs à detruire {} dans Mes Parcelles".format( champs_a_detruire))
+        field_ids = [mes_parcelles.fields().indexFromName(f) for f in all_fields if f in ne_pas_detruire]
+        #monPrint( "Champs à conserver {} dans Mes Parcelles".format( field_ids))
+        mes_parcelles.dataProvider().deleteAttributes( champs_a_detruire)
+        mes_parcelles.updateFields()
+
         monProjet.addMapLayer(mes_parcelles, False)
-        nouveauGroupe.addLayer( mes_parcelles)
-        monPrint( self.tr("Couche Mes Parcelles {}".format( uri)))
+        nouveauGroupeMP.addLayer( mes_parcelles)
+        # Forcer EPSG 2154 QgsCoordinateReferenceSystem constructor deprecated
+        mes_parcelles.setCrs(QgsCoordinateReferenceSystem('EPSG:'+str(ID_DESTINATION_CRS)))
 
-#TODO: 3 appels processing et supprimer colonnes inutiles
-###processing.run("native:renametablefield", 
-#{'INPUT':'delimitedtext://file:////home/j/Documents/DATA/MON_PARCELLAIRE/Export geometries
-# parcelles2025_Fronton_09-04-2025.csv?delimiter=,&wktField=geom',
-# 'FIELD':'nom_parcelle','NEW_NAME':'nom','OUTPUT':'TEMPORARY_OUTPUT'})
 
-#### processing.run("qgis:selectbyattribute", 
-#{'INPUT':'memory://Polygon?crs=EPSG:2154&field=idexploitation:integer(0,0)&field=idparcelleculturale:integer(0,0)&field=idilot:integer(0,0)&field=pacage:integer(0,0)&field=raisonsociale:string(0,0)&field=refca:string(0,0)&field=millesime:integer(0,0)&field=num_ilot:integer(0,0)&field=nom_ilot:string(0,0)&field=surf_ilot:double(0,0)&field=pac:string(0,0)&field=code_insee:integer(0,0)&field=commune:string(0,0)&field=num_parcelle:integer(0,0)&field=nom:string(0,0)&field=surf_parcelle:double(0,0)&field=idculture:integer(0,0)&field=libelle_usage:string(0,0)&field=libelle_s2:string(0,0)&field=code_culture:string(0,0)&field=ichn:string(0,0)&field=bio:string(0,0)&field=conversion_bio:string(0,0)&field=annee_engagement_bio:string(0,0)&field=variete_cepage:string(0,0)&field=porte_greffe:string(0,0)&uid={755adf0b-e261-4601-99ad-05def0914425}',
-#'FIELD':'code_culture','OPERATOR':0,'VALUE':'VRC','METHOD':0})		
-
-#### processing.run("native:savefeatures", 
-#{'INPUT':QgsProcessingFeatureSourceDefinition('Polygon?crs=EPSG:2154&field=idexploitation:integer(0,0)&field=idparcelleculturale:integer(0,0)&field=idilot:integer(0,0)&field=pacage:integer(0,0)&field=raisonsociale:string(0,0)&field=refca:string(0,0)&field=millesime:integer(0,0)&field=num_ilot:integer(0,0)&field=nom_ilot:string(0,0)&field=surf_ilot:double(0,0)&field=pac:string(0,0)&field=code_insee:integer(0,0)&field=commune:string(0,0)&field=num_parcelle:integer(0,0)&field=nom:string(0,0)&field=surf_parcelle:double(0,0)&field=idculture:integer(0,0)&field=libelle_usage:string(0,0)&field=libelle_s2:string(0,0)&field=code_culture:string(0,0)&field=ichn:string(0,0)&field=bio:string(0,0)&field=conversion_bio:string(0,0)&field=annee_engagement_bio:string(0,0)&field=variete_cepage:string(0,0)&field=porte_greffe:string(0,0)&uid={755adf0b-e261-4601-99ad-05def0914425}', selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
-#'OUTPUT':'/home/j/Documents/DATA/MON_PARCELLAIRE/mes_parcelles_25.geojson',
-#'LAYER_NAME':'','DATASOURCE_OPTIONS':'','LAYER_OPTIONS':'',
-#'ACTION_ON_EXISTING_FILE':0})
+        # Filtrer les seules vignes
+        try:
+              nom_toutes_parcelles = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_TOUTES"+EXT_geojson)
+              traitementSauver( uri, nom_toutes_parcelles)
+              toutes_parcelles = QgsVectorLayer(nom_toutes_parcelles, \
+              		MesParcelles_GJ, "ogr")
+              monProjet.addMapLayer(toutes_parcelles, False)
+              traitementSelectionnerVignes( nom_toutes_parcelles)
+              selection_input=QgsProcessingFeatureSourceDefinition( nom_toutes_parcelles, \
+				selectedFeaturesOnly=True, \
+				featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
+              nom_vignes_attr = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_ATTRS_VIGNES"+EXT_geojson)
+              traitementSauver( selection_input, nom_vignes_attr)
+              toutes_attr_vignes = QgsVectorLayer(nom_vignes_attr, \
+              		MonParcellaireFiltre_GJ, "ogr")
+              monProjet.addMapLayer(toutes_attr_vignes, False)
+              nouveauGroupeMP.addLayer( toutes_attr_vignes)
+        except:
+              monPrint( "Vecteur {0} ne convient pas pour la sélection des vignes".format( uri), T_ERR)
+              erreurTraitement("Sélection vignes")
+        try:
+              nom_vignes = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_VIGNES"+EXT_geojson)
+              traitementDupliquer_nom_parcelle( nom_vignes_attr, nom_vignes)
+              toutes_vignes = QgsVectorLayer(nom_vignes, \
+              		MonParcellaire_attr_MP, "ogr")
+              monProjet.addMapLayer(toutes_vignes, False)
+              # Supprimer les colonnes inconnues
+              ne_pas_detruire = ["nom", "nom_parcelle", "raisonsociale"]
+              #with edit(toutes_vignes):
+              all_fields = toutes_vignes.fields().names()
+              champs_a_detruire = [toutes_vignes.fields().indexFromName(f) for f in all_fields if f not in ne_pas_detruire]
+              monPrint( "Champs à détruire {} dr Mes Parcelles".format( champs_a_detruire))
+              field_ids = [toutes_vignes.fields().indexFromName(f) for f in all_fields if f in ne_pas_detruire]
+              monPrint( "Champs à conserver {} de Mes Parcelles".format( field_ids))
+              #TODO BUG on garde les trois premieres colonnes
+              toutes_vignes.dataProvider().deleteAttributes( champs_a_detruire)
+              toutes_vignes.updateFields()
+              nouveauGroupeMP.addLayer( toutes_vignes)
+        except:
+              monPrint( "Vecteur {0} ne convient pas pour gerer attribut pour Mon Parcellaire la sélection des vignes".format( nom_vignes_attr), T_ERR)
+              erreurTraitement("Sélection vignes")
         return mes_parcelles
 
     def slotTraiterRepertoireGPKGJointure( self):

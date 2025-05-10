@@ -109,12 +109,15 @@ GPKG_LAYERNAME = SEP_PIPE + "layername="
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
 MonParcellaireNomAttribut='nom'
-#Nommage dans Mes Parcelles
-MesParcellesNomAttribut='nom_parcelle'   # Il faut faire une copie en 'nom' comme MonParcellaireNomAttribut
-MesParcellesFiltreAttribut='code_usage'  # "VRC" pour vignes
+# Nommage dans Mes Parcelles
+#MesParcellesNomAttribut='nom_parcelle'   # Il faut faire une copie en 'nom' comme MonParcellaireNomAttribut
+#MesParcellesFiltreAttribut='code_culture'  # "VRC" pour vignes
 
 # Autres noms
 MonParcellaire_MP="Vignes de Mes Parcelles" 
+MesParcelles_GJ="Vignes dans geojson" 
+MonParcellaireFiltre_GJ="Vignes filtrées dans geojson" 
+MonParcellaire_attr_MP="Vignes attribuées pour Mon Parcellaire" 
 MonParcellaire_JOI="jointure" # EN join between
 MonParcellaire_PROJET=APPLI_NOM+EXT_qgz
 # REPERTOIRE SAUVEGARDE et MODELE
@@ -179,10 +182,10 @@ class MonParcellaireErreurMethodo( MonParcellaireException):
 NOM_APPS_VENDANGE="CoopViti"
 NOM_SIG_VENDANGE="QGIS Projet Référentiel Mon Tom"
 VerificationReferentielMonParcellaire="Avez-vous paramétré le chemin vers le référentiel Mon Parcellaire ? \n\
-    Vérifiez dans l'onglet {0} si le chemin vers le référentiel est correct. \n\
-    Avez-vous déposer une jointure d'extension {1} dans ce référentiel ? \n\
+    Vérifiez dans l'onglet {} si le chemin vers le référentiel est correct. \n\
+    Avez-vous déposer une jointure d'extension {} dans ce référentiel ? \n\
     Son encodage est de l'UTF-8 ? \n\
-    La jointure a-t-elle un délimiteur".format( E_OK, EXTENSIONS_CONNUES,  tuple( DELIMITEURS_CONNUS))
+    La jointure a-t-elle un délimiteur parmi {}".format( E_OK, EXTENSIONS_CONNUES,  tuple( DELIMITEURS_CONNUS))
 Maintenance="Contactez la maintenance jhemmi.eu"
 Support="Si besoin, contactez pour du support jhemmi.eu"
 Maintenance_GPKG="{0}, en fournissant votre GPKG de référence ~MonParcellaire/MonParcellaire.gpkg.".format(Maintenance)
