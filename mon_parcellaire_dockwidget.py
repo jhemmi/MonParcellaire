@@ -72,26 +72,41 @@ def traitementSauver(source, sortie):
     monPrint( "Sauver en {0}".format( result))
     return result
 
+def traitementGarderChamps(source, sortie, \
+	ne_pas_detruire = [ "code_culture", "surf_parcelle", \
+			"nom_parcelle", "raisonsociale"]):
+    """ Champs à conserver de "Mes Parcelles à conserver"""
+    algo_name, algo_simplifie ="native:retainfields",  "Garder champs utiles"
+    result = processing.run(algo_name, 
+        {'INPUT': source , 'OUTPUT': sortie, \
+		'FIELDS':ne_pas_detruire})
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreurTraitement(algo_name)
+    return result
+
 def traitementDupliquer_nom_parcelle(source, sortie):
     algo_name, algo_simplifie ="native:fieldcalculator",  "Dupliquer nom_parcelles..."
     result = processing.run(algo_name, 
         {'INPUT': source , 'OUTPUT': sortie, \
-			'FIELD_NAME':MonParcellaireNomAttribut,'FIELD_TYPE':2,'FIELD_LENGTH':15,'FIELD_PRECISION':0,
+			'FIELD_NAME':MonParcellaireNomAttribut,'FIELD_TYPE':2,'FIELD_LENGTH':25,'FIELD_PRECISION':0,
 			'FORMULA':' "nom_parcelle" '})
     if result == None:
         monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
         erreurTraitement(algo_name)
-    monPrint( "Nom est dans {0}".format( result))
     return result
 
-def traitementJointureLocalisation(source, jointure, sortie, libelle=""):
-    """ {'INPUT':source, 'JOIN':jointure,
-    'PREDICATE':[0,1,3,5],'JOIN_FIELDS':['nom'],'METHOD':0,'DISCARD_NONMATCHING':True,'PREFIX':'',
-    'OUTPUT':sortie} """
+def traitementJointureOrientation(source, jointure, sortie, libelle=""):
+    """ {'INPUT':'xxx',
+	   'PREDICATE':[1],'JOIN':'zzz','JOIN_FIELDS':['orientatio'],
+		'METHOD':1,'DISCARD_NONMATCHING':False,'PREFIX':'',
+		'OUTPUT':'TEMPORARY_OUTPUT'}) """
     algo_name,  algo_simplifie ="qgis:joinattributesbylocation",  "Jointure par localisation ..."
     # TODO: ? orientatio ou tion
     result = processing.run(algo_name, 
-        {'INPUT': source, 'JOIN':jointure, 'PREDICATE':[0,1,3,5],'JOIN_FIELDS':['nom',  'orientatio'],'METHOD':0,'DISCARD_NONMATCHING':True,'PREFIX':'', 'OUTPUT': sortie})
+        {'INPUT': source, 'JOIN':jointure, 'PREDICATE':[1],
+		 'JOIN_FIELDS':['orientatio'],'METHOD':1,'DISCARD_NONMATCHING':False,
+		 'PREFIX':'', 'OUTPUT': sortie})
     if result == None:
         monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
         erreur_traitement(algo_name)
@@ -585,26 +600,11 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         cheminCompletMesParcelle = self.Mes_Parcelles_lineEdit.text()
         uri="file:///"+cheminCompletMesParcelle+"?delimiter={}&wktField={}".format(",","geom")
         mes_parcelles = QgsVectorLayer(uri, \
-              MonParcellaire_PAR+SEP_U+MonParcellaire_MP, 'delimitedtext')
-
-        # Supprimer les colonnes inconnues
-        ne_pas_detruire = ["nom_parcelle", "raisonsociale"]
-        #with edit(mes_parcelles):
-        all_fields = mes_parcelles.fields().names()
-        #monPrint( "Champs {} dans Mes Parcelles".format( all_fields))
-
-        champs_a_detruire = [mes_parcelles.fields().indexFromName(f) for f in all_fields if f not in ne_pas_detruire]
-        monPrint( "Champs à detruire {} dans Mes Parcelles".format( champs_a_detruire))
-        field_ids = [mes_parcelles.fields().indexFromName(f) for f in all_fields if f in ne_pas_detruire]
-        #monPrint( "Champs à conserver {} dans Mes Parcelles".format( field_ids))
-        mes_parcelles.dataProvider().deleteAttributes( champs_a_detruire)
-        mes_parcelles.updateFields()
-
+              MonParcellaire_MP, 'delimitedtext')
         monProjet.addMapLayer(mes_parcelles, False)
         nouveauGroupeMP.addLayer( mes_parcelles)
         # Forcer EPSG 2154 QgsCoordinateReferenceSystem constructor deprecated
         mes_parcelles.setCrs(QgsCoordinateReferenceSystem('EPSG:'+str(ID_DESTINATION_CRS)))
-
 
         # Filtrer les seules vignes
         try:
@@ -617,35 +617,44 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               selection_input=QgsProcessingFeatureSourceDefinition( nom_toutes_parcelles, \
 				selectedFeaturesOnly=True, \
 				featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
-              nom_vignes_attr = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_ATTRS_VIGNES"+EXT_geojson)
-              traitementSauver( selection_input, nom_vignes_attr)
-              toutes_attr_vignes = QgsVectorLayer(nom_vignes_attr, \
+              nom_vignes_tous_attributs = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_TOUTS_ATTRIBUTS"+EXT_geojson)
+              traitementSauver( selection_input, nom_vignes_tous_attributs)
+              toutes_attr_vignes = QgsVectorLayer( nom_vignes_tous_attributs, \
               		MonParcellaireFiltre_GJ, "ogr")
               monProjet.addMapLayer(toutes_attr_vignes, False)
-              nouveauGroupeMP.addLayer( toutes_attr_vignes)
+              #nouveauGroupeMP.addLayer( toutes_attr_vignes)
         except:
               monPrint( "Vecteur {0} ne convient pas pour la sélection des vignes".format( uri), T_ERR)
               erreurTraitement("Sélection vignes")
         try:
+              # Garder les colonnes utiles de Mes Parcelles pour Mon Parcellaire
+              nom_vignes_mini_attributs = os.path.join( REPERTOIRE_GPKG, \
+				"MES_PARCELLES_MINI_ATTRIBUTS"+EXT_geojson)
+              traitementGarderChamps( nom_vignes_tous_attributs, nom_vignes_mini_attributs)
               nom_vignes = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_VIGNES"+EXT_geojson)
-              traitementDupliquer_nom_parcelle( nom_vignes_attr, nom_vignes)
+              traitementDupliquer_nom_parcelle( nom_vignes_mini_attributs, nom_vignes)
               toutes_vignes = QgsVectorLayer(nom_vignes, \
               		MonParcellaire_attr_MP, "ogr")
               monProjet.addMapLayer(toutes_vignes, False)
-              # Supprimer les colonnes inconnues
-              ne_pas_detruire = ["nom", "nom_parcelle", "raisonsociale"]
-              #with edit(toutes_vignes):
-              all_fields = toutes_vignes.fields().names()
-              champs_a_detruire = [toutes_vignes.fields().indexFromName(f) for f in all_fields if f not in ne_pas_detruire]
-              monPrint( "Champs à détruire {} dr Mes Parcelles".format( champs_a_detruire))
-              field_ids = [toutes_vignes.fields().indexFromName(f) for f in all_fields if f in ne_pas_detruire]
-              monPrint( "Champs à conserver {} de Mes Parcelles".format( field_ids))
-              #TODO BUG on garde les trois premieres colonnes
-              toutes_vignes.dataProvider().deleteAttributes( champs_a_detruire)
-              toutes_vignes.updateFields()
               nouveauGroupeMP.addLayer( toutes_vignes)
         except:
-              monPrint( "Vecteur {0} ne convient pas pour gerer attribut pour Mon Parcellaire la sélection des vignes".format( nom_vignes_attr), T_ERR)
+              monPrint( "Vecteur {0} ne convient pas pour gerer attribut pour Mon Parcellaire la sélection des vignes".format( nom_vignes_tous_attributs), T_ERR)
+              erreurTraitement("Sélection vignes")
+        try:
+              # Si demandé, retrouver les orientations
+              nom_vignes_orientees_modele = os.path.join( REPERTOIRE_GPKG, \
+				MonParcellaire_ORIENTE_MODELE+EXT_geojson)
+              nom_vignes_orientees = os.path.join( REPERTOIRE_GPKG, \
+				MonParcellaire_ORIENTE+EXT_geojson)
+		# TODO : index spatial avant jointure
+              traitementJointureOrientation( nom_vignes_mini_attributs, \
+					nom_vignes_orientees_modele, nom_vignes_orientees)
+              vignes_orientees = QgsVectorLayer(nom_vignes_orientees, \
+              		MonParcellaire_ORIENTE, "ogr")
+              monProjet.addMapLayer(vignes_orientees, False)
+              nouveauGroupeMP.addLayer( vignes_orientees)
+        except:
+              monPrint( "Vecteur {0} ne convient pas pour joindre les orientations".format( nom_vignes_orientees_modele), T_ERR)
               erreurTraitement("Sélection vignes")
         return mes_parcelles
 

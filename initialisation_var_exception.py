@@ -108,13 +108,13 @@ GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
+MonParcellaire_ORIENTE=MonParcellaire_PAR+SEP_U+"orientées"
+MonParcellaire_ORIENTE_MODELE="MODELE"+SEP_U+MonParcellaire_ORIENTE
 MonParcellaireNomAttribut='nom'
-# Nommage dans Mes Parcelles
-#MesParcellesNomAttribut='nom_parcelle'   # Il faut faire une copie en 'nom' comme MonParcellaireNomAttribut
-#MesParcellesFiltreAttribut='code_culture'  # "VRC" pour vignes
+# Nommage dans Mes Parcelles en dur
 
 # Autres noms
-MonParcellaire_MP="Vignes de Mes Parcelles" 
+MonParcellaire_MP="Import de Mes Parcelles" 
 MesParcelles_GJ="Vignes dans geojson" 
 MonParcellaireFiltre_GJ="Vignes filtrées dans geojson" 
 MonParcellaire_attr_MP="Vignes attribuées pour Mon Parcellaire" 
