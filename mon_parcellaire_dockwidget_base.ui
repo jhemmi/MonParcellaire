@@ -364,7 +364,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>140</y>
+            <y>170</y>
             <width>26</width>
             <height>20</height>
            </rect>
@@ -391,19 +391,80 @@
          <widget class="QWidget" name="verticalLayoutWidget_2">
           <property name="geometry">
            <rect>
-            <x>10</x>
-            <y>240</y>
-            <width>351</width>
-            <height>108</height>
+            <x>0</x>
+            <y>200</y>
+            <width>361</width>
+            <height>81</height>
            </rect>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_2"/>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_apres">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="text">
+              <string>Après jointure</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="Suite_checkBox">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Affecter vignes suites</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="Terroir_checkBox">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Joindre les informations terroirs</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
          <widget class="QCheckBox" name="Mes_Parcelles_checkBox">
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>10</y>
+            <y>40</y>
             <width>349</width>
             <height>25</height>
            </rect>
@@ -423,7 +484,7 @@
           <property name="geometry">
            <rect>
             <x>20</x>
-            <y>40</y>
+            <y>70</y>
             <width>191</width>
             <height>17</height>
            </rect>
@@ -459,7 +520,7 @@
           <property name="geometry">
            <rect>
             <x>50</x>
-            <y>60</y>
+            <y>90</y>
             <width>300</width>
             <height>20</height>
            </rect>
@@ -505,7 +566,7 @@
           <property name="geometry">
            <rect>
             <x>20</x>
-            <y>120</y>
+            <y>150</y>
             <width>349</width>
             <height>17</height>
            </rect>
@@ -541,7 +602,7 @@
           <property name="geometry">
            <rect>
             <x>50</x>
-            <y>140</y>
+            <y>170</y>
             <width>300</width>
             <height>20</height>
            </rect>
@@ -586,8 +647,8 @@
          <widget class="QCheckBox" name="Orientation_checkBox">
           <property name="geometry">
            <rect>
-            <x>0</x>
-            <y>90</y>
+            <x>15</x>
+            <y>120</y>
             <width>349</width>
             <height>25</height>
            </rect>
@@ -607,7 +668,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>60</y>
+            <y>90</y>
             <width>26</width>
             <height>20</height>
            </rect>
@@ -631,44 +692,42 @@
            <string>...</string>
           </property>
          </widget>
-         <widget class="QCheckBox" name="Suite_checkBox">
+         <widget class="QLabel" name="label_apres_2">
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>170</y>
-            <width>349</width>
-            <height>25</height>
+            <y>10</y>
+            <width>359</width>
+            <height>21</height>
            </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
           </property>
           <property name="font">
            <font>
-            <pointsize>10</pointsize>
+            <pointsize>12</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
           </property>
-          <property name="text">
-           <string>Affecter vignes suites</string>
-          </property>
-         </widget>
-         <widget class="QCheckBox" name="Terroir_checkBox">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>200</y>
-            <width>349</width>
-            <height>25</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
+          <property name="toolTip">
+           <string/>
           </property>
           <property name="text">
-           <string> Joindre les informations terroirs</string>
+           <string>Avant jointure</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
         </widget>

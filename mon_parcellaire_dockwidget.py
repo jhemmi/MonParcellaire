@@ -60,12 +60,24 @@ def traitementSelectionnerVignes(source, champ_selection = 'code_culture', libel
         erreurTraitement(algo_name)
     monPrint( "Sélection dans {0}".format( resultat_selection))
 
-def traitementSauver(source, sortie):
-    """ Sauver"""
+def traitementSauverEcraser(source, sortie):
+    """ Sauver en ecrasant fichier"""
     algo_name, algo_simplifie ="native:savefeatures",  "Sauver vignes..."
     result = processing.run(algo_name, 
         {'INPUT': source , 'OUTPUT': sortie,'LAYER_NAME':'', \
 			'DATASOURCE_OPTIONS':'','LAYER_OPTIONS':'','ACTION_ON_EXISTING_FILE':0})
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreurTraitement(algo_name)
+    monPrint( "Sauver en {0}".format( result))
+    return result
+
+def traitementSauverGPKGEcraserCouche(source, sortie_gpkg, couche):
+    """ Sauver en ecrasant fichier"""
+    algo_name, algo_simplifie ="native:savefeatures",  "Sauver vignes..."
+    result = processing.run(algo_name, 
+        {'INPUT': source , 'OUTPUT': sortie_gpkg,'LAYER_NAME':couche, \
+			'DATASOURCE_OPTIONS':'','LAYER_OPTIONS':'','ACTION_ON_EXISTING_FILE':1})
     if result == None:
         monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
         erreurTraitement(algo_name)
@@ -133,8 +145,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.plugin_dir = os.path.dirname(__file__) 
         
         #print( "** Démarrage de MonParcellaire {0}".format(APPLI_VERSION))
-        CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHOIX_ORIENTATION, CHOIX_TERROIR, \
-            CHOIX_JOINTURE, REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
+        CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHOIX_ORIENTATION, NOM_ORIENTATION, \
+		    CHOIX_SUITE, CHOIX_TERROIR, CHOIX_JOINTURE, \
+		    REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
         # Slot boutons 
         self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotTraiterRepertoireGPKGJointure)
@@ -145,6 +158,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)
         self.Jointure_checkBox.stateChanged.connect( self.slotBasculeJointure)
         self.Mes_Parcelles_toolButton.pressed.connect( self.slotLectureMesParcelles)
+        self.Orientation_toolButton.pressed.connect( self.slotLectureOrientation)
         self.Mes_Parcelles_checkBox.stateChanged.connect( self.slotBasculeMesParcelles)
 
         # Cas des combo
@@ -199,6 +213,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         s.setValue("MonParcellaire/nomMesParcelles", self.Mes_Parcelles_lineEdit.text())
         choixOrientation= "YES" if self.Orientation_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/Orientation", choixOrientation)
+        choixSuite= "YES" if self.Suite_checkBox.isChecked() else "NO"
+        s.setValue("MonParcellaire/Suite", choixSuite)
+        s.setValue("MonParcellaire/nomOrientation", self.Orientation_lineEdit.text())
         choixTerroir= "YES" if self.Terroir_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/Terroir", choixTerroir)
         choixJointure = "YES" if self.Jointure_checkBox.isChecked() else "NO"
@@ -227,8 +244,12 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.Mes_Parcelles_lineEdit.setText( NOM_CSV_MES_PARCELLES )
         CHOIX_ORIENTATION = s.value("MonParcellaire/Orientation", "NO")
         self.Orientation_checkBox.setChecked( Qt.Checked) if CHOIX_ORIENTATION == "YES" else self.Orientation_checkBox.setChecked( Qt.Unchecked)
+        NOM_ORIENTATION = s.value("MonParcellaire/nomOrientation", "MODELE_parcelles_orientées.geojson")
+        self.Orientation_lineEdit.setText( NOM_ORIENTATION )
         CHOIX_TERROIR = s.value("MonParcellaire/Terroir", "NO")
         self.Terroir_checkBox.setChecked( Qt.Checked) if CHOIX_TERROIR == "YES" else self.Terroir_checkBox.setChecked( Qt.Unchecked)
+        CHOIX_SUITE = s.value("MonParcellaire/VigneSuite", "NO")
+        self.Suite_checkBox.setChecked( Qt.Checked) if CHOIX_SUITE == "YES" else self.Suite_checkBox.setChecked( Qt.Unchecked)
         CHOIX_JOINTURE = s.value("MonParcellaire/PresenceJointure", "NO")
         self.Jointure_checkBox.setChecked( Qt.Checked) if CHOIX_JOINTURE == "YES" else self.Jointure_checkBox.setChecked( Qt.Unchecked)
         referentiel_plugin=os.path.join( self.plugin_dir, "data")
@@ -243,9 +264,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         PreparelisteAttributAJoindre = s.value("MonParcellaire/AttributsAJoindre", "Pas de jointure")
         LISTE_ATTRIBUTS_A_JOINDRE=PreparelisteAttributAJoindre.split( SEP_CONFIG)
         #monPrint( "Settings lus jointure {} pour attributs {}".format( CHOIX_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE))
-        return CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHOIX_ORIENTATION, CHOIX_TERROIR, CHOIX_JOINTURE, REPERTOIRE_GPKG, \
-			FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE
-    
+        return CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, \
+           CHOIX_ORIENTATION, NOM_ORIENTATION, CHOIX_SUITE, CHOIX_TERROIR, CHOIX_JOINTURE, \
+           REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE
+
     def sauvergardeSelonFrequence(self, repertoireASauver, nomCourt, frequence, suiteSauvegarde, presenceAttendue=False, nomTable="xxx"):
         """ Fichier (y compris GPKG) est sauvés selon la fréquence et si nécessaire
             nommage detaillé selon la fréquence"""
@@ -278,21 +300,31 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """
         CHEMIN_JOINTURE=None
         if self.Mes_Parcelles_checkBox.isChecked():
-            #_, _, _,_, _, _,REPERTOIRE_GPKG, _, \
-            #ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
             self.Mes_Parcelles_lineEdit.setEnabled( True)
             self.Mes_Parcelles_toolButton.setEnabled( True)
+            self.Orientation_checkBox.setEnabled( True)
+            self.Orientation_lineEdit.setEnabled( True)
+            self.Orientation_toolButton.setEnabled( True)
+            self.Suite_checkBox.setEnabled( True)
+            self.label_chemin_orientation.setEnabled(True)
+            self.label_chemin_Mes_Parcelles.setEnabled(True)
         else:
             self.Mes_Parcelles_lineEdit.setEnabled( False)
             self.Mes_Parcelles_toolButton.setEnabled( False)
-
+            self.Orientation_checkBox.setEnabled( False)
+            self.Orientation_lineEdit.setEnabled( False)
+            self.Orientation_toolButton.setEnabled( False)
+            self.Suite_checkBox.setEnabled( False)
+            self.label_chemin_orientation.setEnabled(False)
+            self.label_chemin_Mes_Parcelles.setEnabled(False)
+ 
     def slotBasculeJointure( self):
         """ 
         Bascule le choix jointure et acces aux listes d'attribut à joindre
         """
         CHEMIN_JOINTURE=None
         if self.Jointure_checkBox.isChecked():
-            _, _, _, _, _, _,REPERTOIRE_GPKG, _, \
+            _, _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
             CHEMIN_JOINTURE = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
         if CHEMIN_JOINTURE != None and self.Jointure_checkBox.isChecked():
@@ -351,12 +383,27 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 for item in matching_items:
                     item.setSelected(True)
 
+    def slotLectureOrientation(self):
+        # Choisir le geojson 
+        s = QgsSettings( APPLI_NOM)
+        REPERTOIRE_GPKG = s.value( "MonParcellaire/repertoireGPKG", os.path.join( self.plugin_dir, "data"))
+        nomOrientation = s.value( "MonParcellaire/nomOrientation", "MODELE_parcelles_orientées.geojson")
+        nomComplet, _ = QFileDialog.getOpenFileName( self, self.tr("Choisir le geojson Modele des orientations de la campagne précédente"),
+                     REPERTOIRE_GPKG, "GEOJSON (*.geojson)");
+
+        if len( nomComplet) == 0:
+            return
+        if not os.path.isfile( nomComplet):
+            return
+        self.Orientation_lineEdit.setText( nomComplet)
+        self.ecrireSettings()
+        return
+
     def slotLectureMesParcelles(self):
         # Choisir le CSV exporté de Mes Parcelles
         s = QgsSettings( APPLI_NOM)
         REPERTOIRE_GPKG = s.value( "MonParcellaire/repertoireGPKG", os.path.join( self.plugin_dir, "data"))
         nomMesParcelles = s.value( "MonParcellaire/nomMesParcelles", "Export geometries parcelles2025_Fronton.csv")
-        #propositionNomCompletMesParcelles = os.path.join( REPERTOIRE_GPKG, nomMesParcelles)
         nomCompletMesParcelles, _ = QFileDialog.getOpenFileName( self, self.tr("Choisir le CSV exporté de Mes Parcelles"),
                      REPERTOIRE_GPKG, "CSV (*.csv)");
 
@@ -366,7 +413,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             return
         self.Mes_Parcelles_lineEdit.setText( nomCompletMesParcelles)
         self.ecrireSettings()
-        # TODO self.slotBasculeMesParcelles()       
         return
 
     def slotLectureRepertoireGPKG(self):
@@ -609,7 +655,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Filtrer les seules vignes
         try:
               nom_toutes_parcelles = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_TOUTES"+EXT_geojson)
-              traitementSauver( uri, nom_toutes_parcelles)
+              traitementSauverEcraser( uri, nom_toutes_parcelles)
               toutes_parcelles = QgsVectorLayer(nom_toutes_parcelles, \
               		MesParcelles_GJ, "ogr")
               monProjet.addMapLayer(toutes_parcelles, False)
@@ -618,7 +664,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 				selectedFeaturesOnly=True, \
 				featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
               nom_vignes_tous_attributs = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_TOUTS_ATTRIBUTS"+EXT_geojson)
-              traitementSauver( selection_input, nom_vignes_tous_attributs)
+              traitementSauverEcraser( selection_input, nom_vignes_tous_attributs)
               toutes_attr_vignes = QgsVectorLayer( nom_vignes_tous_attributs, \
               		MonParcellaireFiltre_GJ, "ogr")
               monProjet.addMapLayer(toutes_attr_vignes, False)
@@ -642,21 +688,24 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               erreurTraitement("Sélection vignes")
         try:
               # Si demandé, retrouver les orientations
-              nom_vignes_orientees_modele = os.path.join( REPERTOIRE_GPKG, \
-				MonParcellaire_ORIENTE_MODELE+EXT_geojson)
-              nom_vignes_orientees = os.path.join( REPERTOIRE_GPKG, \
-				MonParcellaire_ORIENTE+EXT_geojson)
-		# TODO : index spatial avant jointure
-              traitementJointureOrientation( nom_vignes_mini_attributs, \
+              CHOIX_ORIENTATION = "YES" if self.Orientation_checkBox.isChecked() else "NO"
+              if CHOIX_ORIENTATION == "YES":
+                nom_vignes_orientees_modele = os.path.join( REPERTOIRE_GPKG, \
+					MonParcellaire_ORIENTE_MODELE+EXT_geojson)
+                nom_vignes_orientees = os.path.join( REPERTOIRE_GPKG, \
+					MonParcellaire_ORIENTE+EXT_geojson)
+				# TODO : index spatial avant jointure
+                traitementJointureOrientation( nom_vignes, \
 					nom_vignes_orientees_modele, nom_vignes_orientees)
-              vignes_orientees = QgsVectorLayer(nom_vignes_orientees, \
+                vignes_orientees = QgsVectorLayer(nom_vignes_orientees, \
               		MonParcellaire_ORIENTE, "ogr")
-              monProjet.addMapLayer(vignes_orientees, False)
-              nouveauGroupeMP.addLayer( vignes_orientees)
+                monProjet.addMapLayer(vignes_orientees, False)
+                nouveauGroupeMP.addLayer( vignes_orientees)
+                return nom_vignes_orientees
         except:
               monPrint( "Vecteur {0} ne convient pas pour joindre les orientations".format( nom_vignes_orientees_modele), T_ERR)
               erreurTraitement("Sélection vignes")
-        return mes_parcelles
+        return nom_vignes
 
     def slotTraiterRepertoireGPKGJointure( self):
         """ Gestion la sauvegarde du GPKG : trois cas de frequences de sauvegarde, 
@@ -669,6 +718,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         FREQUENCE_SAUVEGARDE = self.FrequenceSauvegarde_comboBox.currentText()
         CHOIX_JOINTURE = "YES" if self.Jointure_checkBox.isChecked() else "NO"
         CHOIX_MES_PARCELLES = "YES" if self.Mes_Parcelles_checkBox.isChecked() else "NO"
+        CHOIX_SUITE = "YES" if self.Suite_checkBox.isChecked() else "NO"
         self.ecrireSettings()        
         ###############
         # Sauvegardes 
@@ -696,7 +746,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             jointureChoisie = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
             if jointureChoisie != None:
                 if CHOIX_MES_PARCELLES == "YES":
-                    mes_parcelles = self.extraireVignesMesParcelles()
+                    cheminCompletImporteMesParcelle = self.extraireVignesMesParcelles()
+                    traitementSauverGPKGEcraserCouche( cheminCompletImporteMesParcelle, CHEMIN_VECTEUR_GPKG, MonParcellaire_PAR)
 
                 CHEMIN_JOINTURE,  attributsAJoindreOrdonne = \
                     self.fusionnerJointure( cheminCompletParcelle, jointureChoisie)
@@ -704,6 +755,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 REPERTOIRE_JOINTURE= os.path.dirname( CHEMIN_JOINTURE)
                 _, _ = self.sauvergardeSelonFrequence( REPERTOIRE_JOINTURE, nomCourtJointure, \
                     LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV,  presenceObligatoire)
+                if CHOIX_SUITE == "YES":
+                    monPrint( "TODO les vignes suites")
                 monPrint( self.tr("Fin : vérification répertoire, sauvegarde GPKGs et jointure {0} pour des attributs {1}".\
                     format(nomCourtJointure, attributsAJoindreOrdonne)), T_OK)
             else:
