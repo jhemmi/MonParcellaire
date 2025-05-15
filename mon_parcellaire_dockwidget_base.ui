@@ -31,7 +31,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <property name="movable">
          <bool>true</bool>
@@ -394,7 +394,7 @@
             <x>0</x>
             <y>200</y>
             <width>361</width>
-            <height>81</height>
+            <height>110</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -414,7 +414,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>11</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
@@ -423,7 +423,7 @@
               <string/>
              </property>
              <property name="text">
-              <string>Après jointure</string>
+              <string>Après première jointure</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -438,6 +438,16 @@
                <weight>75</weight>
                <bold>true</bold>
               </font>
+             </property>
+             <property name="text">
+              <string>Affecter vignes suites</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="SuiteButton">
+             <property name="enabled">
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>Affecter vignes suites</string>
@@ -715,7 +725,7 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>12</pointsize>
+            <pointsize>11</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -864,7 +874,7 @@
          <widget class="QPushButton" name="Contribuer_bouton">
           <property name="geometry">
            <rect>
-            <x>10</x>
+            <x>0</x>
             <y>180</y>
             <width>341</width>
             <height>51</height>
@@ -966,8 +976,8 @@
           </property>
           <property name="geometry">
            <rect>
-            <x>300</x>
-            <y>210</y>
+            <x>290</x>
+            <y>200</y>
             <width>41</width>
             <height>25</height>
            </rect>

@@ -108,6 +108,8 @@ GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
+MonParcellaire_AFF_SANS_SUITE="affectations_sans_suite"
+MonParcellaire_AFF="affectations"
 MonParcellaire_ORIENTE=MonParcellaire_PAR+SEP_U+"orientées"
 MonParcellaire_ORIENTE_MODELE="MODELE"+SEP_U+MonParcellaire_ORIENTE
 MonParcellaireNomAttribut='nom'
@@ -119,6 +121,7 @@ MesParcelles_GJ="Vignes dans geojson"
 MonParcellaireFiltre_GJ="Vignes filtrées dans geojson" 
 MonParcellaire_attr_MP="Vignes attribuées pour Mon Parcellaire" 
 MonParcellaire_JOI="jointure" # EN join between
+MonParcellaire_SUI="Suite"
 MonParcellaire_PROJET=APPLI_NOM+EXT_qgz
 # REPERTOIRE SAUVEGARDE et MODELE
 MonParcellaire_SAV=APPLI_NOM+"_SAUVEGARDE" # Repertoire
@@ -373,8 +376,8 @@ except:
 try:
     import pandas as pd
     VERSION_PANDAS=pd.__version__
-    if MonParcellaire_TRACE=="YES": 
-        print("Version pandas : {0}. Option sans warning".format( VERSION_PANDAS))
+    #if MonParcellaire_TRACE=="YES": 
+    print("Version pandas : {0}. Option sans warning".format( VERSION_PANDAS))
     pd.set_option('mode.chained_assignment',None)
     from pandas.io.json import json_normalize
     if MonParcellaire_TRACE=="YES": dir(json_normalize)

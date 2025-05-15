@@ -124,6 +124,19 @@ def traitementJointureOrientation(source, jointure, sortie, libelle=""):
         erreur_traitement(algo_name)
     return result
 
+def dump_df( df, NOM="un_df", lignes=3):
+    #my_print("{2} Type de {0} {1}".format (NOM, type(df),  E_PANDAS),"Info-entete")
+    print("{1} Nom de {0}".format ( df.__class__.__name__,  E_PANDAS),"Info-entete")
+    #my_print("{0} a pour index {1}".format( NOM, df.index))
+    print("{0} a pour shape {1}".format( NOM, df.shape))
+    print("{0} {1} a pour colums {2}".format( E_PANDAS, NOM, df.columns))
+    #Tester le type
+    if isinstance( df, pd.DataFrame):
+        print("{0} {1} a pour {3} premieres valeurs {2}".format( E_PANDAS, NOM, df.head( lignes),  lignes), "Info-pied")
+    else:
+        min_lignes=min( lignes,  len(df))
+        print("{0} a pour {2} premieres valeurs {1}".format( NOM, df[0:min_lignes], min_lignes), "Info-pied")
+    return
 
 class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
@@ -152,7 +165,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Slot boutons 
         self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotTraiterRepertoireGPKGJointure)
         self.Prepare_buttonBox.button( QDialogButtonBox.Save ).pressed.connect(self.ecrireSettings)
-        self.TestButton.pressed.connect(self.traiterCentipedePos)
+        #self.TestButton.pressed.connect(self.traiterCentipedePos)
+        self.SuiteButton.pressed.connect(self.affecterVignesSuites)
 
         # Slot toolbouton 
         self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)
@@ -456,6 +470,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def fusionnerJointure(self, cheminCompletParcelle, jointureChoisie):
         """ Selon les tables déja ouverte dans le projet : ouverture si necessaire des différents cas de délimiteurs
             Jointure par QGIS """
+        REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
         # Vérification du projet ouverte
         monProjet, nouveauGroupeJointure = self.ouvrirProjetETGroupe( MonParcellaire_JOI)
         # Ouverture du vecteur parcelle
@@ -497,6 +512,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Récupérer les champs de jointure
         maJointure.setJoinFieldNamesSubset( attributsAJoindreOrdonne)
         parcelle.addJoin( maJointure)
+        affectation_sans_suite = os.path.join( REPERTOIRE_GPKG, MonParcellaire_AFF_SANS_SUITE+EXT_geojson)
+        traitementSauverEcraser( parcelle, affectation_sans_suite)
         return jointureChoisie, attributsAJoindreOrdonne
 
     def rechercherExtensionJointure( self, repertoireGPKG):
@@ -624,7 +641,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if layer == None:
                 return nomColonnes, nomColonnesUniques
             for field in layer.fields():
-                #monPrint("Pas de {2} : champ du vecteur {0} a pour type {1}".format( field.name(), field.typeName(), E_PANDAS))
+                #monPrint("Pas de {2} : champ du vecteur {0} a pour type {1}".format( field.name(), field.typeName(), E_PANDASS))
                 nomColonnes.append( field.name())
             # Sans Pandas : mode dégradé pas de recherche des uniques
             nomColonnesUniques = nomColonnes
@@ -694,7 +711,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 					MonParcellaire_ORIENTE_MODELE+EXT_geojson)
                 nom_vignes_orientees = os.path.join( REPERTOIRE_GPKG, \
 					MonParcellaire_ORIENTE+EXT_geojson)
-				# TODO : index spatial avant jointure
+                # TODO : index spatial avant jointure
                 traitementJointureOrientation( nom_vignes, \
 					nom_vignes_orientees_modele, nom_vignes_orientees)
                 vignes_orientees = QgsVectorLayer(nom_vignes_orientees, \
@@ -709,6 +726,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     def slotTraiterRepertoireGPKGJointure( self):
         """ Gestion la sauvegarde du GPKG : trois cas de frequences de sauvegarde, 
+            Gestion des synchronisation Mes Parcelles Orientation    
             Gestion de la jointure    
         """
         monPrint( self.tr("Contrôle répertoire, sauvegarde GPKGs et jointure ... Version {0}".format(APPLI_VERSION)))
@@ -733,7 +751,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Sauver tous les projets
         nomProjetRecherches = os.path.join( REPERTOIRE_GPKG, '*'+EXT_qgz)
         listeProjetTriee = sorted(glob.glob( nomProjetRecherches))
-        monPrint( self.tr("Liste des projets QGIS {0}".format(listeProjetTriee)))
+        #monPrint( self.tr("Liste des projets QGIS {0}".format(listeProjetTriee)))
         for monProjet in listeProjetTriee:
             nomCourtprojet = os.path.basename( monProjet)
             _, _ = self.sauvergardeSelonFrequence( REPERTOIRE_GPKG, nomCourtprojet, \
@@ -757,6 +775,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV,  presenceObligatoire)
                 if CHOIX_SUITE == "YES":
                     monPrint( "TODO les vignes suites")
+                    self.affecterVignesSuites( MonParcellaire_AFF_SANS_SUITE+EXT_geojson)
                 monPrint( self.tr("Fin : vérification répertoire, sauvegarde GPKGs et jointure {0} pour des attributs {1}".\
                     format(nomCourtJointure, attributsAJoindreOrdonne)), T_OK)
             else:
@@ -764,12 +783,93 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         else:
             monPrint( self.tr("Fin : vérification répertoire et sauvegarde GPKGs"), T_OK)
 
+    def affecterVignesSuites( self, source=MonParcellaire_AFF_SANS_SUITE+EXT_geojson, cible = MonParcellaire_AFF+EXT_geojson):
+        """ Traiter les affectations pour les vignes suites
+        """
+        REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
+        if not os.path.isfile( source):
+            source=os.path.join(REPERTOIRE_GPKG,source)
+        if not os.path.isfile( cible):
+            cible=os.path.join(REPERTOIRE_GPKG,cible)
+        monProjet, nouveauGroupeSUITE = self.ouvrirProjetETGroupe( MonParcellaire_SUI)
+        monPrint( "Traitement vignes suites ... Version {} module {}".format(APPLI_VERSION, __name__))
+        import geopandas as gpd
+        dfAffectation = gpd.read_file( source)
+        #dump_df( dfAffectation, "Affect")
+
+        available_parcelles=dfAffectation['nom'].sort_values().unique()
+        print("= Info = Nombre de parcelles uniques {}.".format( len( available_parcelles)))
+        max_sous_parcelle=0
+        derniere_liste_a_ecrire=[]
+        for pos, une_parcelle in enumerate( available_parcelles):
+            # Trappe pour debug
+            #if pos > 30:
+            #   break
+            #if une_parcelle != "F0001CO24":
+            #    continue
+            df_une_parcelle=dfAffectation[ (dfAffectation['nom'] == une_parcelle)]
+            if len(df_une_parcelle) > 1:
+                monPrint( "{} DOUBLE entité pour la parcelle {} qui est ignorée".format(E_WARNING, une_parcelle))
+                continue
+            # TODO vérifier si df_une_parcelle n'a qu'une vigne
+            #df[['Column1', 'Column2']].values.tolist()
+            affectation_coopviti= df_une_parcelle['Code validation'].values[0]
+            cepage= df_une_parcelle['Cépage'].values[0]
+            PG= df_une_parcelle['Porte Greffe'].values[0]
+            pre_orientation= df_une_parcelle['orientatio'].values[0]
+            try:
+                orientation=int( pre_orientation)
+            except ValueError:
+                orientation=9999
+            #print( "Pour la parcelle {} a pour affectation {} et orientation {}".format(une_parcelle, affectation_coopviti, orientation))
+            # Rapprochement des vignes suites (A B C D) avec sa vigne principale
+            if affectation_coopviti is None or affectation_coopviti == "nan" or len(affectation_coopviti) <= 0:
+                if une_parcelle[-1] in ["A", "B", "C", "D", "E"]:
+                    if une_parcelle[0:-1] == derniere_liste_a_ecrire[0]:
+                        #print("== Parcelle suite {} est rapprochée de {}".format( une_parcelle, derniere_liste_a_ecrire[0] ))
+                        affectation_coopviti= derniere_liste_a_ecrire[1]
+                        cepage=derniere_liste_a_ecrire[2]
+                        PG=derniere_liste_a_ecrire[3]
+                        if orientation==9999:
+                            orientation=int( derniere_liste_a_ecrire[4])
+							
+                    else:
+                        print("{} == Parcelle suite {} ne peut pas être rapprochée de la précedente parcelle {}".\
+							  format( E_WARNING, une_parcelle, derniere_liste_a_ecrire[0] ))
+                        affectation_coopviti="Inconnue"
+                        cepage="Inconnu"
+                        PG="Inconnu"
+                        if orientation==9999:
+                            orientation=0
+                else:
+                    print("{} BASES INCONSISTANTES == Parcelle {} (non A B C OU D) sans affectation cepage et orientation".format( E_WARNING, une_parcelle ))
+                    affectation_coopviti="Inconnue"
+                    cepage="Inconnu"
+                    PG="Inconnu"
+                    if orientation==9999:
+                        orientation=0
+                # Ecrire Affectation 
+                print("= Info = Vignes suite {} récupere Affectation {} Cépage {} Orientation {}.".\
+					 format( une_parcelle, affectation_coopviti, cepage,orientation))
+                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Code validation"] = affectation_coopviti
+                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "'Cépage'"] = cepage
+                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Porte greffe"] = PG
+                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "orientatio"] = orientation
+            if une_parcelle[-1] not in ["A", "B", "C", "D", "E"]:
+                derniere_liste_a_ecrire = [une_parcelle, affectation_coopviti, cepage, PG, str(orientation)]
+        dfAffectation.to_file( cible, driver="GeoJSON")
+        affectation_suite = QgsVectorLayer(cible, \
+              		MonParcellaire_SUI, "ogr")
+        monProjet.addMapLayer(affectation_suiteaffectation_suite, False)
+        nouveauGroupeSUITE.addLayer( affectation_suite)
+		#data.to_file(output_file, driver='GPKG')
+
 
     def traiterCentipedePos( self):
         """ Traiter les traces Centipede pos
             Creer des rangs ou interrangs dans le parcellaire
         """
-        monPrint( self.tr("BOUTON en chantier : Traitement des traces centipedes ... Version {0} module {}".format(APPLI_VERSION, __name__)))
+        monPrint( self.tr("BOUTON en chantier : Traitement des traces centipedes ... Version {} module {}".format(APPLI_VERSION, __name__)))
 #        monProjet = QgsProject.instance()
 #        root = monProjet.layerTreeRoot()
 #        REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
