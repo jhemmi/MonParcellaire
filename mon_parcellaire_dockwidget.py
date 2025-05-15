@@ -228,7 +228,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         choixOrientation= "YES" if self.Orientation_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/Orientation", choixOrientation)
         choixSuite= "YES" if self.Suite_checkBox.isChecked() else "NO"
-        s.setValue("MonParcellaire/Suite", choixSuite)
+        s.setValue("MonParcellaire/VigneSuite", choixSuite)
         s.setValue("MonParcellaire/nomOrientation", self.Orientation_lineEdit.text())
         choixTerroir= "YES" if self.Terroir_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/Terroir", choixTerroir)
@@ -849,10 +849,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     if orientation==9999:
                         orientation=0
                 # Ecrire Affectation 
-                print("= Info = Vignes suite {} récupere Affectation {} Cépage {} Orientation {}.".\
-					 format( une_parcelle, affectation_coopviti, cepage,orientation))
+                #print("= Info = Vignes suite {} récupere Affectation {} Cépage {} Orientation {}.".\
+				#	 format( une_parcelle, affectation_coopviti, cepage,orientation))
                 dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Code validation"] = affectation_coopviti
-                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "'Cépage'"] = cepage
+                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Cépage"] = cepage
                 dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Porte greffe"] = PG
                 dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "orientatio"] = orientation
             if une_parcelle[-1] not in ["A", "B", "C", "D", "E"]:
@@ -860,9 +860,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         dfAffectation.to_file( cible, driver="GeoJSON")
         affectation_suite = QgsVectorLayer(cible, \
               		MonParcellaire_SUI, "ogr")
-        monProjet.addMapLayer(affectation_suiteaffectation_suite, False)
+        monProjet.addMapLayer(affectation_suite, False)
         nouveauGroupeSUITE.addLayer( affectation_suite)
-		#data.to_file(output_file, driver='GPKG')
 
 
     def traiterCentipedePos( self):
