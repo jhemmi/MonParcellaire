@@ -108,7 +108,6 @@ GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
-MonParcellaire_AFF_SANS_SUITE="affectations_sans_suite"
 MonParcellaire_AFF="affectations"
 MonParcellaire_ORIENTE=MonParcellaire_PAR+SEP_U+"orientées"
 MonParcellaire_ORIENTE_MODELE="MODELE"+SEP_U+MonParcellaire_ORIENTE
@@ -121,7 +120,13 @@ MesParcelles_GJ="Vignes dans geojson"
 MonParcellaireFiltre_GJ="Vignes filtrées dans geojson" 
 MonParcellaire_attr_MP="Vignes attribuées pour Mon Parcellaire" 
 MonParcellaire_JOI="jointure" # EN join between
-MonParcellaire_SUI="Suite"
+MonParcellaire_SUI=MonParcellaire_PAR+" suites"
+MonParcellaire_AFF_SANS_SUITE="affectations_sans_suite".upper()
+# Terroir 
+NOM_REPERTOIRE_TERROIR="SOLS_TERROIRS"
+NOM_TERROIR_GPKG="IFV_sols_terroir"+ EXT_gpkg
+MonParcellaire_TER="Terroir"
+
 MonParcellaire_PROJET=APPLI_NOM+EXT_qgz
 # REPERTOIRE SAUVEGARDE et MODELE
 MonParcellaire_SAV=APPLI_NOM+"_SAUVEGARDE" # Repertoire

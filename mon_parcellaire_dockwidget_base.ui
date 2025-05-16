@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string notr="true">Mon Parcellaire V3.34.0 -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V3.34.4 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -394,7 +394,7 @@
             <x>0</x>
             <y>200</y>
             <width>361</width>
-            <height>110</height>
+            <height>141</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -464,7 +464,17 @@
               </font>
              </property>
              <property name="text">
-              <string>Joindre les informations terroirs</string>
+              <string>Consolider les informations des terroirs</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="TerroirButton">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Consolider les informations des terroirs à la parcelle</string>
              </property>
             </widget>
            </item>
@@ -792,7 +802,7 @@
            <rect>
             <x>10</x>
             <y>50</y>
-            <width>456</width>
+            <width>350</width>
             <height>16</height>
            </rect>
           </property>
@@ -802,7 +812,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Joindre des données externes</string>
+           <string>Joindre vos données externes (Mes Parcelles, Terroir)</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -947,7 +957,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>140</y>
+            <y>120</y>
             <width>211</width>
             <height>21</height>
            </rect>
@@ -977,7 +987,7 @@
           <property name="geometry">
            <rect>
             <x>290</x>
-            <y>200</y>
+            <y>210</y>
             <width>41</width>
             <height>25</height>
            </rect>

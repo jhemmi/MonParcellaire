@@ -165,9 +165,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Slot boutons 
         self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotTraiterRepertoireGPKGJointure)
         self.Prepare_buttonBox.button( QDialogButtonBox.Save ).pressed.connect(self.ecrireSettings)
-        #self.TestButton.pressed.connect(self.traiterCentipedePos)
+        self.TestButton.pressed.connect(self.traiterCentipedePos)
         self.SuiteButton.pressed.connect(self.affecterVignesSuites)
-
+        self.TerroirButton.pressed.connect(self.consoliderTerroir)
         # Slot toolbouton 
         self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)
         self.Jointure_checkBox.stateChanged.connect( self.slotBasculeJointure)
@@ -784,7 +784,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             monPrint( self.tr("Fin : vérification répertoire et sauvegarde GPKGs"), T_OK)
 
     def affecterVignesSuites( self, source=MonParcellaire_AFF_SANS_SUITE+EXT_geojson, cible = MonParcellaire_AFF+EXT_geojson):
-        """ Traiter les affectations pour les vignes suites
+        """ Deviner les affectations pour les vignes suites
         """
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
         if not os.path.isfile( source):
@@ -799,7 +799,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         available_parcelles=dfAffectation['nom'].sort_values().unique()
         print("= Info = Nombre de parcelles uniques {}.".format( len( available_parcelles)))
-        max_sous_parcelle=0
+        nb_double=0
         derniere_liste_a_ecrire=[]
         for pos, une_parcelle in enumerate( available_parcelles):
             # Trappe pour debug
@@ -809,7 +809,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             #    continue
             df_une_parcelle=dfAffectation[ (dfAffectation['nom'] == une_parcelle)]
             if len(df_une_parcelle) > 1:
-                monPrint( "{} DOUBLE entité pour la parcelle {} qui est ignorée".format(E_WARNING, une_parcelle))
+                nb_double=nb_double+1
+                monPrint( "{} {}ème DOUBLE entité pour la parcelle {} dans Mes Parcelles qui doit être corrigé".format(E_WARNING, nb_double, une_parcelle))
                 continue
             # TODO vérifier si df_une_parcelle n'a qu'une vigne
             #df[['Column1', 'Column2']].values.tolist()
@@ -858,10 +859,34 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if une_parcelle[-1] not in ["A", "B", "C", "D", "E"]:
                 derniere_liste_a_ecrire = [une_parcelle, affectation_coopviti, cepage, PG, str(orientation)]
         dfAffectation.to_file( cible, driver="GeoJSON")
+		# TODO kml
         affectation_suite = QgsVectorLayer(cible, \
-              		MonParcellaire_SUI, "ogr")
+              		MonParcellaire_SUI.upper(), "ogr")
         monProjet.addMapLayer(affectation_suite, False)
         nouveauGroupeSUITE.addLayer( affectation_suite)
+
+    def consoliderTerroir( self, source_gpkg="IFV_sols_terroir"+EXT_gpkg, couche_gpkg="sols terroirs", \
+				intersection = MonParcellaire_AFF+EXT_geojson, \
+				cible ="CONSOLIDE"+SEP_U+MonParcellaire_PAR+SEP_U+MonParcellaire_TER+EXT_geojson):
+        """ La sauvergarde du shp en gpkg n'est pas automatisé # TODO: trouver le bon encodage
+           Créer une intersection de "sols terroirs" par "affectatioins"
+        
+        
+        """
+        REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
+        REPERTOIRE_COMMUN= os.path.dirname( REPERTOIRE_GPKG)
+        REPERTOIRE_TERROIR=os.path.join(REPERTOIRE_COMMUN, NOM_REPERTOIRE_TERROIR)
+
+        if not os.path.isfile( intersection):
+            intersection=os.path.join(REPERTOIRE_GPKG,intersection)
+        if not os.path.isfile( source_gpkg):
+            source_gpkg=os.path.join(REPERTOIRE_TERROIR,source_gpkg)
+        # TODO nommage et sauvegarde terroir
+
+        if not os.path.isfile( cible):
+            cible=os.path.join(REPERTOIRE_GPKG,cible)
+        monProjet, nouveauGroupeTERROIR = self.ouvrirProjetETGroupe( MonParcellaire_TER)
+        monPrint( "Consolider Terroirs à la parcelle... Version {} module {}".format(APPLI_VERSION, __name__))
 
 
     def traiterCentipedePos( self):
