@@ -120,7 +120,7 @@ MesParcelles_GJ="Vignes dans geojson"
 MonParcellaireFiltre_GJ="Vignes filtrées dans geojson" 
 MonParcellaire_attr_MP="Vignes attribuées pour Mon Parcellaire" 
 MonParcellaire_JOI="jointure" # EN join between
-MonParcellaire_SUI=MonParcellaire_PAR+" suites"
+MonParcellaire_SUI=MonParcellaire_PAR+" suites".upper()
 MonParcellaire_AFF_SANS_SUITE="affectations_sans_suite".upper()
 # Terroir 
 NOM_REPERTOIRE_TERROIR="SOLS_TERROIRS"

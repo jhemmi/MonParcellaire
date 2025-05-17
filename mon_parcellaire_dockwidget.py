@@ -97,6 +97,18 @@ def traitementGarderChamps(source, sortie, \
         erreurTraitement(algo_name)
     return result
 
+def traitementCalculerSuperficie(source, sortie):
+    algo_name, algo_simplifie ="native:fieldcalculator",  "Calculer superficie..."
+    result = processing.run(algo_name, 
+        {'INPUT': source , 'OUTPUT': sortie, \
+	 'FIELD_NAME':'superficie','FIELD_TYPE':1,'FIELD_LENGTH':10,'FIELD_PRECISION':0,\
+		 'FORMULA':'to_int( $area)'})
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreurTraitement(algo_name)
+    return result
+
+
 def traitementDupliquer_nom_parcelle(source, sortie):
     algo_name, algo_simplifie ="native:fieldcalculator",  "Dupliquer nom_parcelles..."
     result = processing.run(algo_name, 
@@ -783,8 +795,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         else:
             monPrint( self.tr("Fin : vérification répertoire et sauvegarde GPKGs"), T_OK)
 
-    def affecterVignesSuites( self, source=MonParcellaire_AFF_SANS_SUITE+EXT_geojson, cible = MonParcellaire_AFF+EXT_geojson):
-        """ Deviner les affectations pour les vignes suites
+    def affecterVignesSuites( self, source=MonParcellaire_AFF_SANS_SUITE+EXT_geojson, cible = MonParcellaire_SUI+ SEP_U +'SANS_superficie'+EXT_geojson):
+        """ Deviner les affectations pour les vignes suites (mais aussi cepage et orientation
         """
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
         if not os.path.isfile( source):
@@ -812,11 +824,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 nb_double=nb_double+1
                 monPrint( "{} {}ème DOUBLE entité pour la parcelle {} dans Mes Parcelles qui doit être corrigé".format(E_WARNING, nb_double, une_parcelle))
                 continue
-            # TODO vérifier si df_une_parcelle n'a qu'une vigne
-            #df[['Column1', 'Column2']].values.tolist()
             affectation_coopviti= df_une_parcelle['Code validation'].values[0]
             cepage= df_une_parcelle['Cépage'].values[0]
-            PG= df_une_parcelle['Porte Greffe'].values[0]
             pre_orientation= df_une_parcelle['orientatio'].values[0]
             try:
                 orientation=int( pre_orientation)
@@ -830,23 +839,20 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                         #print("== Parcelle suite {} est rapprochée de {}".format( une_parcelle, derniere_liste_a_ecrire[0] ))
                         affectation_coopviti= derniere_liste_a_ecrire[1]
                         cepage=derniere_liste_a_ecrire[2]
-                        PG=derniere_liste_a_ecrire[3]
                         if orientation==9999:
-                            orientation=int( derniere_liste_a_ecrire[4])
+                            orientation=int( derniere_liste_a_ecrire[3])
 							
                     else:
                         print("{} == Parcelle suite {} ne peut pas être rapprochée de la précedente parcelle {}".\
 							  format( E_WARNING, une_parcelle, derniere_liste_a_ecrire[0] ))
                         affectation_coopviti="Inconnue"
                         cepage="Inconnu"
-                        PG="Inconnu"
                         if orientation==9999:
                             orientation=0
                 else:
                     print("{} BASES INCONSISTANTES == Parcelle {} (non A B C OU D) sans affectation cepage et orientation".format( E_WARNING, une_parcelle ))
                     affectation_coopviti="Inconnue"
                     cepage="Inconnu"
-                    PG="Inconnu"
                     if orientation==9999:
                         orientation=0
                 # Ecrire Affectation 
@@ -854,13 +860,15 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 				#	 format( une_parcelle, affectation_coopviti, cepage,orientation))
                 dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Code validation"] = affectation_coopviti
                 dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Cépage"] = cepage
-                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Porte greffe"] = PG
                 dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "orientatio"] = orientation
             if une_parcelle[-1] not in ["A", "B", "C", "D", "E"]:
-                derniere_liste_a_ecrire = [une_parcelle, affectation_coopviti, cepage, PG, str(orientation)]
+                derniere_liste_a_ecrire = [une_parcelle, affectation_coopviti, cepage, str(orientation)]
         dfAffectation.to_file( cible, driver="GeoJSON")
 		# TODO kml
-        affectation_suite = QgsVectorLayer(cible, \
+		# Calculer superficie
+        cible_finale = os.path.join(REPERTOIRE_GPKG, MonParcellaire_AFF+EXT_geojson)
+        traitementCalculerSuperficie( cible, cible_finale)
+        affectation_suite = QgsVectorLayer(cible_finale, \
               		MonParcellaire_SUI.upper(), "ogr")
         monProjet.addMapLayer(affectation_suite, False)
         nouveauGroupeSUITE.addLayer( affectation_suite)
