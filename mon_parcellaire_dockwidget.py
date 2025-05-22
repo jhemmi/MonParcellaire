@@ -97,17 +97,38 @@ def traitementGarderChamps(source, sortie, \
         erreurTraitement(algo_name)
     return result
 
-def traitementCalculerSuperficie(source, sortie):
+def traitementCalculerSuperficie(source, sortie, champ_superficie='superficie'):
     algo_name, algo_simplifie ="native:fieldcalculator",  "Calculer superficie..."
+    if (champ_superficie == 'surface_ut_dans_parcelle'):
+        CHEMIN=os.path.dirname( sortie)
+        CIBLE=os.path.basename( sortie)
+        la_sortie = os.path.join(CHEMIN, 'TMP_'+CIBLE)
+    else:
+        la_sortie = sortie
     result = processing.run(algo_name, 
-        {'INPUT': source , 'OUTPUT': sortie, \
-	 'FIELD_NAME':'superficie','FIELD_TYPE':1,'FIELD_LENGTH':10,'FIELD_PRECISION':0,\
-		 'FORMULA':'to_int( $area)'})
+        {'INPUT': source , 'OUTPUT': la_sortie, \
+	 	'FIELD_NAME':champ_superficie,'FIELD_TYPE':1,'FIELD_LENGTH':10,'FIELD_PRECISION':0,\
+		'FORMULA':'to_int( $area)'})
+    if (champ_superficie == 'surface_ut_dans_parcelle'):
+        result = processing.run(algo_name, 
+         {'INPUT': la_sortie , 'OUTPUT': sortie, \
+			 'FIELD_NAME':'pourcent_ut_dans_parcelle​','FIELD_TYPE':1,'FIELD_LENGTH':10,'FIELD_PRECISION':0,\
+			 'FORMULA':'"surface_ut_dans_parcelle"/"superficie"*100'})
+
     if result == None:
         monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
         erreurTraitement(algo_name)
     return result
 
+def traitementIntersection(source, intersection, sortie):
+    algo_name, algo_simplifie ="native:intersection",  "Intersecter terroir par parcelles..."
+    result = processing.run(algo_name, 
+        {'INPUT': source , 'OVERLAY': intersection,'OUTPUT': sortie, \
+			'INPUT_FIELDS':[],'OVERLAY_FIELDS':[],'OVERLAY_FIELDS_PREFIX':''})
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreurTraitement(algo_name)
+    return result
 
 def traitementDupliquer_nom_parcelle(source, sortie):
     algo_name, algo_simplifie ="native:fieldcalculator",  "Dupliquer nom_parcelles..."
@@ -171,20 +192,20 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         
         #print( "** Démarrage de MonParcellaire {0}".format(APPLI_VERSION))
         CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHOIX_ORIENTATION, NOM_ORIENTATION, \
-		    CHOIX_SUITE, CHOIX_TERROIR, CHOIX_JOINTURE, \
+		    CHOIX_SUITE, CHOIX_JOINTURE, \
 		    REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
         # Slot boutons 
         self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotTraiterRepertoireGPKGJointure)
         self.Prepare_buttonBox.button( QDialogButtonBox.Save ).pressed.connect(self.ecrireSettings)
         self.TestButton.pressed.connect(self.traiterCentipedePos)
-        self.SuiteButton.pressed.connect(self.affecterVignesSuites)
+        #self.SuiteButton.pressed.connect(self.affecterVignesSuites)
         self.TerroirButton.pressed.connect(self.consoliderTerroir)
         # Slot toolbouton 
         self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)
         self.Jointure_checkBox.stateChanged.connect( self.slotBasculeJointure)
         self.Mes_Parcelles_toolButton.pressed.connect( self.slotLectureMesParcelles)
-        self.Orientation_toolButton.pressed.connect( self.slotLectureOrientation)
+        #self.Orientation_toolButton.pressed.connect( self.slotLectureOrientation)
         self.Mes_Parcelles_checkBox.stateChanged.connect( self.slotBasculeMesParcelles)
 
         # Cas des combo
@@ -241,9 +262,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         s.setValue("MonParcellaire/Orientation", choixOrientation)
         choixSuite= "YES" if self.Suite_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/VigneSuite", choixSuite)
-        s.setValue("MonParcellaire/nomOrientation", self.Orientation_lineEdit.text())
-        choixTerroir= "YES" if self.Terroir_checkBox.isChecked() else "NO"
-        s.setValue("MonParcellaire/Terroir", choixTerroir)
+        s.setValue("MonParcellaire/nomOrientation",  "modele parcelles orientées")
         choixJointure = "YES" if self.Jointure_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/PresenceJointure", choixJointure)
         s.setValue("MonParcellaire/AttributJointure", self.AttributJointure_comboBox.currentText())
@@ -270,10 +289,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.Mes_Parcelles_lineEdit.setText( NOM_CSV_MES_PARCELLES )
         CHOIX_ORIENTATION = s.value("MonParcellaire/Orientation", "NO")
         self.Orientation_checkBox.setChecked( Qt.Checked) if CHOIX_ORIENTATION == "YES" else self.Orientation_checkBox.setChecked( Qt.Unchecked)
-        NOM_ORIENTATION = s.value("MonParcellaire/nomOrientation", "MODELE_parcelles_orientées.geojson")
+        NOM_ORIENTATION = s.value("MonParcellaire/nomOrientation", "modele parcelles orientées")
         self.Orientation_lineEdit.setText( NOM_ORIENTATION )
-        CHOIX_TERROIR = s.value("MonParcellaire/Terroir", "NO")
-        self.Terroir_checkBox.setChecked( Qt.Checked) if CHOIX_TERROIR == "YES" else self.Terroir_checkBox.setChecked( Qt.Unchecked)
         CHOIX_SUITE = s.value("MonParcellaire/VigneSuite", "NO")
         self.Suite_checkBox.setChecked( Qt.Checked) if CHOIX_SUITE == "YES" else self.Suite_checkBox.setChecked( Qt.Unchecked)
         CHOIX_JOINTURE = s.value("MonParcellaire/PresenceJointure", "NO")
@@ -291,7 +308,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         LISTE_ATTRIBUTS_A_JOINDRE=PreparelisteAttributAJoindre.split( SEP_CONFIG)
         #monPrint( "Settings lus jointure {} pour attributs {}".format( CHOIX_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE))
         return CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, \
-           CHOIX_ORIENTATION, NOM_ORIENTATION, CHOIX_SUITE, CHOIX_TERROIR, CHOIX_JOINTURE, \
+           CHOIX_ORIENTATION, NOM_ORIENTATION, CHOIX_SUITE, CHOIX_JOINTURE, \
            REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE
 
     def sauvergardeSelonFrequence(self, repertoireASauver, nomCourt, frequence, suiteSauvegarde, presenceAttendue=False, nomTable="xxx"):
@@ -330,7 +347,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.Mes_Parcelles_toolButton.setEnabled( True)
             self.Orientation_checkBox.setEnabled( True)
             self.Orientation_lineEdit.setEnabled( True)
-            self.Orientation_toolButton.setEnabled( True)
             self.Suite_checkBox.setEnabled( True)
             self.label_chemin_orientation.setEnabled(True)
             self.label_chemin_Mes_Parcelles.setEnabled(True)
@@ -339,7 +355,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.Mes_Parcelles_toolButton.setEnabled( False)
             self.Orientation_checkBox.setEnabled( False)
             self.Orientation_lineEdit.setEnabled( False)
-            self.Orientation_toolButton.setEnabled( False)
             self.Suite_checkBox.setEnabled( False)
             self.label_chemin_orientation.setEnabled(False)
             self.label_chemin_Mes_Parcelles.setEnabled(False)
@@ -350,7 +365,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """
         CHEMIN_JOINTURE=None
         if self.Jointure_checkBox.isChecked():
-            _, _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, \
+            _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
             CHEMIN_JOINTURE = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
         if CHEMIN_JOINTURE != None and self.Jointure_checkBox.isChecked():
@@ -692,7 +707,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               selection_input=QgsProcessingFeatureSourceDefinition( nom_toutes_parcelles, \
 				selectedFeaturesOnly=True, \
 				featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
-              nom_vignes_tous_attributs = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_TOUTS_ATTRIBUTS"+EXT_geojson)
+              nom_vignes_tous_attributs = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_TOUS_ATTRIBUTS"+EXT_geojson)
               traitementSauverEcraser( selection_input, nom_vignes_tous_attributs)
               toutes_attr_vignes = QgsVectorLayer( nom_vignes_tous_attributs, \
               		MonParcellaireFiltre_GJ, "ogr")
@@ -719,11 +734,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               # Si demandé, retrouver les orientations
               CHOIX_ORIENTATION = "YES" if self.Orientation_checkBox.isChecked() else "NO"
               if CHOIX_ORIENTATION == "YES":
-                nom_vignes_orientees_modele = os.path.join( REPERTOIRE_GPKG, \
-					MonParcellaire_ORIENTE_MODELE+EXT_geojson)
+                _, _, nom_vignes_orientees_modele = nommagesGPKG( REPERTOIRE_GPKG, MonParcellaire_ORIENTE_MODELE_DANS_GPKG)
+                #nom_vignes_orientees_modele = os.path.join( REPERTOIRE_GPKG, MonParcellaire_ORIENTE_MODELE+EXT_geojson)
                 nom_vignes_orientees = os.path.join( REPERTOIRE_GPKG, \
 					MonParcellaire_ORIENTE+EXT_geojson)
-                # TODO : index spatial avant jointure
                 traitementJointureOrientation( nom_vignes, \
 					nom_vignes_orientees_modele, nom_vignes_orientees)
                 vignes_orientees = QgsVectorLayer(nom_vignes_orientees, \
@@ -786,7 +800,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 _, _ = self.sauvergardeSelonFrequence( REPERTOIRE_JOINTURE, nomCourtJointure, \
                     LISTE_FREQUENCE_SAUVEGARDE[0], MonParcellaire_SAV,  presenceObligatoire)
                 if CHOIX_SUITE == "YES":
-                    monPrint( "TODO les vignes suites")
                     self.affecterVignesSuites( MonParcellaire_AFF_SANS_SUITE+EXT_geojson)
                 monPrint( self.tr("Fin : vérification répertoire, sauvegarde GPKGs et jointure {0} pour des attributs {1}".\
                     format(nomCourtJointure, attributsAJoindreOrdonne)), T_OK)
@@ -864,38 +877,45 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if une_parcelle[-1] not in ["A", "B", "C", "D", "E"]:
                 derniere_liste_a_ecrire = [une_parcelle, affectation_coopviti, cepage, str(orientation)]
         dfAffectation.to_file( cible, driver="GeoJSON")
-		# TODO kml
-		# Calculer superficie
+		# Calculer superficie des vignes
         cible_finale = os.path.join(REPERTOIRE_GPKG, MonParcellaire_AFF+EXT_geojson)
         traitementCalculerSuperficie( cible, cible_finale)
+		# TODO kml en GPS et GPKG en 2154
+        cible_kml = os.path.join(REPERTOIRE_GPKG, MonParcellaire_AFF+EXT_kml)
+        CHEMIN_VECTEUR_GPKG = os.path.join(REPERTOIRE_GPKG, MonParcellaire_GPKG)
+        traitementSauverGPKGEcraserCouche( cible_finale, CHEMIN_VECTEUR_GPKG, MonParcellaire_AFF)
         affectation_suite = QgsVectorLayer(cible_finale, \
               		MonParcellaire_SUI.upper(), "ogr")
         monProjet.addMapLayer(affectation_suite, False)
         nouveauGroupeSUITE.addLayer( affectation_suite)
 
-    def consoliderTerroir( self, source_gpkg="IFV_sols_terroir"+EXT_gpkg, couche_gpkg="sols terroirs", \
-				intersection = MonParcellaire_AFF+EXT_geojson, \
+    def consoliderTerroir( self, terroir_gpkg="IFV_sols_terroir"+EXT_gpkg, couche_terroir_gpkg="sols terroirs", \
+				affectation_gpkg = MonParcellaire_GPKG, couche_affectation_gpkg = MonParcellaire_AFF, \
 				cible ="CONSOLIDE"+SEP_U+MonParcellaire_PAR+SEP_U+MonParcellaire_TER+EXT_geojson):
-        """ La sauvergarde du shp en gpkg n'est pas automatisé # TODO: trouver le bon encodage
+        """ La sauvergarde du shp en gpkg n'est pas automatisé 
            Créer une intersection de "sols terroirs" par "affectatioins"
-        
-        
+           Rechercher surface des terroir dans parcelle et leur % pour classer et pondérer les informtions terroirs
+           Lancer la consolidation finale
         """
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
         REPERTOIRE_COMMUN= os.path.dirname( REPERTOIRE_GPKG)
         REPERTOIRE_TERROIR=os.path.join(REPERTOIRE_COMMUN, NOM_REPERTOIRE_TERROIR)
+		# TODO: repertoire CONSOLIDATION ?
+        # Nommage et sauvegarde terroir
+        _, _, intersection = nommagesGPKG( REPERTOIRE_GPKG, couche_affectation_gpkg, affectation_gpkg, True)
+        _, _, terroirs = nommagesGPKG( REPERTOIRE_TERROIR, couche_terroir_gpkg, terroir_gpkg, True)
+		# TODO Assert Terroir existe pour vérouiller seul cas FRONTON et exception explicite
+		# TODO: verifier le bon encodage UTF-8
 
-        if not os.path.isfile( intersection):
-            intersection=os.path.join(REPERTOIRE_GPKG,intersection)
-        if not os.path.isfile( source_gpkg):
-            source_gpkg=os.path.join(REPERTOIRE_TERROIR,source_gpkg)
-        # TODO nommage et sauvegarde terroir
-
-        if not os.path.isfile( cible):
-            cible=os.path.join(REPERTOIRE_GPKG,cible)
+		if not os.path.isfile( cible):
+            cible_complet=os.path.join(REPERTOIRE_TERROIR,cible)
         monProjet, nouveauGroupeTERROIR = self.ouvrirProjetETGroupe( MonParcellaire_TER)
-        monPrint( "Consolider Terroirs à la parcelle... Version {} module {}".format(APPLI_VERSION, __name__))
+        traitementIntersection(terroirs, intersection, cible_complet)
 
+        # Champs superfie de chaque UT dans chaque parcelle et % des morceaux 
+        consolide_surface=os.path.join(REPERTOIRE_TERROIR,"SURFACE_"+cible)
+        traitementCalculerSuperficie( cible_complet, consolide_surface, 'surface_ut_dans_parcelle')
+        #TODO: Export CSV dans terroir de consolide_surface
 
     def traiterCentipedePos( self):
         """ Traiter les traces Centipede pos

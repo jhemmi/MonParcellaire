@@ -95,6 +95,7 @@ EXTENSIONS_CONNUES=[EXT_txt, EXT_csv, EXT_tsv]
 EXT_json=".json"
 EXT_qml=".qml"
 EXT_xml=".xml"
+EXT_kml=".xml"
 EXT_geojson=".geojson"
 #DRIVER_GEOJSON="GeoJSON" # Ecrire un geojson depuis geopanda
 EXT_pos=".pos"
@@ -110,7 +111,9 @@ MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
 MonParcellaire_AFF="affectations"
 MonParcellaire_ORIENTE=MonParcellaire_PAR+SEP_U+"orientées"
-MonParcellaire_ORIENTE_MODELE="MODELE"+SEP_U+MonParcellaire_ORIENTE
+#MonParcellaire_ORIENTE_MODELE="MODELE"+SEP_U+MonParcellaire_ORIENTE
+MonParcellaire_ORIENTE_MODELE_DANS_GPKG="modele " + MonParcellaire_PAR + " orientees"
+
 MonParcellaireNomAttribut='nom'
 # Nommage dans Mes Parcelles en dur
 
@@ -383,13 +386,19 @@ try:
     VERSION_PANDAS=pd.__version__
     #if MonParcellaire_TRACE=="YES": 
     print("Version pandas : {0}. Option sans warning".format( VERSION_PANDAS))
-    pd.set_option('mode.chained_assignment',None)
-    from pandas.io.json import json_normalize
-    if MonParcellaire_TRACE=="YES": dir(json_normalize)
+except:
+    VERSION_PANDAS=None
+    erreurImportVersion("pandas") 
+
+try:
+    pd.options.mode.chained_assignment = None
+    # OLD pd.set_option('mode.chained_assignment',None)
+    #from pandas.io.json import json_normalize
+    #if MonParcellaire_TRACE=="YES": dir(json_normalize)
 
 except:
     VERSION_PANDAS=None
-    erreurImportVersion("pandas")        
+    erreurImportVersion("pandas try 2")        
 try:
     import json
     if MonParcellaire_TRACE=="YES": dir( json)

@@ -31,7 +31,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <property name="movable">
          <bool>true</bool>
@@ -360,34 +360,6 @@
          <attribute name="title">
           <string>Synchronisations</string>
          </attribute>
-         <widget class="QToolButton" name="Orientation_toolButton">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>170</y>
-            <width>26</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="focusPolicy">
-           <enum>Qt::NoFocus</enum>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-         </widget>
          <widget class="QWidget" name="verticalLayoutWidget_2">
           <property name="geometry">
            <rect>
@@ -445,36 +417,12 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="SuiteButton">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Affecter vignes suites</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="Terroir_checkBox">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Consolider les informations des terroirs</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QPushButton" name="TerroirButton">
              <property name="enabled">
               <bool>true</bool>
              </property>
              <property name="text">
-              <string>Consolider les informations des terroirs à la parcelle</string>
+              <string>Consolider les informations des terroirs Fronton à la parcelle</string>
              </property>
             </widget>
            </item>
@@ -612,7 +560,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Nom de vos orientations valides</string>
+           <string>Nom de la couche de vos orientations valides</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -623,7 +571,7 @@
            <rect>
             <x>50</x>
             <y>170</y>
-            <width>300</width>
+            <width>200</width>
             <height>20</height>
            </rect>
           </property>
@@ -658,7 +606,7 @@
            <string notr="true"/>
           </property>
           <property name="text">
-           <string>dernières_orientations_validées.geojson</string>
+           <string>modele parcelles orientees</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
