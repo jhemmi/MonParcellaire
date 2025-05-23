@@ -100,7 +100,7 @@ def traitementGarderChamps(source, sortie, \
 def traitementCalculerAffectationSimplifiee(source, sortie):
     algo_name, algo_simplifie ="native:fieldcalculator",  "Calculer affectation simplifiée..."
     result = processing.run(algo_name, 
-        {'INPUT': source , 'OUTPUT': la_sortie, \
+        {'INPUT': source , 'OUTPUT': sortie, \
 	 	 'FIELD_NAME':'Affectation simplifiee','FIELD_TYPE':2,'FIELD_LENGTH':5,'FIELD_PRECISION':0,
 		 'FORMULA':' left(  "Code validation" ,3)'})
     if result == None:
@@ -930,11 +930,12 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         consolide_affectation=os.path.join( REPERTOIRE_TERROIR, "AFFECTATION_"+cible)
         traitementCalculerAffectationSimplifiee( consolide_surface, consolide_affectation)
 		# Afficher consolidation 
-        consolide_terroir = QgsVectorLayer(consolide_surface, \
+        consolide_terroir = QgsVectorLayer(consolide_affectation, \
               		MonParcellaire_TER.upper(), "ogr")
         monProjet.addMapLayer(consolide_terroir, False)
         nouveauGroupeTERROIR.addLayer( consolide_terroir)
         #TODO: Lire geojson dans Pandas (pas d'export CSV dans DEV/CONSOLIDATION_TERROIR
+		#JHJHJH intégrer le code consolidation
 		#cible_csv=os.path.join(REPERTOIRE_TERROIR,"UTs_par_parcelles.csv")
 
     def traiterCentipedePos( self):
