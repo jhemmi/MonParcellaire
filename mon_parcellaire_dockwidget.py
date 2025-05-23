@@ -97,6 +97,17 @@ def traitementGarderChamps(source, sortie, \
         erreurTraitement(algo_name)
     return result
 
+def traitementCalculerAffectationSimplifiee(source, sortie):
+    algo_name, algo_simplifie ="native:fieldcalculator",  "Calculer affectation simplifiée..."
+    result = processing.run(algo_name, 
+        {'INPUT': source , 'OUTPUT': la_sortie, \
+	 	 'FIELD_NAME':'Affectation simplifiee','FIELD_TYPE':2,'FIELD_LENGTH':5,'FIELD_PRECISION':0,
+		 'FORMULA':' left(  "Code validation" ,3)'})
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreurTraitement(algo_name)
+    return result
+
 def traitementCalculerSuperficie(source, sortie, champ_superficie='superficie'):
     algo_name, algo_simplifie ="native:fieldcalculator",  "Calculer superficie..."
     if (champ_superficie == 'surface_ut_dans_parcelle'):
@@ -681,7 +692,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         
     def extraireVignesMesParcelles(self):
         """ Ouvrir CSV Mes Parcelles
-        Renommer en nom le champ nom_parcelle
+        Dupliquer dans nom le champ nom_parcelle
         Selectionnées les vignes
         """
 
@@ -907,15 +918,24 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 		# TODO Assert Terroir existe pour vérouiller seul cas FRONTON et exception explicite
 		# TODO: verifier le bon encodage UTF-8
 
-		if not os.path.isfile( cible):
-            cible_complet=os.path.join(REPERTOIRE_TERROIR,cible)
+        if not os.path.isfile( cible):
+            cible_complet=os.path.join( REPERTOIRE_TERROIR, cible)
         monProjet, nouveauGroupeTERROIR = self.ouvrirProjetETGroupe( MonParcellaire_TER)
         traitementIntersection(terroirs, intersection, cible_complet)
 
         # Champs superfie de chaque UT dans chaque parcelle et % des morceaux 
-        consolide_surface=os.path.join(REPERTOIRE_TERROIR,"SURFACE_"+cible)
+        consolide_surface=os.path.join( REPERTOIRE_TERROIR, "SURFACE_"+cible)
         traitementCalculerSuperficie( cible_complet, consolide_surface, 'surface_ut_dans_parcelle')
-        #TODO: Export CSV dans terroir de consolide_surface
+		# Ajout du champ affectation simplifiée
+        consolide_affectation=os.path.join( REPERTOIRE_TERROIR, "AFFECTATION_"+cible)
+        traitementCalculerAffectationSimplifiee( consolide_surface, consolide_affectation)
+		# Afficher consolidation 
+        consolide_terroir = QgsVectorLayer(consolide_surface, \
+              		MonParcellaire_TER.upper(), "ogr")
+        monProjet.addMapLayer(consolide_terroir, False)
+        nouveauGroupeTERROIR.addLayer( consolide_terroir)
+        #TODO: Lire geojson dans Pandas (pas d'export CSV dans DEV/CONSOLIDATION_TERROIR
+		#cible_csv=os.path.join(REPERTOIRE_TERROIR,"UTs_par_parcelles.csv")
 
     def traiterCentipedePos( self):
         """ Traiter les traces Centipede pos

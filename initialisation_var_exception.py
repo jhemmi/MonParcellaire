@@ -45,7 +45,7 @@ T_WAR="Attention"
 T_BAR="BAR"
 T_LOG="LOG"
 
-# Unicode
+# Unicode / logo / imagettes
 U_TOM           ="𝝉"
 E_ZIP           ="🗜️"
 E_REP           ="📂"
@@ -113,9 +113,8 @@ MonParcellaire_AFF="affectations"
 MonParcellaire_ORIENTE=MonParcellaire_PAR+SEP_U+"orientées"
 #MonParcellaire_ORIENTE_MODELE="MODELE"+SEP_U+MonParcellaire_ORIENTE
 MonParcellaire_ORIENTE_MODELE_DANS_GPKG="modele " + MonParcellaire_PAR + " orientees"
-
 MonParcellaireNomAttribut='nom'
-# Nommage dans Mes Parcelles en dur
+# Nommage dans Mes Parcelles en dur "nom_parcelle"
 
 # Autres noms
 MonParcellaire_MP="Import de Mes Parcelles" 
