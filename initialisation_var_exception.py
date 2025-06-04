@@ -31,6 +31,7 @@ APPLI_VERSION="V3.34"
 APPLI_NOM_VERSION=APPLI_NOM + " (" +  APPLI_VERSION + ")"
 # Suivi des versions dans metadata.txt
 PARTIE_CENTIPEDE="NO"   # "YES" utilise pyproj et geopandas
+PARTIE_TERROIR="YES"   # "YES" utilise geopandas
 # EPSG pour pyProj ou QGIS
 ID_SOURCE_CRS      =4326
 SUFFIXE_SOURCE_CRS ="_WGS84"
@@ -403,9 +404,9 @@ try:
     if MonParcellaire_TRACE=="YES": dir( json)
 except:
     erreurImport("json")
-if PARTIE_CENTIPEDE == "YES":
+if PARTIE_CENTIPEDE == "YES" or PARTIE_TERROIR == "YES":
     try:
-        #import geopandas as gpd
+        import geopandas as gpd
         from geopandas import datasets, GeoDataFrame, read_file,  __version__ as gpdVersion    
         from geopandas.tools import sjoin
         if MonParcellaire_TRACE=="YES": 

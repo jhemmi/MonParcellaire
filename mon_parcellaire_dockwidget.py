@@ -22,6 +22,7 @@
  ***************************************************************************/
 """
 from .initialisation_var_exception import *
+from .terroir_consolidateur import *
 #from .mes_rangs_centipede import ( chercherDernierPosCentipede, creerTamponsParcelles, filtreQualitesCentipede,  \
 #    projectionPourJointureSpatiale, choisirGeoJSONsInterieurExterieur, creerPointsLignesBrises) 
 
@@ -65,7 +66,7 @@ def traitementSauverEcraser(source, sortie):
     algo_name, algo_simplifie ="native:savefeatures",  "Sauver vignes..."
     result = processing.run(algo_name, 
         {'INPUT': source , 'OUTPUT': sortie,'LAYER_NAME':'', \
-			'DATASOURCE_OPTIONS':'','LAYER_OPTIONS':'','ACTION_ON_EXISTING_FILE':0})
+		 'DATASOURCE_OPTIONS':'', 'LAYER_OPTIONS':'','ACTION_ON_EXISTING_FILE':0})
     if result == None:
         monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
         erreurTraitement(algo_name)
@@ -123,7 +124,7 @@ def traitementCalculerSuperficie(source, sortie, champ_superficie='superficie'):
     if (champ_superficie == 'surface_ut_dans_parcelle'):
         result = processing.run(algo_name, 
          {'INPUT': la_sortie , 'OUTPUT': sortie, \
-			 'FIELD_NAME':'pourcent_ut_dans_parcelle​','FIELD_TYPE':1,'FIELD_LENGTH':10,'FIELD_PRECISION':0,\
+			 'FIELD_NAME':'pourcent_ut_dans_parcelle','FIELD_TYPE':1,'FIELD_LENGTH':10,'FIELD_PRECISION':0,\
 			 'FORMULA':'"surface_ut_dans_parcelle"/"superficie"*100'})
 
     if result == None:
@@ -152,17 +153,40 @@ def traitementDupliquer_nom_parcelle(source, sortie):
         erreurTraitement(algo_name)
     return result
 
+def traitementCalculerOrientation(source, sortie):
+    algo_name, algo_simplifie ="native:fieldcalculator",  "Calculer affectation simplifiée..."
+    result = processing.run(algo_name, 
+        {'INPUT': source , 'OUTPUT': sortie, \
+	 	 'FIELD_NAME':'orientation','FIELD_TYPE':1,'FIELD_LENGTH':5,'FIELD_PRECISION':0,
+		 'FORMULA':' 360-"orientatio"'})
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreurTraitement(algo_name)
+    return result
+
 def traitementJointureOrientation(source, jointure, sortie, libelle=""):
-    """ {'INPUT':'xxx',
-	   'PREDICATE':[1],'JOIN':'zzz','JOIN_FIELDS':['orientatio'],
-		'METHOD':1,'DISCARD_NONMATCHING':False,'PREFIX':'',
-		'OUTPUT':'TEMPORARY_OUTPUT'}) """
     algo_name,  algo_simplifie ="qgis:joinattributesbylocation",  "Jointure par localisation ..."
-    # TODO: ? orientatio ou tion
+    # Pour calcul orientation (360-orientatio)
+    CHEMIN=os.path.dirname( sortie)
+    CIBLE=os.path.basename( sortie)
+    la_sortie = os.path.join(CHEMIN, 'TMP_'+CIBLE)
+
     result = processing.run(algo_name, 
         {'INPUT': source, 'JOIN':jointure, 'PREDICATE':[1],
 		 'JOIN_FIELDS':['orientatio'],'METHOD':1,'DISCARD_NONMATCHING':False,
-		 'PREFIX':'', 'OUTPUT': sortie})
+		 'PREFIX':'', 'OUTPUT': la_sortie})
+    traitementCalculerOrientation( la_sortie, sortie)
+    if result == None:
+        monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
+        erreur_traitement(algo_name)
+    return result
+
+def traitementJointureAttributs(source, jointure, sortie, non_terroir, libelle=""):
+    algo_name,  algo_simplifie ="native:joinattributestable",  "Jointure de  tous les attributs ..."
+    result = processing.run(algo_name, 
+        {'INPUT': source, 'FIELD':'nom', 'INPUT_2':jointure, 'FIELD_2':'nom', 'FIELDS_TO_COPY':[], \
+        'METHOD':1,'DISCARD_NONMATCHING':False,'PREFIX':'', \
+		 'NON_MATCHING':non_terroir,'OUTPUT': sortie})
     if result == None:
         monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
         erreur_traitement(algo_name)
@@ -224,7 +248,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         CHEMIN_JOINTURE = None
         if CHOIX_JOINTURE == "YES":
             # Déterminer le nom de la jointure
-            CHEMIN_JOINTURE = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
+            CHEMIN_JOINTURE = self.rechercherExtensionEncodage( REPERTOIRE_GPKG)
         if CHEMIN_JOINTURE != None:
             nomColonnes, nomColonnesUniques = self.lireAttributsJointure( CHEMIN_JOINTURE)
         else:
@@ -378,7 +402,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         if self.Jointure_checkBox.isChecked():
             _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
-            CHEMIN_JOINTURE = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
+            CHEMIN_JOINTURE = self.rechercherExtensionEncodage( REPERTOIRE_GPKG)
         if CHEMIN_JOINTURE != None and self.Jointure_checkBox.isChecked():
             self.AttributJointure_comboBox.setEnabled( True)
             self.AttributsAJoindre_listWidget.setEnabled( True)
@@ -554,7 +578,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         traitementSauverEcraser( parcelle, affectation_sans_suite)
         return jointureChoisie, attributsAJoindreOrdonne
 
-    def rechercherExtensionJointure( self, repertoireGPKG):
+    def rechercherExtensionEncodage( self, repertoireGPKG, nom_jointure = MonParcellaire_JOI):
         """ Traite les différents cas d'extensions
             Rend la première jointure disponbile et la transforme en UTF-8 si necessaire
             ou None si il n'est existe aucune"""
@@ -562,7 +586,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             erreurRepertoire( repertoireGPKG)
         for extension in EXTENSIONS_CONNUES:
             #monPrint( "Extension {0} pour repertoire {1}".format( extension, repertoireGPKG))
-            CHEMIN_JOINTURE = nommageVecteur( repertoireGPKG, MonParcellaire_JOI, extension,  "Ne doit pas preexister")
+            CHEMIN_JOINTURE = nommageVecteur( repertoireGPKG, nom_jointure, extension,  "Ne doit pas preexister")
             if os.path.isfile( CHEMIN_JOINTURE):
                 break
         if not os.path.isfile( CHEMIN_JOINTURE):
@@ -579,7 +603,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         if detection['encoding'] == 'utf-8':
             CHEMIN_JOINTURE_UTF=CHEMIN_JOINTURE
         else:
-            CHEMIN_JOINTURE_UTF= os.path.join( repertoireGPKG, MonParcellaire_JOI + "_UTF-8" + extension)
+            CHEMIN_JOINTURE_UTF= os.path.join( repertoireGPKG, nom_jointure + "_UTF-8" + extension)
             monFile_UTF=open(CHEMIN_JOINTURE_UTF, "wb")
             monPrint( "Encodage {0} pour cette jointure pris en charge par Mon Parcellaire".format( detection['encoding']), T_OK)
             dataUTF=rawdata.decode(detection['encoding']).encode("utf-8")
@@ -798,7 +822,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         ###############                   
         if CHOIX_JOINTURE == "YES":
             # Déterminer le nom de la jointure (plusieurs extensions)
-            jointureChoisie = self.rechercherExtensionJointure( REPERTOIRE_GPKG)
+            jointureChoisie = self.rechercherExtensionEncodage( REPERTOIRE_GPKG)
             if jointureChoisie != None:
                 if CHOIX_MES_PARCELLES == "YES":
                     cheminCompletImporteMesParcelle = self.extraireVignesMesParcelles()
@@ -858,7 +882,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             #print( "Pour la parcelle {} a pour affectation {} et orientation {}".format(une_parcelle, affectation_coopviti, orientation))
             # Rapprochement des vignes suites (A B C D) avec sa vigne principale
             if affectation_coopviti is None or affectation_coopviti == "nan" or len(affectation_coopviti) <= 0:
-                if une_parcelle[-1] in ["A", "B", "C", "D", "E"]:
+                if une_parcelle[-1] in ["A", "B", "C", "D", "E", "F"]:
                     if une_parcelle[0:-1] == derniere_liste_a_ecrire[0]:
                         #print("== Parcelle suite {} est rapprochée de {}".format( une_parcelle, derniere_liste_a_ecrire[0] ))
                         affectation_coopviti= derniere_liste_a_ecrire[1]
@@ -911,11 +935,11 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
         REPERTOIRE_COMMUN= os.path.dirname( REPERTOIRE_GPKG)
         REPERTOIRE_TERROIR=os.path.join(REPERTOIRE_COMMUN, NOM_REPERTOIRE_TERROIR)
-		# TODO: repertoire CONSOLIDATION ?
+		# TODO: repertoire SYNCHRONISATION dans celui de GPKG ?
         # Nommage et sauvegarde terroir
         _, _, intersection = nommagesGPKG( REPERTOIRE_GPKG, couche_affectation_gpkg, affectation_gpkg, True)
+		# Assert Terroir existe pour vérouiller seul cas FRONTON et exception explicite
         _, _, terroirs = nommagesGPKG( REPERTOIRE_TERROIR, couche_terroir_gpkg, terroir_gpkg, True)
-		# TODO Assert Terroir existe pour vérouiller seul cas FRONTON et exception explicite
 		# TODO: verifier le bon encodage UTF-8
 
         if not os.path.isfile( cible):
@@ -927,22 +951,83 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         consolide_surface=os.path.join( REPERTOIRE_TERROIR, "SURFACE_"+cible)
         traitementCalculerSuperficie( cible_complet, consolide_surface, 'surface_ut_dans_parcelle')
 		# Ajout du champ affectation simplifiée
-        consolide_affectation=os.path.join( REPERTOIRE_TERROIR, "AFFECTATION_"+cible)
-        traitementCalculerAffectationSimplifiee( consolide_surface, consolide_affectation)
+        #consolide_affectation=os.path.join( REPERTOIRE_TERROIR, "AFFECTATION_"+cible)
+        #traitementCalculerAffectationSimplifiee( consolide_surface, consolide_affectation)
 		# Afficher consolidation 
-        consolide_terroir = QgsVectorLayer(consolide_affectation, \
+        consolide_terroir = QgsVectorLayer(consolide_surface, \
               		MonParcellaire_TER.upper(), "ogr")
         monProjet.addMapLayer(consolide_terroir, False)
         nouveauGroupeTERROIR.addLayer( consolide_terroir)
-        #TODO: Lire geojson dans Pandas (pas d'export CSV dans DEV/CONSOLIDATION_TERROIR
-		#JHJHJH intégrer le code consolidation
-		#cible_csv=os.path.join(REPERTOIRE_TERROIR,"UTs_par_parcelles.csv")
+        # PB Lire geojson dans Pandas (export CSV dans DEV/CONSOLIDATION_TERROIR
+        df_T_P = gpd.read_file( consolide_surface)
+
+        #cible_csv=os.path.join(REPERTOIRE_TERROIR,"UTs_par_parcelles.csv")
+        #traitementSauverEcraser( consolide_surface, cible_csv)
+		# Verifier presence et passage eventuel en UTF
+        #csvChoisie = self.rechercherExtensionEncodage( REPERTOIRE_TERROIR,"UTs_par_parcelles")
+        #df_T_P = pd.read_csv( csvChoisie,  sep="{}".format(",")) #, encoding="utf-8")
+        # Creer la synthese
+        CHEMIN_SYNTHESE = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
+        if not os.path.isdir( CHEMIN_SYNTHESE):
+            os.mkdir(CHEMIN_SYNTHESE)
+        NOM_COURT_SYNTHESE = "Parcelle Coopviti Mes Parcelles Orientation" + SEP_U  + 'SUP'+ SEP_U  + str( LE_POURCENTAGE_IGNORE) + EXT_csv
+        CSV_SYNTHESE = os.path.join( CHEMIN_SYNTHESE, NOM_COURT_SYNTHESE)
+        mon_csv_synthese,  writer=initaliser_synthese_csv( CSV_SYNTHESE)
+        #dump_df( df_T_P, cible)
+        #monPrint("Les types des colonnes sont : {}".format( df_T_P.dtypes))
+        available_parcelles=df_T_P['nom'].sort_values().unique()
+        monPrint("= Info = Nombre de parcelles uniques {}.".format( len( available_parcelles)))
+        un_seul=plusieurs=sans_terroir=0
+        max_sous_parcelle=0
+        for pos, une_parcelle in enumerate(available_parcelles):
+        # Trappe pour debug
+        #if une_parcelle != "F0001CO24":
+        #    continue
+            df_une_parcelle=df_T_P[ (df_T_P['nom'] == une_parcelle) & (df_T_P['pourcent_ut_dans_parcelle'] > LE_POURCENTAGE_IGNORE)]
+            info_terroir=df_une_parcelle[['pourcent_ut_dans_parcelle',  'CODE_UT', 'N_REG_SOL',  'NOMENCLATU', 'RUM', 'DRAINAGE', 'VIGUEUR', 'Surface Encepagée',  
+                                  'Code validation', 'Cépage', 'Porte Greffe', 'orientatio']].sort_values(ascending=False, by = 'pourcent_ut_dans_parcelle').values.tolist()
+            if len(df_une_parcelle) > 1:
+        #available_pourcentage_parcelles=df_une_parcelle['pourcent_ut_dans_parcelle'].sort_values(ascending=False)
+                plusieurs=plusieurs+1 
+                if len(df_une_parcelle) > max_sous_parcelle:
+                    max_sous_parcelle = len(df_une_parcelle)
+###        if plusieurs in [ 100, 800]:
+#            print( "Parcelle {} a plusieurs cas de terroirs {} et les pourcentages sont {}".\
+#                format( une_parcelle, len(df_une_parcelle),  list(available_pourcentage_parcelles)))
+#            print( "Parcelle {} et info terroirs {}".\
+#                format( une_parcelle, info_terroir))
+            elif len(df_une_parcelle) == 1:
+                un_seul=un_seul+1
+            else:
+                # Cas bizarre
+                sans_terroir=sans_terroir+1
+                monPrint( "{} Attention TERROIR == Parcelle {} n'a aucune information terroir.".format( U_TERROIR, une_parcelle))
+                continue
+            # Ecrire dans synthese
+            ajoute_une_consolidation( writer, une_parcelle, info_terroir)
+
+        monPrint("== RESUME {} parcelles avec un seul terroir, {} avec plusieurs (max vaut {}) et {} sans information terroir.".\
+                format( un_seul,  plusieurs, max_sous_parcelle, sans_terroir))
+        mon_csv_synthese.close()
+        # Jointure des affectations et de la synthese terroir
+        cible_terroir_court="TERROIR_AFFECTES"+EXT_geojson
+        cible_terroir = os.path.join( REPERTOIRE_TERROIR, cible_terroir_court)
+        sans_terroir = os.path.join( REPERTOIRE_TERROIR, "PARCELLE_SANS_TERROIR"+EXT_geojson)
+        traitementJointureAttributs(intersection, CSV_SYNTHESE,cible_terroir, sans_terroir)
+        consolide_terroir = QgsVectorLayer(cible_terroir, \
+              		cible_terroir_court, "ogr")
+        monProjet.addMapLayer(consolide_terroir, False)
+        nouveauGroupeTERROIR.addLayer( consolide_terroir)
+
+        print("== Fin la consolidation terroir {} est créée, tu as les parcelles sans terroir dans {}.".\
+                format( cible_terroir, sans_terroir), T_OK)
 
     def traiterCentipedePos( self):
         """ Traiter les traces Centipede pos
             Creer des rangs ou interrangs dans le parcellaire
         """
         monPrint( self.tr("BOUTON en chantier : Traitement des traces centipedes ... Version {} module {}".format(APPLI_VERSION, __name__)))
+		
 #        monProjet = QgsProject.instance()
 #        root = monProjet.layerTreeRoot()
 #        REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()

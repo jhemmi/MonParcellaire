@@ -21,7 +21,8 @@ repository=https://github.com/jhemmi/MonParcellaire
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
-  V3.34.0 Options de synchronisation
+  V3.34.13 Consolidation de données de l'étude terroir de Fronton
+  V3.34.4 Synchronisation d'export Mes Parcelles, récupération d'orientation
   V2.1 CENTIPEDE facultatif pour Q3.22 geopandas et pyproj problemes de version à corriger vs Q3.4
   V2.0 GPKG for QGIS HUB Project
   V1.5.0 CENTIPEDE : Identification des rangs (ou interrangs)

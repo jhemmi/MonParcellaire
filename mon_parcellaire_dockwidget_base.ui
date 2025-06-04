@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string notr="true">Mon Parcellaire V3.34.4 -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V3.34.13 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -422,7 +422,7 @@
               <bool>true</bool>
              </property>
              <property name="text">
-              <string>Consolider les informations des terroirs Fronton à la parcelle</string>
+              <string>Consolider les terroirs Fronton à la parcelle</string>
              </property>
             </widget>
            </item>
@@ -571,7 +571,7 @@
            <rect>
             <x>50</x>
             <y>170</y>
-            <width>200</width>
+            <width>241</width>
             <height>20</height>
            </rect>
           </property>

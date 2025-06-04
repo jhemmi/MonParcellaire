@@ -5,28 +5,18 @@
 # 0 parametres trouve le fichier csv des morceaux de terroir par parcelles
 # Consolide l'information pour chaque parcelle dans un .csv
 
-### UTs_par_parcelles.csv en entré provient d'une séquence sous QGIS :
-### - parcelles_25 provient d'un export Mes Parcelles et d'un filtre sur les "Vigne" sauvé dans Mon_Parcellaire/parcelles
-### - une jointure dans Mon Parcellaire (entre ces formes et l'information coopviti [cépage, code cepage, PG, code validation (simplifié en AOP Rouge Rosé & IGP)]
-### - puis jointure spatiale avec les orientations [orientatio]. 
-### - sauver dans SOLS_TERROIRS/IFV_sols_terroir.gpkg ~vinovalie_25
-### - enfin intersection entre UT_Terroir et ce fichier d'affectation vinovalie_25
-### - le resultat est sauvé en ./UTs_par_parcelles.csv [creer les champs surface_ut_dans_parcelle et pourcent_ut_dans_parcelle]
+### UTs_par_parcelles.csv en entrée provient d'une intersection avec MonParcellaire.gpkg/affectations
+### TERROIR_AFFECTATION.geojon contient les informations de Coopviti, l'orientation et de l'étude terroir
+### des consolidations des différentes UTs d'une parcelle :
+##### une RUM_consolidé que l'on apparente à une profondeur probable du sol
+##### le drainage retenu est la plus grande surface 
+##### pour retour vers Mes Parcelles le script crée 'Type de sol' & 'Précision du type de sol' (selon table de correspondance à partir de UT 
+##### de P.Malié (IFV puis CA Région Occitanie)
 
-### le CSV en sortie  
-### contient les informations de Coopviti, l'orientation et de l'étude terroir
-### des consolidations des différentes UTs d'une parcelle permette une synthèse et en particulier une RUM_consolidé que l'on apparente à une profondeur probable du sol
-### pour retour vers Mes Parcelles le script crée 'Type de sol' & 'Précision du type de sol' (selon table de correspondance de P.Malié (IFV CA Région)
-### Pour les parcelles suites A B C qui n'ont pas d'affectation dans Coopviti, on recopie l'affectation, cépage, PG et orientation de la "vigne principale"
-# Ce csv peut ensuite être déposé pour jointure dans Mon Parcellaire avec les formes "Vignes" filtrés de Mes Parcelles
-# il peut aussi servir à importer des informations de terroir ou coopviti dans Mes Parcelles (envoie à CA)
-
-import os
 import sys
 from datetime import datetime # , date #, datetime
+import os
 import csv
-import pandas as pd
-pd.options.mode.chained_assignment = None
 
 # Unicode / logo / imagettes
 U_TERROIR           ="τ"
@@ -54,6 +44,7 @@ SEP_VIRGULE=SEP_V
 SEP_TIRET=SEP_T
 SEP_DATE=SEP_T # ou "/" pour Zoho
 SEP_POINT_VIRGULE=";"
+
 # Extensions
 EXT_csv=".csv"
 EXT_json=".json"
@@ -61,28 +52,6 @@ EXT_txt=".txt"
 
 # Répertoires
 REP_SYN="SYNTHESE"
-
-APPLI_NOM="Terroir-Consolidateur"
-APPLI_VERSION="V3.34 Data licence As this"  
-# Suivi des versions
-# 3.34 Integration à l'extension de Mon Parcellaire (onglet Synchronisation)
-# 0.2 Ajout de la vigueur, du drainage et des code teroirs pour "Mes Parcelles"
-# 0.1 Création
-# Exceptions 
-class TC_exception( BaseException):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
-# Exemple    
-class TC_except_extraction( TC_exception):
-    pass
-
-
-def erreur_assert_TC( NOM_ASSERT, NOM_MODULE, a_text=""):
-    aText="Assert Terroir_consolidation {0} en erreur {1}".format( NOM_ASSERT, a_text)
-    aText=aText + ". Regardes dans le code {0}".format( NOM_MODULE)
-    raise TC_except_extraction( aText)
 
 def initaliser_synthese_csv(a_csv_name):
     """ Ecrit un nouvelle entete et ecrire un nouveau csv """
@@ -292,11 +261,6 @@ def ajoute_une_consolidation( writer, nom_parcelle, info_terroir): #, la_dernier
     liste_a_ecrire =  liste_a_ecrire + ajoute_une_affectation_terroir( nom_parcelle, liste_a_ecrire)
     liste_a_ecrire =  liste_a_ecrire + ajoute_un_terroir_mes_parcelles( nom_parcelle, liste_a_ecrire)
     writer.writerow(liste_a_ecrire)
-#    if nom_parcelle[-1] in ["A", "B", "C", "D", "E"]:
-#        derniere_liste_a_ecrire = la_derniere_liste_a_ecrire
-#    else:
-#        derniere_liste_a_ecrire =  liste_a_ecrire
-#    return derniere_liste_a_ecrire
     return
 
 def dump_df( df, NOM="un_df", lignes=3):
@@ -313,72 +277,3 @@ def dump_df( df, NOM="un_df", lignes=3):
         print("{0} a pour {2} premieres valeurs {1}".format( NOM, df[0:min_lignes], min_lignes), "Info-pied")
     return
 
-###my_print("Arguments : ", "Info-entete")
-#for arg in sys.argv:
-#    print(arg)
-#my_print("Fin des {0} arguments :".format( len(sys.argv)), "Info-pied")
-
-# Début de code 
-CHEMIN_TC=os.path.dirname( sys.argv[0])
-NOM_MODULE=os.path.basename( sys.argv[0])
-print("== Version {} du module {}".format( APPLI_VERSION, NOM_MODULE ))
-
-NOM_COURT_TERROIRS_PARCELLES = "UTs_par_parcelles" + EXT_csv
-CSV_TERROIRS_PARCELLES = os.path.join( CHEMIN_TC, NOM_COURT_TERROIRS_PARCELLES)
-if not os.path.isfile( CSV_TERROIRS_PARCELLES):
-    print("KO ~~ Le CSV des Terroirs par parcelles {0} n'existe pas. Créez une jointure des terroirs par vos parcelles et la sauvez en csv dans le répertoire {1}".\
-            format( CSV_TERROIRS_PARCELLES, CHEMIN_TC))
-    exit()
-    
-CHEMIN_SYNTHESE = os.path.join( CHEMIN_TC, REP_SYN)   
-if not os.path.isdir( CHEMIN_SYNTHESE):
-    os.mkdir(CHEMIN_SYNTHESE)
-NOM_COURT_SYNTHESE = "Parcelle Coopviti Mes Parcelles Orientation" + SEP_U  + 'SUP'+ SEP_U  + str( LE_POURCENTAGE_IGNORE) + EXT_csv
-CSV_SYNTHESE = os.path.join( CHEMIN_SYNTHESE, NOM_COURT_SYNTHESE)
-mon_csv_synthese,  writer=initaliser_synthese_csv( CSV_SYNTHESE)
-
-df_T_P =  pd.read_csv( CSV_TERROIRS_PARCELLES,  sep=SEP_POINT_VIRGULE)
-#df_T_P =  pd.read_csv( CSV_TERROIRS_PARCELLES,  sep=SEP_VIRGULE)
-dump_df( df_T_P, NOM_COURT_TERROIRS_PARCELLES)
-print("Les types des colonnes sont : {}".format( df_T_P.dtypes))
-available_parcelles=df_T_P['nom'].sort_values().unique()
-print("= Info = Nombre de parcelles uniques {}.".format( len( available_parcelles)))
-un_seul=plusieurs=sans_terroir=0
-max_sous_parcelle=0
-#derniere_liste_a_ecrire=[]
-for pos, une_parcelle in enumerate(available_parcelles):
-    # Trappe pour debug
-    #if une_parcelle != "F0001CO24":
-    #    continue
-    df_une_parcelle=df_T_P[ (df_T_P['nom'] == une_parcelle) & (df_T_P['pourcent_ut_dans_parcelle'] > LE_POURCENTAGE_IGNORE)]
-    #df_toutes_UTs_une_parcelle=df_T_P[ df_T_P['nom'] == une_parcelle]
-    #df_une_parcelle=df_toutes_UTs_une_parcelle[ df_toutes_UTs_une_parcelle['pourcent_ut_dans_parcelle'] > LE_POURCENTAGE_IGNORE]
-    #df[['Column1', 'Column2']].values.tolist()
-    info_terroir=df_une_parcelle[['pourcent_ut_dans_parcelle',  'CODE_UT', 'N_REG_SOL',  'NOMENCLATU', 'RUM', 'DRAINAGE', 'VIGUEUR', 'Surface Encepagée',  
-                                  'Code validation', 'Cépage', 'Porte Greffe', 'orientatio']].sort_values(ascending=False, by = 'pourcent_ut_dans_parcelle').values.tolist()
-    if len(df_une_parcelle) > 1:
-        #available_pourcentage_parcelles=df_une_parcelle['pourcent_ut_dans_parcelle'].sort_values(ascending=False)
-        plusieurs=plusieurs+1 
-        if len(df_une_parcelle) > max_sous_parcelle:
-            max_sous_parcelle = len(df_une_parcelle)
-###        if plusieurs in [ 100, 800]:
-#            print( "Parcelle {} a plusieurs cas de terroirs {} et les pourcentages sont {}".\
-#                format( une_parcelle, len(df_une_parcelle),  list(available_pourcentage_parcelles)))
-#            print( "Parcelle {} et info terroirs {}".\
-#                format( une_parcelle, info_terroir))
-    elif len(df_une_parcelle) == 1:
-        un_seul=un_seul+1
-    else:
-        # Cas bizarre
-        sans_terroir=sans_terroir+1
-        print( "{} Attention TERROIR == Parcelle {} n'a aucune information terroir.".format( U_TERROIR, une_parcelle))
-        continue
-    # Ecrire dans synthese
-#    derniere_liste_a_ecrire=ajoute_une_consolidation( writer, une_parcelle, info_terroir, derniere_liste_a_ecrire)
-    ajoute_une_consolidation( writer, une_parcelle, info_terroir)
-
-        
-print("== RESUME {} parcelles avec un seul terroir, {} avec plusieurs (min vaut {}%) et {} sans information terroir.".\
-    format( un_seul,  plusieurs, max_sous_parcelle, sans_terroir))
-print("== Fin la nouvelle Synthèse {} est créée, tu peux faire une jointure avec Mon Parcellaire.".\
-                format( CSV_SYNTHESE))
