@@ -533,6 +533,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """ Selon les tables déja ouverte dans le projet : ouverture si necessaire des différents cas de délimiteurs
             Jointure par QGIS """
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
+        CHEMIN_SYNCHRONISATION = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
+        if not os.path.isdir( CHEMIN_SYNCHRONISATION):
+            os.mkdir(CHEMIN_SYNCHRONISATION)
         # Vérification du projet ouverte
         monProjet, nouveauGroupeJointure = self.ouvrirProjetETGroupe( MonParcellaire_JOI)
         # Ouverture du vecteur parcelle
@@ -574,7 +577,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Récupérer les champs de jointure
         maJointure.setJoinFieldNamesSubset( attributsAJoindreOrdonne)
         parcelle.addJoin( maJointure)
-        affectation_sans_suite = os.path.join( REPERTOIRE_GPKG, MonParcellaire_AFF_SANS_SUITE+EXT_geojson)
+        affectation_sans_suite = os.path.join( CHEMIN_SYNCHRONISATION, MonParcellaire_AFF_SANS_SUITE+EXT_geojson)
         traitementSauverEcraser( parcelle, affectation_sans_suite)
         return jointureChoisie, attributsAJoindreOrdonne
 
@@ -721,6 +724,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """
 
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
+        CHEMIN_SYNCHRONISATION = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
+        if not os.path.isdir( CHEMIN_SYNCHRONISATION):
+            os.mkdir(CHEMIN_SYNCHRONISATION)
         monProjet, nouveauGroupeMP = self.ouvrirProjetETGroupe( MonParcellaire_MP)
         cheminCompletMesParcelle = self.Mes_Parcelles_lineEdit.text()
         uri="file:///"+cheminCompletMesParcelle+"?delimiter={}&wktField={}".format(",","geom")
@@ -733,7 +739,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         # Filtrer les seules vignes
         try:
-              nom_toutes_parcelles = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_TOUTES"+EXT_geojson)
+              nom_toutes_parcelles = os.path.join( CHEMIN_SYNCHRONISATION, "MES_PARCELLES_TOUTES"+EXT_geojson)
               traitementSauverEcraser( uri, nom_toutes_parcelles)
               toutes_parcelles = QgsVectorLayer(nom_toutes_parcelles, \
               		MesParcelles_GJ, "ogr")
@@ -742,7 +748,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               selection_input=QgsProcessingFeatureSourceDefinition( nom_toutes_parcelles, \
 				selectedFeaturesOnly=True, \
 				featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
-              nom_vignes_tous_attributs = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_TOUS_ATTRIBUTS"+EXT_geojson)
+              nom_vignes_tous_attributs = os.path.join( CHEMIN_SYNCHRONISATION, "MES_PARCELLES_TOUS_ATTRIBUTS"+EXT_geojson)
               traitementSauverEcraser( selection_input, nom_vignes_tous_attributs)
               toutes_attr_vignes = QgsVectorLayer( nom_vignes_tous_attributs, \
               		MonParcellaireFiltre_GJ, "ogr")
@@ -753,10 +759,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               erreurTraitement("Sélection vignes")
         try:
               # Garder les colonnes utiles de Mes Parcelles pour Mon Parcellaire
-              nom_vignes_mini_attributs = os.path.join( REPERTOIRE_GPKG, \
+              nom_vignes_mini_attributs = os.path.join( CHEMIN_SYNCHRONISATION, \
 				"MES_PARCELLES_MINI_ATTRIBUTS"+EXT_geojson)
               traitementGarderChamps( nom_vignes_tous_attributs, nom_vignes_mini_attributs)
-              nom_vignes = os.path.join( REPERTOIRE_GPKG, "MES_PARCELLES_VIGNES"+EXT_geojson)
+              nom_vignes = os.path.join( CHEMIN_SYNCHRONISATION, "MES_PARCELLES_VIGNES"+EXT_geojson)
               traitementDupliquer_nom_parcelle( nom_vignes_mini_attributs, nom_vignes)
               toutes_vignes = QgsVectorLayer(nom_vignes, \
               		MonParcellaire_attr_MP, "ogr")
@@ -770,8 +776,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               CHOIX_ORIENTATION = "YES" if self.Orientation_checkBox.isChecked() else "NO"
               if CHOIX_ORIENTATION == "YES":
                 _, _, nom_vignes_orientees_modele = nommagesGPKG( REPERTOIRE_GPKG, MonParcellaire_ORIENTE_MODELE_DANS_GPKG)
-                #nom_vignes_orientees_modele = os.path.join( REPERTOIRE_GPKG, MonParcellaire_ORIENTE_MODELE+EXT_geojson)
-                nom_vignes_orientees = os.path.join( REPERTOIRE_GPKG, \
+                #nom_vignes_orientees_modele = os.path.join( CHEMIN_SYNCHRONISATION, MonParcellaire_ORIENTE_MODELE+EXT_geojson)
+                nom_vignes_orientees = os.path.join( CHEMIN_SYNCHRONISATION, \
 					MonParcellaire_ORIENTE+EXT_geojson)
                 traitementJointureOrientation( nom_vignes, \
 					nom_vignes_orientees_modele, nom_vignes_orientees)
@@ -847,10 +853,13 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """ Deviner les affectations pour les vignes suites (mais aussi cepage et orientation
         """
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
+        CHEMIN_SYNCHRONISATION = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
+        if not os.path.isdir( CHEMIN_SYNCHRONISATION):
+            os.mkdir(CHEMIN_SYNCHRONISATION)
         if not os.path.isfile( source):
-            source=os.path.join(REPERTOIRE_GPKG,source)
+            source=os.path.join(CHEMIN_SYNCHRONISATION,source)
         if not os.path.isfile( cible):
-            cible=os.path.join(REPERTOIRE_GPKG,cible)
+            cible=os.path.join(CHEMIN_SYNCHRONISATION,cible)
         monProjet, nouveauGroupeSUITE = self.ouvrirProjetETGroupe( MonParcellaire_SUI)
         monPrint( "Traitement vignes suites ... Version {} module {}".format(APPLI_VERSION, __name__))
         import geopandas as gpd
@@ -913,7 +922,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 derniere_liste_a_ecrire = [une_parcelle, affectation_coopviti, cepage, str(orientation)]
         dfAffectation.to_file( cible, driver="GeoJSON")
 		# Calculer superficie des vignes
-        cible_finale = os.path.join(REPERTOIRE_GPKG, MonParcellaire_AFF+EXT_geojson)
+        cible_finale = os.path.join(CHEMIN_SYNCHRONISATION, MonParcellaire_AFF+EXT_geojson)
         traitementCalculerSuperficie( cible, cible_finale)
 		# TODO kml en GPS et GPKG en 2154
         cible_kml = os.path.join(REPERTOIRE_GPKG, MonParcellaire_AFF+EXT_kml)
@@ -933,6 +942,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
            Lancer la consolidation finale
         """
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
+        CHEMIN_SYNCHRONISATION = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
+        if not os.path.isdir( CHEMIN_SYNCHRONISATION):
+            os.mkdir(CHEMIN_SYNCHRONISATION)
         REPERTOIRE_COMMUN= os.path.dirname( REPERTOIRE_GPKG)
         REPERTOIRE_TERROIR=os.path.join(REPERTOIRE_COMMUN, NOM_REPERTOIRE_TERROIR)
 		# TODO: repertoire SYNCHRONISATION dans celui de GPKG ?
@@ -967,11 +979,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         #csvChoisie = self.rechercherExtensionEncodage( REPERTOIRE_TERROIR,"UTs_par_parcelles")
         #df_T_P = pd.read_csv( csvChoisie,  sep="{}".format(",")) #, encoding="utf-8")
         # Creer la synthese
-        CHEMIN_SYNTHESE = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
-        if not os.path.isdir( CHEMIN_SYNTHESE):
-            os.mkdir(CHEMIN_SYNTHESE)
         NOM_COURT_SYNTHESE = "Parcelle Coopviti Mes Parcelles Orientation" + SEP_U  + 'SUP'+ SEP_U  + str( LE_POURCENTAGE_IGNORE) + EXT_csv
-        CSV_SYNTHESE = os.path.join( CHEMIN_SYNTHESE, NOM_COURT_SYNTHESE)
+        CSV_SYNTHESE = os.path.join( CHEMIN_SYNCHRONISATION, NOM_COURT_SYNTHESE)
         mon_csv_synthese,  writer=initaliser_synthese_csv( CSV_SYNTHESE)
         #dump_df( df_T_P, cible)
         #monPrint("Les types des colonnes sont : {}".format( df_T_P.dtypes))

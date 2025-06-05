@@ -110,7 +110,10 @@ GPKG_LAYERNAME = SEP_PIPE + "layername="
 # Noms tables gpkg
 MonParcellaire_ROU="routes"
 MonParcellaire_PAR="parcelles"
+MonParcellaire_SYN="SYNCHRONISATION"
 MonParcellaire_AFF="affectations"
+# Répertoires
+REP_SYN="SYNCHRONISATION"
 MonParcellaire_ORIENTE=MonParcellaire_PAR+SEP_U+"orientées"
 #MonParcellaire_ORIENTE_MODELE="MODELE"+SEP_U+MonParcellaire_ORIENTE
 MonParcellaire_ORIENTE_MODELE_DANS_GPKG="modele " + MonParcellaire_PAR + " orientees"

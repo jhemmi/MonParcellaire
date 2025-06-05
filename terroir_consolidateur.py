@@ -50,9 +50,6 @@ EXT_csv=".csv"
 EXT_json=".json"
 EXT_txt=".txt"
 
-# Répertoires
-REP_SYN="SYNTHESE"
-
 def initaliser_synthese_csv(a_csv_name):
     """ Ecrit un nouvelle entete et ecrire un nouveau csv """
     SUFFIXE_CONSOLIDE=SEP_U+"CONSOLIDE"
