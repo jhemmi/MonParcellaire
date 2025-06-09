@@ -75,7 +75,7 @@ def traitementSauverEcraser(source, sortie):
 
 def traitementSauverGPKGEcraserCouche(source, sortie_gpkg, couche):
     """ Sauver en ecrasant fichier"""
-    algo_name, algo_simplifie ="native:savefeatures",  "Sauver vignes..."
+    algo_name, algo_simplifie ="native:savefeatures",  "Sauver gpkg des vignes..."
     result = processing.run(algo_name, 
         {'INPUT': source , 'OUTPUT': sortie_gpkg,'LAYER_NAME':couche, \
 			'DATASOURCE_OPTIONS':'','LAYER_OPTIONS':'','ACTION_ON_EXISTING_FILE':1})
@@ -864,6 +864,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         monPrint( "Traitement vignes suites ... Version {} module {}".format(APPLI_VERSION, __name__))
         import geopandas as gpd
         dfAffectation = gpd.read_file( source)
+        dfAffectation[ "suite"]="Non"
         #dump_df( dfAffectation, "Affect")
 
         available_parcelles=dfAffectation['nom'].sort_values().unique()
@@ -890,6 +891,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 orientation=9999
             #print( "Pour la parcelle {} a pour affectation {} et orientation {}".format(une_parcelle, affectation_coopviti, orientation))
             # Rapprochement des vignes suites (A B C D) avec sa vigne principale
+            suite="Non"
             if affectation_coopviti is None or affectation_coopviti == "nan" or len(affectation_coopviti) <= 0:
                 if une_parcelle[-1] in ["A", "B", "C", "D", "E", "F"]:
                     if une_parcelle[0:-1] == derniere_liste_a_ecrire[0]:
@@ -898,7 +900,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                         cepage=derniere_liste_a_ecrire[2]
                         if orientation==9999:
                             orientation=int( derniere_liste_a_ecrire[3])
-							
+                        suite="Oui"
                     else:
                         print("{} == Parcelle suite {} ne peut pas être rapprochée de la précedente parcelle {}".\
 							  format( E_WARNING, une_parcelle, derniere_liste_a_ecrire[0] ))
@@ -906,10 +908,12 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                         cepage="Inconnu"
                         if orientation==9999:
                             orientation=0
+                        suite="Non rapprochée"
                 else:
                     print("{} BASES INCONSISTANTES == Parcelle {} (non A B C OU D) sans affectation cepage et orientation".format( E_WARNING, une_parcelle ))
                     affectation_coopviti="Inconnue"
                     cepage="Inconnu"
+                    suite="Non affectée"
                     if orientation==9999:
                         orientation=0
                 # Ecrire Affectation 
@@ -918,6 +922,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Code validation"] = affectation_coopviti
                 dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Cépage"] = cepage
                 dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "orientatio"] = orientation
+                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "orientation"] = 360-orientation
+                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "suite"] = suite
             if une_parcelle[-1] not in ["A", "B", "C", "D", "E"]:
                 derniere_liste_a_ecrire = [une_parcelle, affectation_coopviti, cepage, str(orientation)]
         dfAffectation.to_file( cible, driver="GeoJSON")
@@ -925,7 +931,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         cible_finale = os.path.join(CHEMIN_SYNCHRONISATION, MonParcellaire_AFF+EXT_geojson)
         traitementCalculerSuperficie( cible, cible_finale)
 		# TODO kml en GPS et GPKG en 2154
-        cible_kml = os.path.join(REPERTOIRE_GPKG, MonParcellaire_AFF+EXT_kml)
+        cible_kml = os.path.join(CHEMIN_SYNCHRONISATION, MonParcellaire_AFF+EXT_kml)
+        traitementSauverEcraser( cible_finale, cible_kml)
         CHEMIN_VECTEUR_GPKG = os.path.join(REPERTOIRE_GPKG, MonParcellaire_GPKG)
         traitementSauverGPKGEcraserCouche( cible_finale, CHEMIN_VECTEUR_GPKG, MonParcellaire_AFF)
         affectation_suite = QgsVectorLayer(cible_finale, \
@@ -947,7 +954,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             os.mkdir(CHEMIN_SYNCHRONISATION)
         REPERTOIRE_COMMUN= os.path.dirname( REPERTOIRE_GPKG)
         REPERTOIRE_TERROIR=os.path.join(REPERTOIRE_COMMUN, NOM_REPERTOIRE_TERROIR)
-		# TODO: repertoire SYNCHRONISATION dans celui de GPKG ?
         # Nommage et sauvegarde terroir
         _, _, intersection = nommagesGPKG( REPERTOIRE_GPKG, couche_affectation_gpkg, affectation_gpkg, True)
 		# Assert Terroir existe pour vérouiller seul cas FRONTON et exception explicite

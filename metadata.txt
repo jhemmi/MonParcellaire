@@ -6,7 +6,7 @@
 name=MonParcellaire
 qgisMinimumVersion=3.4
 description=Manage your parcels
-version=3.34.0
+version=3.34.13
 author=jhemmi.eu
 email=jean@jhemmi.eu
 
