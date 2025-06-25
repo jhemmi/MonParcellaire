@@ -6,7 +6,7 @@
 name=MonParcellaire
 qgisMinimumVersion=3.4
 description=Manage your parcels
-version=3.34.13
+version=3.40.7
 author=jhemmi.eu
 email=jean@jhemmi.eu
 
@@ -21,6 +21,7 @@ repository=https://github.com/jhemmi/MonParcellaire
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
+  V3.40.7 Corrections mineures pour Windows (quand geojson existe)
   V3.34.13 Consolidation de données de l'étude terroir de Fronton
   V3.34.4 Synchronisation d'export Mes Parcelles, récupération d'orientation
   V2.1 CENTIPEDE facultatif pour Q3.22 geopandas et pyproj problemes de version à corriger vs Q3.4
