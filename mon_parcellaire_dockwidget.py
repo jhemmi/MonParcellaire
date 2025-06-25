@@ -736,14 +736,20 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         nouveauGroupeMP.addLayer( mes_parcelles)
         # Forcer EPSG 2154 QgsCoordinateReferenceSystem constructor deprecated
         mes_parcelles.setCrs(QgsCoordinateReferenceSystem('EPSG:'+str(ID_DESTINATION_CRS)))
-
-        # Filtrer les seules vignes
+        monProjet.addMapLayer(mes_parcelles, False)
+        nouveauGroupeMP.addLayer( mes_parcelles)
+		
+        # Sauver en geojson
         try:
               nom_toutes_parcelles = os.path.join( CHEMIN_SYNCHRONISATION, "MES_PARCELLES_TOUTES"+EXT_geojson)
               traitementSauverEcraser( uri, nom_toutes_parcelles)
               toutes_parcelles = QgsVectorLayer(nom_toutes_parcelles, \
               		MesParcelles_GJ, "ogr")
               monProjet.addMapLayer(toutes_parcelles, False)
+        except:
+              erreurGeojsonOuvert( nom_toutes_parcelles)
+        # Filtrer les seules vignes
+        try:
               traitementSelectionnerVignes( nom_toutes_parcelles)
               selection_input=QgsProcessingFeatureSourceDefinition( nom_toutes_parcelles, \
 				selectedFeaturesOnly=True, \
@@ -755,7 +761,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               monProjet.addMapLayer(toutes_attr_vignes, False)
               #nouveauGroupeMP.addLayer( toutes_attr_vignes)
         except:
-              monPrint( "Vecteur {0} ne convient pas pour la sélection des vignes".format( uri), T_ERR)
+              monPrint( "Vecteur {0} ne convient pas pour la sélection des vignes".format( nom_toutes_parcelles), T_ERR)
               erreurTraitement("Sélection vignes")
         try:
               # Garder les colonnes utiles de Mes Parcelles pour Mon Parcellaire
@@ -770,7 +776,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               nouveauGroupeMP.addLayer( toutes_vignes)
         except:
               monPrint( "Vecteur {0} ne convient pas pour gerer attribut pour Mon Parcellaire la sélection des vignes".format( nom_vignes_tous_attributs), T_ERR)
-              erreurTraitement("Sélection vignes")
+              erreurTraitement("Gestion des attributs de vignes")
         try:
               # Si demandé, retrouver les orientations
               CHOIX_ORIENTATION = "YES" if self.Orientation_checkBox.isChecked() else "NO"
@@ -788,7 +794,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 return nom_vignes_orientees
         except:
               monPrint( "Vecteur {0} ne convient pas pour joindre les orientations".format( nom_vignes_orientees_modele), T_ERR)
-              erreurTraitement("Sélection vignes")
+              erreurTraitement("Orientation vignes")
         return nom_vignes
 
     def slotTraiterRepertoireGPKGJointure( self):

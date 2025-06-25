@@ -214,6 +214,10 @@ def erreurRepertoire( CHEMIN_REP, correction=VerificationReferentielMonParcellai
     aText="Nom de répertoire {0} n'existe pas".format( CHEMIN_REP)
     raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1}".format(aText, correction))
 # FICHIER    
+def erreurGeojsonOuvert( NOM_gson):
+    aText="Vous avez probablement jouer plusieurs fois la synchronisatoin : la couche {0} est déjà existante. Ouvrez un nouveau projet vide (sans sauver le précédent) et relancez une synchronisation".format(NOM_gson)
+    monPrint( "{0}".format(aText),  T_ERR)
+    return
 def erreurGPKG( CHEMIN_REP, NOM_GPKG, correction=VerificationReferentielMonParcellaire):
     aText="Pas de GPKG à traiter - nom de gpkg {0} - répertoire recherché {1})".format(NOM_GPKG, CHEMIN_REP)
     raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
