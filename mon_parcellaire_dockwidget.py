@@ -192,6 +192,17 @@ def traitementJointureAttributs(source, jointure, sortie, non_terroir, libelle="
         erreur_traitement(algo_name)
     return result
 
+def quel_chemin_synchro( REPERTOIRE_base, REP_suite):
+    CHEMIN_base = os.path.join( REPERTOIRE_base, REP_suite)   
+    if not os.path.isdir( CHEMIN_base):
+        os.mkdir(CHEMIN_base)
+    dateMaintenant = datetime.now()
+    dateFormatee=dateMaintenant.strftime("%Y%m%d%H%M")
+    CHEMIN_COMPLET = os.path.join( CHEMIN_base, REP_suite+SEP_U+dateFormatee)
+    if not os.path.isdir( CHEMIN_COMPLET):
+        os.mkdir(CHEMIN_COMPLET)
+    return CHEMIN_COMPLET
+
 def dump_df( df, NOM="un_df", lignes=3):
     #my_print("{2} Type de {0} {1}".format (NOM, type(df),  E_PANDAS),"Info-entete")
     print("{1} Nom de {0}".format ( df.__class__.__name__,  E_PANDAS),"Info-entete")
@@ -533,9 +544,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """ Selon les tables déja ouverte dans le projet : ouverture si necessaire des différents cas de délimiteurs
             Jointure par QGIS """
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
-        CHEMIN_SYNCHRONISATION = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
-        if not os.path.isdir( CHEMIN_SYNCHRONISATION):
-            os.mkdir(CHEMIN_SYNCHRONISATION)
+        CHEMIN_SYNCHRONISATION = quel_chemin_synchro(REPERTOIRE_GPKG, REP_SYN)
+
         # Vérification du projet ouverte
         monProjet, nouveauGroupeJointure = self.ouvrirProjetETGroupe( MonParcellaire_JOI)
         # Ouverture du vecteur parcelle
@@ -724,9 +734,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """
 
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
-        CHEMIN_SYNCHRONISATION = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
-        if not os.path.isdir( CHEMIN_SYNCHRONISATION):
-            os.mkdir(CHEMIN_SYNCHRONISATION)
+        CHEMIN_SYNCHRONISATION = quel_chemin_synchro(REPERTOIRE_GPKG, REP_SYN)
         monProjet, nouveauGroupeMP = self.ouvrirProjetETGroupe( MonParcellaire_MP)
         cheminCompletMesParcelle = self.Mes_Parcelles_lineEdit.text()
         uri="file:///"+cheminCompletMesParcelle+"?delimiter={}&wktField={}".format(",","geom")
@@ -859,9 +867,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """ Deviner les affectations pour les vignes suites (mais aussi cepage et orientation
         """
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
-        CHEMIN_SYNCHRONISATION = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
-        if not os.path.isdir( CHEMIN_SYNCHRONISATION):
-            os.mkdir(CHEMIN_SYNCHRONISATION)
+        CHEMIN_SYNCHRONISATION = quel_chemin_synchro(REPERTOIRE_GPKG, REP_SYN)
+
         if not os.path.isfile( source):
             source=os.path.join(CHEMIN_SYNCHRONISATION,source)
         if not os.path.isfile( cible):
@@ -955,9 +962,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
            Lancer la consolidation finale
         """
         REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
-        CHEMIN_SYNCHRONISATION = os.path.join( REPERTOIRE_GPKG, REP_SYN)   
-        if not os.path.isdir( CHEMIN_SYNCHRONISATION):
-            os.mkdir(CHEMIN_SYNCHRONISATION)
+        CHEMIN_SYNCHRONISATION = quel_chemin_synchro(REPERTOIRE_GPKG, REP_SYN)
         REPERTOIRE_COMMUN= os.path.dirname( REPERTOIRE_GPKG)
         REPERTOIRE_TERROIR=os.path.join(REPERTOIRE_COMMUN, NOM_REPERTOIRE_TERROIR)
         # Nommage et sauvegarde terroir
