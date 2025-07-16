@@ -945,7 +945,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         traitementCalculerSuperficie( cible, cible_finale)
 		# TODO kml en GPS et GPKG en 2154
         cible_kml = os.path.join(CHEMIN_SYNCHRONISATION, MonParcellaire_AFF+EXT_kml)
-        traitementSauverEcraser( cible_finale, cible_kml)
+        traitementGarderChamps( cible_finale, cible_kml, ["nom", "Code validation"])
         CHEMIN_VECTEUR_GPKG = os.path.join(REPERTOIRE_GPKG, MonParcellaire_GPKG)
         traitementSauverGPKGEcraserCouche( cible_finale, CHEMIN_VECTEUR_GPKG, MonParcellaire_AFF)
         affectation_suite = QgsVectorLayer(cible_finale, \
