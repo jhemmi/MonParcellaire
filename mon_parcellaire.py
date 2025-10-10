@@ -213,7 +213,7 @@ class MonParcellaire:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-            print("** Démarrage MonParcellaire")
+            print("** Demarrage MonParcellaire")
 
             # dockwidget may not exist if:
             #    first run of plugin

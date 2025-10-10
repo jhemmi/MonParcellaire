@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string notr="true">Mon Parcellaire V3.40.7 -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V3.40.7alpha -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -31,7 +31,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <property name="movable">
          <bool>true</bool>
@@ -356,6 +356,267 @@
           </property>
          </widget>
         </widget>
+        <widget class="QWidget" name="tab_Imprimator">
+         <attribute name="title">
+          <string>Mes atlas</string>
+         </attribute>
+         <widget class="QWidget" name="verticalLayoutWidget_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>0</y>
+            <width>443</width>
+            <height>353</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_Imprimer">
+           <item>
+            <widget class="QLabel" name="label_nom_atlas">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>11</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="lineWidth">
+              <number>1</number>
+             </property>
+             <property name="text">
+              <string>Choisir l'atlas à imprimer pour chacun des noms :</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="Atlas_comboBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>350</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_impression_selection">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="text">
+              <string>Vérifier vos couches sélectionnées</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_impression_mention">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="text">
+              <string>Vérifier que les mentions légales sont appropriées </string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="ImprimerTousButton">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>350</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Imprimer tous (peut prendre quelques minutes)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="ImprimerSelectionButton">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>350</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Imprimer la séléction</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="attributs_horizontalLayout_Imprimer">
+             <item>
+              <spacer name="horizontalSpacer_Imprimer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>10</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_AttributsAImprimer">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>110</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Selectionnez la liste des attributs de la jointure que vous voulez importer pour chacune de vos parcelles.&lt;/p&gt;&lt;p&gt;En bleu : les attributs sélectionnés.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="lineWidth">
+                <number>2</number>
+               </property>
+               <property name="text">
+                <string>Noms prêts à imprimer</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::PlainText</enum>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="NomsImprimables_listWidget">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="autoFillBackground">
+                <bool>false</bool>
+               </property>
+               <property name="showDropIndicator" stdset="0">
+                <bool>false</bool>
+               </property>
+               <property name="selectionMode">
+                <enum>QAbstractItemView::MultiSelection</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
         <widget class="QWidget" name="tab_Synchronisation">
          <attribute name="title">
           <string>Synchronisations</string>
@@ -451,7 +712,7 @@
          <widget class="QLabel" name="label_chemin_Mes_Parcelles">
           <property name="geometry">
            <rect>
-            <x>20</x>
+            <x>15</x>
             <y>70</y>
             <width>191</width>
             <height>17</height>
@@ -533,7 +794,7 @@
          <widget class="QLabel" name="label_chemin_orientation">
           <property name="geometry">
            <rect>
-            <x>20</x>
+            <x>15</x>
             <y>150</y>
             <width>349</width>
             <height>17</height>
@@ -560,7 +821,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Nom de la couche de vos orientations valides</string>
+           <string>Nom de la couche des orientations valides dans référentiel</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -781,7 +1042,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Publier un atlas de  vos parcelles</string>
+           <string>Publier un atlas de vos parcelles</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -791,7 +1052,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>90</y>
+            <y>110</y>
             <width>331</width>
             <height>16</height>
            </rect>
@@ -812,7 +1073,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>160</y>
+            <y>180</y>
             <width>341</width>
             <height>21</height>
            </rect>
@@ -833,7 +1094,7 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>180</y>
+            <y>200</y>
             <width>341</width>
             <height>51</height>
            </rect>
@@ -863,7 +1124,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>240</y>
+            <y>260</y>
             <width>111</width>
             <height>21</height>
            </rect>
@@ -886,7 +1147,7 @@
           <property name="geometry">
            <rect>
             <x>120</x>
-            <y>240</y>
+            <y>260</y>
             <width>171</width>
             <height>21</height>
            </rect>
@@ -905,7 +1166,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>120</y>
+            <y>140</y>
             <width>211</width>
             <height>21</height>
            </rect>
@@ -935,7 +1196,7 @@
           <property name="geometry">
            <rect>
             <x>290</x>
-            <y>210</y>
+            <y>230</y>
             <width>41</width>
             <height>25</height>
            </rect>
@@ -948,7 +1209,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>270</y>
+            <y>290</y>
             <width>111</width>
             <height>18</height>
            </rect>
@@ -969,7 +1230,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>270</y>
+            <y>290</y>
             <width>221</width>
             <height>21</height>
            </rect>
@@ -986,6 +1247,27 @@
            </font>
           </property>
          </widget>
+         <widget class="QLabel" name="label_extension_6">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>90</y>
+            <width>331</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Traitement d'impression de vos atlas</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
          <zorder>label_extension</zorder>
          <zorder>label_extension_2</zorder>
          <zorder>label_extension_3</zorder>
@@ -999,6 +1281,7 @@
          <zorder>label_Traces</zorder>
          <zorder>Traces_comboBox</zorder>
          <zorder>Contribuer_bouton</zorder>
+         <zorder>label_extension_6</zorder>
         </widget>
        </widget>
       </item>

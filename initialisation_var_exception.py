@@ -97,6 +97,7 @@ EXT_json=".json"
 EXT_qml=".qml"
 EXT_xml=".xml"
 EXT_kml=".kml"
+EXT_pdf=".pdf"
 EXT_geojson=".geojson"
 #DRIVER_GEOJSON="GeoJSON" # Ecrire un geojson depuis geopanda
 EXT_pos=".pos"

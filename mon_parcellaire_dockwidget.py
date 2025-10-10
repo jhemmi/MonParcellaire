@@ -52,7 +52,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     
 """ TRAITEMENTS ou PROCESSING"""
 def traitementSelectionnerVignes(source, champ_selection = 'code_culture', libelle='VRC'):
-    """ Selection"""
+    """ Selection dans Mes Parcelles"""
     algo_name, algo_simplifie ="qgis:selectbyattribute",  "Filtrer vignes..."
     resultat_selection = processing.run(algo_name, 
         {'INPUT': source, 'FIELD': champ_selection, 'OPERATOR':0,'VALUE':libelle,'METHOD':0})
@@ -240,13 +240,16 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHOIX_ORIENTATION, NOM_ORIENTATION, \
 		    CHOIX_SUITE, CHOIX_JOINTURE, \
 		    REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
-            ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
+            ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE, \
+		    LISTE_NOMS_IMPRIMABLES, LISTE_NOMS_IMPRIMES, DERNIER_ATLAS_CHOISI = self.lireSettings()
         # Slot boutons 
         self.Prepare_buttonBox.button( QDialogButtonBox.Ok ).pressed.connect(self.slotTraiterRepertoireGPKGJointure)
         self.Prepare_buttonBox.button( QDialogButtonBox.Save ).pressed.connect(self.ecrireSettings)
         self.TestButton.pressed.connect(self.traiterCentipedePos)
-        #self.SuiteButton.pressed.connect(self.affecterVignesSuites)
+        # pour test: self.SuiteButton.pressed.connect(self.affecterVignesSuites)
         self.TerroirButton.pressed.connect(self.consoliderTerroir)
+        self.ImprimerSelectionButton.pressed.connect(self.imprimerSelection)
+        self.ImprimerTousButton.pressed.connect(self.imprimerTous)
         # Slot toolbouton 
         self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)
         self.Jointure_checkBox.stateChanged.connect( self.slotBasculeJointure)
@@ -266,33 +269,55 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             nomColonnes=['Pas de jointure']
             nomColonnesUniques=['Pas de jointure']
         # Attributs pour la joindre
-        self.initialiserCombo( self.AttributJointure_comboBox, nomColonnesUniques, ATTRIBUT_JOINTURE)
+        self.initialiserCombo( self.AttributJointure_comboBox, nomColonnesUniques, ATTRIBUT_JOINTURE, "des attributs disponibles pour jointure")
         # Liste AttributsAJoindre
-        self.initialiserListeMultiple( self.AttributsAJoindre_listWidget, nomColonnes, LISTE_ATTRIBUTS_A_JOINDRE,  "attributs à joindre")
+        self.initialiserListeMultiple( self.AttributsAJoindre_listWidget, nomColonnes, LISTE_ATTRIBUTS_A_JOINDRE,  "des attributs à joindre")
         # Cas où jointure est attendu mais n'existe pas (ou plus)
         if CHOIX_JOINTURE == "YES" and CHEMIN_JOINTURE == None:
             self.Jointure_checkBox.setChecked( Qt.Unchecked)
             CHOIX_JOINTURE == "NO"
         else:
             self.Jointure_checkBox.setChecked( Qt.Checked)
-            
+        self.slotBasculeJointure
+
+        # Les noms imprimables dans NomsImprimables_listWidget
+        self.initialiserListeMultiple( self.NomsImprimables_listWidget, LISTE_NOMS_IMPRIMABLES, LISTE_NOMS_IMPRIMES, "de noms imprimables")
+        self.NomsImprimables_listWidget.setEnabled( True)
+        self.label_AttributsAImprimer.setEnabled( True)
         # Appel à aide ou contrib
         self.Aide_bouton.pressed.connect(self.slotDemanderAide)
         self.Contribuer_bouton.pressed.connect(self.slotDemanderContribution)
+        
+        project = QgsProject.instance()                                  
+        manager = project.layoutManager()
+        malayouts_list = manager.printLayouts()
+        LISTE_ATLAS=[]
+        for layout in malayouts_list:
+            un_atlas=layout.atlas()
+            if un_atlas.enabled():
+                LISTE_ATLAS.append( layout.name())
+        if LISTE_ATLAS == []:
+            LISTE_ATLAS=["Aucun atlas disponible"]
+        self.initialiserCombo( self.Atlas_comboBox, LISTE_ATLAS, DERNIER_ATLAS_CHOISI, "des atlas disponibles dans le projet")
+        self.ecrireSettings()
+        return
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
-        
+        return
+
     def slotDemanderContribution( self):
         """ Pointer vers page paiement pour QGIS""" 
         help_url = QUrl("https://qgis.org/funding/donate/")
         QDesktopServices.openUrl(help_url)
-    
+        return
+
     def slotDemanderAide(self):
         """ Help html qui pointe vers gitHub""" 
         help_url = QUrl("https://github.com/jhemmi/MonParcellaire/wiki")
         QDesktopServices.openUrl(help_url)
+        return
 
     def ecrireSettings(self):
         """On écrit dans settings les saisies"""
@@ -312,6 +337,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         choixJointure = "YES" if self.Jointure_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/PresenceJointure", choixJointure)
         s.setValue("MonParcellaire/AttributJointure", self.AttributJointure_comboBox.currentText())
+        s.setValue("MonParcellaire/AtlasChoisi", self.Atlas_comboBox.currentText())
         # Multivalues
         items=self.AttributsAJoindre_listWidget.selectedItems()
         listeAJoindre = ""
@@ -323,6 +349,17 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 else:
                     listeAJoindre=listeAJoindre + SEP_CONFIG + nomItem
         s.setValue("MonParcellaire/AttributsAJoindre", listeAJoindre)
+        # Liste noms imprimables
+        items=self.NomsImprimables_listWidget.selectedItems()
+        listeNoms_imprimes = ""
+        for item in range(len(items)):
+            nomItem=str(self.NomsImprimables_listWidget.selectedItems()[item].text())
+            if item == 0:
+                listeNoms_imprimes=nomItem
+            else:
+                listeNoms_imprimes=listeNoms_imprimes + SEP_CONFIG + nomItem
+        s.setValue("MonParcellaire/NomsImprimes", listeNoms_imprimes)
+
         #monPrint( "Settings sauvegardées")
         return
 
@@ -353,9 +390,28 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         PreparelisteAttributAJoindre = s.value("MonParcellaire/AttributsAJoindre", "Pas de jointure")
         LISTE_ATTRIBUTS_A_JOINDRE=PreparelisteAttributAJoindre.split( SEP_CONFIG)
         #monPrint( "Settings lus jointure {} pour attributs {}".format( CHOIX_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE))
+        # Noms imprimables dans une liste de noms exporter en csv ou bien TODO: dans la couche Emprise
+        liste="les_noms"+EXT_csv # TODO: appel de 
+        nom_liste_noms = os.path.join( REPERTOIRE_GPKG, liste)
+        if os.path.isfile( nom_liste_noms):
+            df_les_noms = pd.read_csv( nom_liste_noms, sep=",")   # TODO: envisager usage de rechercherDelimiteurJointure
+            available_noms=df_les_noms["Code Exploitant"].sort_values().unique()
+            LISTE_NOMS_IMPRIMABLES=available_noms.tolist()
+        else:
+            LISTE_NOMS_IMPRIMABLES=["Pas de noms imprimables"]
+			
+        # Noms à imprimer
+        PreparelisteNomsImprimes= s.value("MonParcellaire/NomsImprimes", "Pas de noms imprimables")
+        LISTE_NOMS_IMPRIMES=PreparelisteNomsImprimes.split( SEP_CONFIG)
+        #monPrint( "Settings lus pour noms à imprimer {}".format( LISTE_NOMS_IMPRIMES))
+        # Atlas choisi
+        DERNIER_ATLAS_CHOISI = s.value("MonParcellaire/AtlasChoisi", "Aucun atlas disponible")
+
+        self.ecrireSettings()
         return CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, \
            CHOIX_ORIENTATION, NOM_ORIENTATION, CHOIX_SUITE, CHOIX_JOINTURE, \
-           REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE
+           REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE, \
+           LISTE_NOMS_IMPRIMABLES, LISTE_NOMS_IMPRIMES, DERNIER_ATLAS_CHOISI
 
     def sauvergardeSelonFrequence(self, repertoireASauver, nomCourt, frequence, suiteSauvegarde, presenceAttendue=False, nomTable="xxx"):
         """ Fichier (y compris GPKG) est sauvés selon la fréquence et si nécessaire
@@ -382,7 +438,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             shutil.copy( CHEMIN_GPKG, CHEMIN_GPKG_SAVE)
         return CHEMIN_GPKG, cheminCompletTable
 
-
     def slotBasculeMesParcelles( self):
         """ 
         Bascule le choix Mes Parcelles
@@ -404,15 +459,17 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.Suite_checkBox.setEnabled( False)
             self.label_chemin_orientation.setEnabled(False)
             self.label_chemin_Mes_Parcelles.setEnabled(False)
- 
+        return
+
     def slotBasculeJointure( self):
         """ 
         Bascule le choix jointure et acces aux listes d'attribut à joindre
         """
         CHEMIN_JOINTURE=None
+        self.ecrireSettings()
         if self.Jointure_checkBox.isChecked():
             _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, \
-            ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE = self.lireSettings()
+            ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE, _, _, _ = self.lireSettings()
             CHEMIN_JOINTURE = self.rechercherExtensionEncodage( REPERTOIRE_GPKG)
         if CHEMIN_JOINTURE != None and self.Jointure_checkBox.isChecked():
             self.AttributJointure_comboBox.setEnabled( True)
@@ -434,7 +491,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.label_AttributsAJoindre.setEnabled( False)
             self.initialiserCombo( self.AttributJointure_comboBox, ["Pas de jointure"], "Pas de jointure")
             self.initialiserListeMultiple( self.AttributsAJoindre_listWidget, ["Pas de jointure"], ["Pas de jointure"], "attributs à joindre")
-            
+
     def initialiserCombo( self, comboAInitialiser, LISTE_VALEURS, UNE_VALEUR,  libelleErreur=None):
         """Initialise un combo avec une liste de valeur et avec la position de la valeur correspondante trouvé dans Settings
         """
@@ -539,7 +596,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         root.removeChildNode(temporaireGroupe)
         return monProjet, nouveauGroupe
 
-
     def fusionnerJointure(self, cheminCompletParcelle, jointureChoisie):
         """ Selon les tables déja ouverte dans le projet : ouverture si necessaire des différents cas de délimiteurs
             Jointure par QGIS """
@@ -624,42 +680,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             monFile_UTF.close()
         return CHEMIN_JOINTURE_UTF
 
-#    def lireSignets(self):
-#        import xml.etree.ElementTree as ET
-#        
-#        referentielPlugin=os.path.join( self.plugin_dir, "data")
-#        mesSignets=os.path.join( referentielPlugin, "signets"+EXT_xml)
-#        mesSignetsCSV=os.path.join( referentielPlugin, "signets"+EXT_csv)
-#        if not os.path.isfile( mesSignets):
-#            print("Pas de signets {}".format(mesSignets))
-#            return
-#
-#        root = ET.parse(mesSignets).getroot()
-#        if root.tag != "qgis_bookmarks":
-#            print("Signets non QGIS")
-#            return
-#
-#        tags = {"tags":[]}
-#        for bookmark in root.iter('bookmark'):
-##            name = bookmark.find('name').text
-##            xmin = bookmark.find('xmin').text
-##            monPrint( "Name et xmin : {0} {0} ".format( name,  xmin))
-#            tag = {}
-#            tag["name"] = bookmark.find('name').text
-#            xmin = bookmark.find('xmin').text
-#            ymin = bookmark.find('ymin').text
-#            xmax = bookmark.find('xmax').text
-#            ymax = bookmark.find('ymax').text
-#            WKT = "MultiPolygon ((({0} {1}, {2} {1}, {2} {3}, {0} {3}, {0} {1})))".\
-#                format( xmin, ymin, xmax, ymax)
-#            tag["WKT"] = WKT
-#
-#            tags["tags"]. append(tag)
-#        df_signets = pd.DataFrame(tags["tags"])
-#        monPrint( "Signet : {}".format( df_signets.head()))
-#        print( df_signets.head())        
-#        df_signets.to_csv( mesSignetsCSV, sep=';')
-#                
     def rechercherDelimiteurJointure( self, CHEMIN_JOINTURE, mode="Pandas"):
         """ Traite les différents cas de délimiteurs avec pandas ou QGIS"""
         if VERSION_PANDAS != None and mode == "Pandas":
@@ -699,7 +719,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             _, dfJointure, _ = self.rechercherDelimiteurJointure( CHEMIN_JOINTURE)
             if dfJointure.empty:
                 return nomColonnes, nomColonnesUniques
-                    
             #monPrint("Liste des colonnes {}".format( listeColonnes))        
             for col in dfJointure.columns:                
                 if col != MonParcellaireNomAttribut:
@@ -953,6 +972,77 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         monProjet.addMapLayer(affectation_suite, False)
         nouveauGroupeSUITE.addLayer( affectation_suite)
 
+    def filterAtOnce(self, fieldName, operator, fieldValue):
+        #Très fortement inspiré de l'extension FilterAtOnce (id 1968, https://github.com/muratkendir/FilterLayersAtOnce) Thanks muratkendir
+        #Inutile de faire un clear avant
+        layers = QgsProject.instance().layerTreeRoot().children()
+        #fieldName = self.dlg.lineEdit_fieldName.text()
+        #operator = self.dlg.comboBox.currentText()
+        #fieldValue = self.dlg.lineEdit_value.text()
+        if fieldName == '' or fieldValue == '':
+            monPrint( "{} Attention, il manque field name or value.".format(E_WARNING))
+        else:
+            for katman in layers:
+                # Eviter de filtrer "tree layer group"
+                try:
+                    layer_name = katman.layer().name()
+                    #monPrint( katman.type() + ' is layer ?')
+                    try:
+                        katman.layer().setSubsetString(str(fieldName)+' '+str(operator)+' '+"'"+str(fieldValue)+"'")
+                        #print(layer_name + ' layer is filtered with given expression.')
+                    except:
+                         print(layer_name + " n'est pas filtrée.")
+                except:
+                    print(layer_name + " : la couche suivante n'est pas filtrée.")
+            #monPrint( "Toutes les couches filtrées avec l'expression: {} {} {}".format( fieldName,operator, fieldValue))
+        return
+
+    def imprimerSelection( self, selection=[]):
+        """ Filtrer les couches sur le nom présents dans selection (inspiration de Filter at once)
+           Imprimer l'atlas de chaque selection
+        """
+        self.ecrireSettings()
+        _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, _, _, _, _, DERNIER_ATLAS_CHOISI = self.lireSettings()
+        if selection == []:
+            impressionSelectionnes=self.NomsImprimables_listWidget.selectedItems()
+            impressionListe = []
+            for position in range(len(impressionSelectionnes)):
+                impressionListe.append( str(self.NomsImprimables_listWidget.selectedItems()[position].text()))
+            if impressionListe != []:
+                selection = impressionListe
+        #monPrint("Début impression de atlas {} pour la sélection : {}".format( self.Imprimer_lineEdit_Nom.text(), selection))
+        REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
+        repertoire_print = os.path.join( REPERTOIRE_GPKG, "PRINT")
+        if not os.path.isdir( repertoire_print):
+            os.mkdir(repertoire_print)
+
+        for nom in selection:
+            #monPrint("Filtrer sur le nom : {}".format( nom))
+            # Filtrer les couches du projet ? en batch
+            self.filterAtOnce( "nom", "like", nom+"%")
+            pdf_print = os.path.join( repertoire_print, nom + " " + DERNIER_ATLAS_CHOISI+ EXT_pdf)
+            monPrint("Imprimer atlas du nom : {} dans le pdf {}".format( nom, pdf_print))
+            #TODO: Récuperer dans la boite AttributsImprimable_listWidget le nom de l'atlas
+            processing.run("native:atlaslayouttopdf", {'LAYOUT':DERNIER_ATLAS_CHOISI,'COVERAGE_LAYER':None, \
+               'FILTER_EXPRESSION':'','SORTBY_EXPRESSION':'','SORTBY_REVERSE':False,'LAYERS':None,'DPI':None,'FORCE_VECTOR':False,\
+               'FORCE_RASTER':False,'GEOREFERENCE':True,'INCLUDE_METADATA':True,'DISABLE_TILED':False,'SIMPLIFY':True,'TEXT_FORMAT':1, \
+               'IMAGE_COMPRESSION':0,'OUTPUT':pdf_print})
+        monPrint("Fin des impression de la liste : {}".format( selection))
+        return
+
+    def imprimerTous( self):
+        """ Retrouver tous les noms imprimables et appeler imprimerSelection
+        """
+        self.ecrireSettings()
+        _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, _, _, LISTE_TOUS_IMPRIMABLES, _, _ = self.lireSettings()
+        #monPrint("Début impression de tous retrouver dans : {}".format( LISTE_TOUS_IMPRIMABLES))
+        if LISTE_TOUS_IMPRIMABLES != ["Pas de noms imprimables"]:
+            self.imprimerSelection( LISTE_TOUS_IMPRIMABLES)
+            #monPrint("Fin impression de tous : {}".format( LISTE_TOUS_IMPRIMABLES))
+        else:
+            monPrint("{} dans le répertoire {} : aucune impression".format( "Pas de noms imprimables", REPERTOIRE_GPKG))
+        return
+
     def consoliderTerroir( self, terroir_gpkg="IFV_sols_terroir"+EXT_gpkg, couche_terroir_gpkg="sols terroirs", \
 				affectation_gpkg = MonParcellaire_GPKG, couche_affectation_gpkg = MonParcellaire_AFF, \
 				cible ="CONSOLIDE"+SEP_U+MonParcellaire_PAR+SEP_U+MonParcellaire_TER+EXT_geojson):
@@ -1047,13 +1137,15 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         print("== Fin la consolidation terroir {} est créée, tu as les parcelles sans terroir dans {}.".\
                 format( cible_terroir, sans_terroir), T_OK)
+        return
 
     def traiterCentipedePos( self):
         """ Traiter les traces Centipede pos
             Creer des rangs ou interrangs dans le parcellaire
         """
         monPrint( self.tr("BOUTON en chantier : Traitement des traces centipedes ... Version {} module {}".format(APPLI_VERSION, __name__)))
-		
+        return
+
 #        monProjet = QgsProject.instance()
 #        root = monProjet.layerTreeRoot()
 #        REPERTOIRE_GPKG = self.Repertoire_lineEdit.text()
@@ -1074,3 +1166,41 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
 #        creerPointsLignesBrises( dfPointBrut,  quelRendu)
 #        monPrint( "{} Fin extraction des Points & Lignes brisées à partir de {}".format( E_CLAP, quelRendu),  T_OK)
+
+
+#    def lireSignets(self):
+#        import xml.etree.ElementTree as ET
+#        
+#        referentielPlugin=os.path.join( self.plugin_dir, "data")
+#        mesSignets=os.path.join( referentielPlugin, "signets"+EXT_xml)
+#        mesSignetsCSV=os.path.join( referentielPlugin, "signets"+EXT_csv)
+#        if not os.path.isfile( mesSignets):
+#            print("Pas de signets {}".format(mesSignets))
+#            return
+#
+#        root = ET.parse(mesSignets).getroot()
+#        if root.tag != "qgis_bookmarks":
+#            print("Signets non QGIS")
+#            return
+#
+#        tags = {"tags":[]}
+#        for bookmark in root.iter('bookmark'):
+##            name = bookmark.find('name').text
+##            xmin = bookmark.find('xmin').text
+##            monPrint( "Name et xmin : {0} {0} ".format( name,  xmin))
+#            tag = {}
+#            tag["name"] = bookmark.find('name').text
+#            xmin = bookmark.find('xmin').text
+#            ymin = bookmark.find('ymin').text
+#            xmax = bookmark.find('xmax').text
+#            ymax = bookmark.find('ymax').text
+#            WKT = "MultiPolygon ((({0} {1}, {2} {1}, {2} {3}, {0} {3}, {0} {1})))".\
+#                format( xmin, ymin, xmax, ymax)
+#            tag["WKT"] = WKT
+#
+#            tags["tags"]. append(tag)
+#        df_signets = pd.DataFrame(tags["tags"])
+#        monPrint( "Signet : {}".format( df_signets.head()))
+#        print( df_signets.head())        
+#        df_signets.to_csv( mesSignetsCSV, sep=';')
+#                
