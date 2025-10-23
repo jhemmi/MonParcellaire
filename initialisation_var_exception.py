@@ -27,7 +27,7 @@ else:
     MonParcellaire_TRACE="NO"
 
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="V3.40"  
+APPLI_VERSION="V3.40.7"  
 APPLI_NOM_VERSION=APPLI_NOM + " (" +  APPLI_VERSION + ")"
 # Suivi des versions dans metadata.txt
 PARTIE_CENTIPEDE="NO"   # "YES" utilise pyproj et geopandas

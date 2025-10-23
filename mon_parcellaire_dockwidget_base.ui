@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string notr="true">Mon Parcellaire V3.40.7alpha -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V3.40.8 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -31,7 +31,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <property name="movable">
          <bool>true</bool>
@@ -1087,7 +1087,7 @@
            </font>
           </property>
           <property name="text">
-           <string>L'extension Mon Parcellaire pour QGIS3 est utile pour vous ?</string>
+           <string>L'extension Mon Parcellaire pour QGIS est utile pour vous ?</string>
           </property>
          </widget>
          <widget class="QPushButton" name="Contribuer_bouton">
@@ -1111,7 +1111,7 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Contribuez maintenant pour QGIS !</string>
+           <string>Contribuez maintenant pour QGIS4 !</string>
           </property>
           <property name="default">
            <bool>false</bool>

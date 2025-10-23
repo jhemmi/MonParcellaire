@@ -74,8 +74,8 @@ def traitementSauverEcraser(source, sortie):
     return result
 
 def traitementSauverGPKGEcraserCouche(source, sortie_gpkg, couche):
-    """ Sauver en ecrasant fichier"""
-    algo_name, algo_simplifie ="native:savefeatures",  "Sauver gpkg des vignes..."
+    """ Sauver en ecrasant couche uniquement"""
+    algo_name, algo_simplifie ="native:savefeatures",  "Sauver couche des vignes..."
     result = processing.run(algo_name, 
         {'INPUT': source , 'OUTPUT': sortie_gpkg,'LAYER_NAME':couche, \
 			'DATASOURCE_OPTIONS':'','LAYER_OPTIONS':'','ACTION_ON_EXISTING_FILE':1})
@@ -153,7 +153,7 @@ def traitementDupliquer_nom_parcelle(source, sortie):
         erreurTraitement(algo_name)
     return result
 
-def traitementCalculerOrientation(source, sortie):
+def traitementExempleCalculerChamp(source, sortie):
     algo_name, algo_simplifie ="native:fieldcalculator",  "Calculer affectation simplifiée..."
     result = processing.run(algo_name, 
         {'INPUT': source , 'OUTPUT': sortie, \
@@ -166,23 +166,18 @@ def traitementCalculerOrientation(source, sortie):
 
 def traitementJointureOrientation(source, jointure, sortie, libelle=""):
     algo_name,  algo_simplifie ="qgis:joinattributesbylocation",  "Jointure par localisation ..."
-    # Pour calcul orientation (360-orientatio)
-    CHEMIN=os.path.dirname( sortie)
-    CIBLE=os.path.basename( sortie)
-    la_sortie = os.path.join(CHEMIN, 'TMP_'+CIBLE)
 
     result = processing.run(algo_name, 
         {'INPUT': source, 'JOIN':jointure, 'PREDICATE':[1],
-		 'JOIN_FIELDS':['orientatio'],'METHOD':1,'DISCARD_NONMATCHING':False,
-		 'PREFIX':'', 'OUTPUT': la_sortie})
-    traitementCalculerOrientation( la_sortie, sortie)
+		 'JOIN_FIELDS':['orientation'],'METHOD':1,'DISCARD_NONMATCHING':False,
+		 'PREFIX':'', 'OUTPUT': sortie})
     if result == None:
         monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
         erreur_traitement(algo_name)
     return result
 
 def traitementJointureAttributs(source, jointure, sortie, non_terroir, libelle=""):
-    algo_name,  algo_simplifie ="native:joinattributestable",  "Jointure de  tous les attributs ..."
+    algo_name,  algo_simplifie ="native:joinattributestable",  "Jointure de tous les attributs ..."
     result = processing.run(algo_name, 
         {'INPUT': source, 'FIELD':'nom', 'INPUT_2':jointure, 'FIELD_2':'nom', 'FIELDS_TO_COPY':[], \
         'METHOD':1,'DISCARD_NONMATCHING':False,'PREFIX':'', \
@@ -254,7 +249,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.Repertoire_toolButton.pressed.connect( self.slotLectureRepertoireGPKG)
         self.Jointure_checkBox.stateChanged.connect( self.slotBasculeJointure)
         self.Mes_Parcelles_toolButton.pressed.connect( self.slotLectureMesParcelles)
-        #self.Orientation_toolButton.pressed.connect( self.slotLectureOrientation)
         self.Mes_Parcelles_checkBox.stateChanged.connect( self.slotBasculeMesParcelles)
 
         # Cas des combo
@@ -391,7 +385,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         LISTE_ATTRIBUTS_A_JOINDRE=PreparelisteAttributAJoindre.split( SEP_CONFIG)
         #monPrint( "Settings lus jointure {} pour attributs {}".format( CHOIX_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE))
         # Noms imprimables dans une liste de noms exporter en csv ou bien TODO: dans la couche Emprise
-        liste="les_noms"+EXT_csv # TODO: appel de 
+        liste="les_noms"+EXT_csv
         nom_liste_noms = os.path.join( REPERTOIRE_GPKG, liste)
         if os.path.isfile( nom_liste_noms):
             df_les_noms = pd.read_csv( nom_liste_noms, sep=",")   # TODO: envisager usage de rechercherDelimiteurJointure
@@ -526,22 +520,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 matching_items = listWidget.findItems(i, Qt.MatchExactly)
                 for item in matching_items:
                     item.setSelected(True)
-
-    def slotLectureOrientation(self):
-        # Choisir le geojson 
-        s = QgsSettings( APPLI_NOM)
-        REPERTOIRE_GPKG = s.value( "MonParcellaire/repertoireGPKG", os.path.join( self.plugin_dir, "data"))
-        nomOrientation = s.value( "MonParcellaire/nomOrientation", "MODELE_parcelles_orientées.geojson")
-        nomComplet, _ = QFileDialog.getOpenFileName( self, self.tr("Choisir le geojson Modele des orientations de la campagne précédente"),
-                     REPERTOIRE_GPKG, "GEOJSON (*.geojson)");
-
-        if len( nomComplet) == 0:
-            return
-        if not os.path.isfile( nomComplet):
-            return
-        self.Orientation_lineEdit.setText( nomComplet)
-        self.ecrireSettings()
-        return
 
     def slotLectureMesParcelles(self):
         # Choisir le CSV exporté de Mes Parcelles
@@ -903,6 +881,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         print("= Info = Nombre de parcelles uniques {}.".format( len( available_parcelles)))
         nb_double=0
         derniere_liste_a_ecrire=[]
+        inconsistants=[]
         for pos, une_parcelle in enumerate( available_parcelles):
             # Trappe pour debug
             #if pos > 30:
@@ -916,7 +895,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 continue
             affectation_coopviti= df_une_parcelle['Code validation'].values[0]
             cepage= df_une_parcelle['Cépage'].values[0]
-            pre_orientation= df_une_parcelle['orientatio'].values[0]
+            pre_orientation= df_une_parcelle['orientation'].values[0]
             try:
                 orientation=int( pre_orientation)
             except ValueError:
@@ -941,28 +920,28 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                         if orientation==9999:
                             orientation=0
                         suite="Non rapprochée"
+
+                    # Mémoriser Affectation 
+                    #print("= Info = Vignes suite {} récupere Affectation {} Cépage {} Orientation {}.".\
+                    #	 format( une_parcelle, affectation_coopviti, cepage,orientation))
+                    dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Code validation"] = affectation_coopviti
+                    dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Cépage"] = cepage
+                    dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "orientation"] = orientation
+                    dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "suite"] = suite
                 else:
-                    print("{} BASES INCONSISTANTES == Parcelle {} (non A B C OU D) sans affectation cepage et orientation".format( E_WARNING, une_parcelle ))
-                    affectation_coopviti="Inconnue"
-                    cepage="Inconnu"
-                    suite="Non affectée"
-                    if orientation==9999:
-                        orientation=0
-                # Ecrire Affectation 
-                #print("= Info = Vignes suite {} récupere Affectation {} Cépage {} Orientation {}.".\
-				#	 format( une_parcelle, affectation_coopviti, cepage,orientation))
-                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Code validation"] = affectation_coopviti
-                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Cépage"] = cepage
-                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "orientatio"] = orientation
-                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "orientation"] = 360-orientation
-                dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "suite"] = suite
+                    print("{} BASES INCONSISTANTES == Parcelle {} (non A B C OU D) sans affectation, cépage et orientation n'est pas conservé".format( E_WARNING, une_parcelle ))
+                    dfAffectation.drop(dfAffectation.loc[dfAffectation["nom"] == une_parcelle].index, inplace=True)
+                    # Ecrire une liste sans affectations
+                    inconsistants.append( une_parcelle)
             if une_parcelle[-1] not in ["A", "B", "C", "D", "E"]:
                 derniere_liste_a_ecrire = [une_parcelle, affectation_coopviti, cepage, str(orientation)]
         dfAffectation.to_file( cible, driver="GeoJSON")
+        if len(inconsistants)>0:
+            monPrint( "{} parcelles provenant de Mes Parcelles non affectable et non suite : {}".format(len(inconsistants), inconsistants), T_WAR)
 		# Calculer superficie des vignes
         cible_finale = os.path.join(CHEMIN_SYNCHRONISATION, MonParcellaire_AFF+EXT_geojson)
         traitementCalculerSuperficie( cible, cible_finale)
-		# TODO kml en GPS et GPKG en 2154
+		# kml en GPS et GPKG en 2154
         cible_kml = os.path.join(CHEMIN_SYNCHRONISATION, MonParcellaire_AFF+EXT_kml)
         traitementGarderChamps( cible_finale, cible_kml, ["nom", "Code validation"])
         CHEMIN_VECTEUR_GPKG = os.path.join(REPERTOIRE_GPKG, MonParcellaire_GPKG)
@@ -993,7 +972,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     except:
                          print(layer_name + " n'est pas filtrée.")
                 except:
-                    print(layer_name + " : la couche suivante n'est pas filtrée.")
+                    print("Une couche n'est pas filtrée.")
             #monPrint( "Toutes les couches filtrées avec l'expression: {} {} {}".format( fieldName,operator, fieldValue))
         return
 
@@ -1022,7 +1001,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.filterAtOnce( "nom", "like", nom+"%")
             pdf_print = os.path.join( repertoire_print, nom + " " + DERNIER_ATLAS_CHOISI+ EXT_pdf)
             monPrint("Imprimer atlas du nom : {} dans le pdf {}".format( nom, pdf_print))
-            #TODO: Récuperer dans la boite AttributsImprimable_listWidget le nom de l'atlas
             processing.run("native:atlaslayouttopdf", {'LAYOUT':DERNIER_ATLAS_CHOISI,'COVERAGE_LAYER':None, \
                'FILTER_EXPRESSION':'','SORTBY_EXPRESSION':'','SORTBY_REVERSE':False,'LAYERS':None,'DPI':None,'FORCE_VECTOR':False,\
                'FORCE_RASTER':False,'GEOREFERENCE':True,'INCLUDE_METADATA':True,'DISABLE_TILED':False,'SIMPLIFY':True,'TEXT_FORMAT':1, \
@@ -1101,7 +1079,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         #    continue
             df_une_parcelle=df_T_P[ (df_T_P['nom'] == une_parcelle) & (df_T_P['pourcent_ut_dans_parcelle'] > LE_POURCENTAGE_IGNORE)]
             info_terroir=df_une_parcelle[['pourcent_ut_dans_parcelle',  'CODE_UT', 'N_REG_SOL',  'NOMENCLATU', 'RUM', 'DRAINAGE', 'VIGUEUR', 'Surface Encepagée',  
-                                  'Code validation', 'Cépage', 'Porte Greffe', 'orientatio']].sort_values(ascending=False, by = 'pourcent_ut_dans_parcelle').values.tolist()
+                                  'Code validation', 'Cépage', 'Porte Greffe', 'orientation']].sort_values(ascending=False, by = 'pourcent_ut_dans_parcelle').values.tolist()
             if len(df_une_parcelle) > 1:
         #available_pourcentage_parcelles=df_une_parcelle['pourcent_ut_dans_parcelle'].sort_values(ascending=False)
                 plusieurs=plusieurs+1 
@@ -1135,7 +1113,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         monProjet.addMapLayer(consolide_terroir, False)
         nouveauGroupeTERROIR.addLayer( consolide_terroir)
 
-        print("== Fin la consolidation terroir {} est créée, tu as les parcelles sans terroir dans {}.".\
+        monPrint("== Fin la consolidation terroir {} est créée, tu as les parcelles sans terroir dans {}.".\
                 format( cible_terroir, sans_terroir), T_OK)
         return
 
