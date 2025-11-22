@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string notr="true">Mon Parcellaire V3.40.8 -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V3.40.11 - Qt5 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -365,7 +365,7 @@
            <rect>
             <x>10</x>
             <y>0</y>
-            <width>443</width>
+            <width>460</width>
             <height>353</height>
            </rect>
           </property>
@@ -449,7 +449,7 @@
               <string/>
              </property>
              <property name="text">
-              <string>Vérifier vos couches sélectionnées</string>
+              <string>Vérifier vos couches sélectionnées qui s'imprimeront et que</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -479,7 +479,7 @@
               <string/>
              </property>
              <property name="text">
-              <string>Vérifier que les mentions légales sont appropriées </string>
+              <string>les mentions légales correspondent aux fonds de carte</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

@@ -29,8 +29,7 @@ from .resources import *
 
 # Import the code for the DockWidget
 from .mon_parcellaire_dockwidget import MonParcellaireDockWidget
-import os.path
-import os
+import os 
 
 class MonParcellaire:
     """QGIS Plugin Implementation."""
@@ -167,9 +166,11 @@ class MonParcellaire:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         icon_path = ':/plugins/mon_parcellaire/icon.png'
+        print("Icon path {}".format(icon_path))
+
         self.add_action(
             icon_path,
-            text=self.tr(u''),
+            text=self.tr(u'Mon Parcellaire'),
             callback=self.run,
             parent=self.iface.mainWindow())
 

@@ -31,11 +31,10 @@ from qgis.core import (
    QgsProcessingFeatureSourceDefinition, QgsFeatureRequest)
   #QgsApplication, QgsWkbTypes, QgsVectorFileWriter, QgsFeature, QgsFields, QgsField,
 
-from PyQt5.QtCore import ( Qt, QUrl) #, QFileInfo)
-from PyQt5.QtGui import ( QDesktopServices)
-from PyQt5.QtWidgets import ( QDialogButtonBox, QFileDialog, QSizePolicy) # QGridLayout QDialog 
+from qgis.PyQt.QtCore import ( Qt, QUrl, pyqtSignal) #, QFileInfo)
+from qgis.PyQt.QtGui import ( QDesktopServices)
+from qgis.PyQt.QtWidgets import ( QDialogButtonBox, QFileDialog, QSizePolicy) # QGridLayout QDialog 
 from qgis.PyQt import ( QtWidgets, uic) # QtGui
-from qgis.PyQt.QtCore import ( pyqtSignal) #, QVariant)
 from qgis.gui import ( QgsMessageBar)
 
 try:
