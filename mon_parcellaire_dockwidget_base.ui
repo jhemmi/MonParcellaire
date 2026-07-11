@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string notr="true">Mon Parcellaire V3.40.11 - Qt5 -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V3.40.12 - Qt5 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -625,9 +625,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>200</y>
+            <y>230</y>
             <width>361</width>
-            <height>141</height>
+            <height>111</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -794,8 +794,8 @@
          <widget class="QLabel" name="label_chemin_orientation">
           <property name="geometry">
            <rect>
-            <x>15</x>
-            <y>150</y>
+            <x>5</x>
+            <y>180</y>
             <width>349</width>
             <height>17</height>
            </rect>
@@ -830,8 +830,8 @@
          <widget class="QLineEdit" name="Orientation_lineEdit">
           <property name="geometry">
            <rect>
-            <x>50</x>
-            <y>170</y>
+            <x>40</x>
+            <y>200</y>
             <width>241</width>
             <height>20</height>
            </rect>
@@ -876,8 +876,8 @@
          <widget class="QCheckBox" name="Orientation_checkBox">
           <property name="geometry">
            <rect>
-            <x>15</x>
-            <y>120</y>
+            <x>5</x>
+            <y>150</y>
             <width>349</width>
             <height>25</height>
            </rect>
@@ -954,6 +954,57 @@
           </property>
           <property name="text">
            <string>Avant jointure</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QComboBox" name="AttributMesParcellesCombo">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>164</x>
+            <y>115</y>
+            <width>191</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_AttributJointure_2">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>110</y>
+            <width>141</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L'attribut Mes parcelles contenant le nom de vos vignes : nom_parcelle ou code_parcelle&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Le contenu de cet attribut doit être uniques dans votre &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Mes parcelles&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt; comme dans la &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;jointure&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Attribut Mes Parcelles</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

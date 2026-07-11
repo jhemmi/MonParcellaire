@@ -45,7 +45,9 @@ try:
         print("Processing : {0} ".format( dir( QgsProcessingException.__traceback__)))
 except:
     erreurImport("Processing")
-    
+
+import geopandas as gpd
+
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'mon_parcellaire_dockwidget_base.ui'))
     
@@ -86,7 +88,8 @@ def traitementSauverGPKGEcraserCouche(source, sortie_gpkg, couche):
 
 def traitementGarderChamps(source, sortie, \
 	ne_pas_detruire = [ "code_culture", "surf_parcelle", \
-			"nom_parcelle", "raisonsociale"]):
+			MesParcellesNomAttribut, MesParcellesNomAttributBIS, MesParcellesCaveRattachement, "raisonsociale"]):
+			# FR"nom_parcelle", "raisonsociale"]):
     """ Champs à conserver de "Mes Parcelles à conserver"""
     algo_name, algo_simplifie ="native:retainfields",  "Garder champs utiles"
     result = processing.run(algo_name, 
@@ -141,12 +144,12 @@ def traitementIntersection(source, intersection, sortie):
         erreurTraitement(algo_name)
     return result
 
-def traitementDupliquer_nom_parcelle(source, sortie):
-    algo_name, algo_simplifie ="native:fieldcalculator",  "Dupliquer nom_parcelles..."
+def traitementDupliquer_nom_parcelle(source, sortie, nom_champ=MesParcellesNomAttribut):
+    algo_name, algo_simplifie ="native:fieldcalculator",  "Dupliquer nom_parcelle ou code_parcelle.ou code_vigne.."
     result = processing.run(algo_name, 
         {'INPUT': source , 'OUTPUT': sortie, \
 			'FIELD_NAME':MonParcellaireNomAttribut,'FIELD_TYPE':2,'FIELD_LENGTH':25,'FIELD_PRECISION':0,
-			'FORMULA':' "nom_parcelle" '})
+			'FORMULA':nom_champ}) #' "nom_parcelle" '})
     if result == None:
         monPrint( "Erreur bloquante durant processing {0}".format( algo_simplifie), T_ERR)
         erreurTraitement(algo_name)
@@ -167,7 +170,7 @@ def traitementJointureOrientation(source, jointure, sortie, libelle=""):
     algo_name,  algo_simplifie ="qgis:joinattributesbylocation",  "Jointure par localisation ..."
 
     result = processing.run(algo_name, 
-        {'INPUT': source, 'JOIN':jointure, 'PREDICATE':[1],
+        {'INPUT': source, 'JOIN':jointure, 'PREDICATE':[0, 1],
 		 'JOIN_FIELDS':['orientation'],'METHOD':1,'DISCARD_NONMATCHING':False,
 		 'PREFIX':'', 'OUTPUT': sortie})
     if result == None:
@@ -231,7 +234,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.plugin_dir = os.path.dirname(__file__) 
         
         #print( "** Démarrage de MonParcellaire {0}".format(APPLI_VERSION))
-        CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHOIX_ORIENTATION, NOM_ORIENTATION, \
+        CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHOIX_ORIENTATION, NOM_ORIENTATION, \
 		    CHOIX_SUITE, CHOIX_JOINTURE, \
 		    REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE, \
@@ -251,6 +254,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.Mes_Parcelles_checkBox.stateChanged.connect( self.slotBasculeMesParcelles)
 
         # Cas des combo
+        self.initialiserCombo( self.AttributMesParcellesCombo, MesParcellesNomPossible, NOM_CSV_MES_PARCELLES,  "des noms d'attributs vigne dans Mes Parcelles")
         self.initialiserCombo( self.FrequenceSauvegarde_comboBox, LISTE_FREQUENCE_SAUVEGARDE, FREQUENCE_SAUVEGARDE,  "des fréquences de sauvegarde")
         CHEMIN_JOINTURE = None
         if CHOIX_JOINTURE == "YES":
@@ -322,6 +326,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         choixMesParcelles= "YES" if self.Mes_Parcelles_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/ImportMesParcelles", choixMesParcelles)
         s.setValue("MonParcellaire/nomMesParcelles", self.Mes_Parcelles_lineEdit.text())
+        s.setValue("MonParcellaire/ChampNomVigneMP", self.AttributMesParcellesCombo.currentText())
         choixOrientation= "YES" if self.Orientation_checkBox.isChecked() else "NO"
         s.setValue("MonParcellaire/Orientation", choixOrientation)
         choixSuite= "YES" if self.Suite_checkBox.isChecked() else "NO"
@@ -363,6 +368,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.Mes_Parcelles_checkBox.setChecked( Qt.Checked) if CHOIX_MES_PARCELLES == "YES" else self.Mes_Parcelles_checkBox.setChecked( Qt.Unchecked)
         NOM_CSV_MES_PARCELLES = s.value("MonParcellaire/nomMesParcelles", "Export geometries parcelles2025_Fronton.csv")
         self.Mes_Parcelles_lineEdit.setText( NOM_CSV_MES_PARCELLES )
+        CHAMP_NOM_VIGNE_MP = s.value("MonParcellaire/ChampNomVigneMP", MesParcellesNomPossible[0])
         CHOIX_ORIENTATION = s.value("MonParcellaire/Orientation", "NO")
         self.Orientation_checkBox.setChecked( Qt.Checked) if CHOIX_ORIENTATION == "YES" else self.Orientation_checkBox.setChecked( Qt.Unchecked)
         NOM_ORIENTATION = s.value("MonParcellaire/nomOrientation", "modele parcelles orientées")
@@ -392,7 +398,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             LISTE_NOMS_IMPRIMABLES=available_noms.tolist()
         else:
             LISTE_NOMS_IMPRIMABLES=["Pas de noms imprimables"]
-			
+        # Nom de vigne dans Mes Parcelles
+
         # Noms à imprimer
         PreparelisteNomsImprimes= s.value("MonParcellaire/NomsImprimes", "Pas de noms imprimables")
         LISTE_NOMS_IMPRIMES=PreparelisteNomsImprimes.split( SEP_CONFIG)
@@ -401,7 +408,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         DERNIER_ATLAS_CHOISI = s.value("MonParcellaire/AtlasChoisi", "Aucun atlas disponible")
 
         self.ecrireSettings()
-        return CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, \
+        return CHOIX_TOUT_VOIR, CHOIX_MES_PARCELLES, NOM_CSV_MES_PARCELLES, CHAMP_NOM_VIGNE_MP, \
            CHOIX_ORIENTATION, NOM_ORIENTATION, CHOIX_SUITE, CHOIX_JOINTURE, \
            REPERTOIRE_GPKG, FREQUENCE_SAUVEGARDE, ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE, \
            LISTE_NOMS_IMPRIMABLES, LISTE_NOMS_IMPRIMES, DERNIER_ATLAS_CHOISI
@@ -439,6 +446,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         if self.Mes_Parcelles_checkBox.isChecked():
             self.Mes_Parcelles_lineEdit.setEnabled( True)
             self.Mes_Parcelles_toolButton.setEnabled( True)
+            self.AttributMesParcellesCombo.setEnabled( True)
             self.Orientation_checkBox.setEnabled( True)
             self.Orientation_lineEdit.setEnabled( True)
             self.Suite_checkBox.setEnabled( True)
@@ -447,6 +455,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         else:
             self.Mes_Parcelles_lineEdit.setEnabled( False)
             self.Mes_Parcelles_toolButton.setEnabled( False)
+            self.AttributMesParcellesCombo.setEnabled( False)
             self.Orientation_checkBox.setEnabled( False)
             self.Orientation_lineEdit.setEnabled( False)
             self.Suite_checkBox.setEnabled( False)
@@ -461,7 +470,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         CHEMIN_JOINTURE=None
         self.ecrireSettings()
         if self.Jointure_checkBox.isChecked():
-            _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, \
+            _, _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, \
             ATTRIBUT_JOINTURE, LISTE_ATTRIBUTS_A_JOINDRE, _, _, _ = self.lireSettings()
             CHEMIN_JOINTURE = self.rechercherExtensionEncodage( REPERTOIRE_GPKG)
         if CHEMIN_JOINTURE != None and self.Jointure_checkBox.isChecked():
@@ -737,7 +746,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         mes_parcelles = QgsVectorLayer(uri, \
               MonParcellaire_MP, 'delimitedtext')
         monProjet.addMapLayer(mes_parcelles, False)
-        nouveauGroupeMP.addLayer( mes_parcelles)
+        #nouveauGroupeMP.addLayer( mes_parcelles)
         # Forcer EPSG 2154 QgsCoordinateReferenceSystem constructor deprecated
         mes_parcelles.setCrs(QgsCoordinateReferenceSystem('EPSG:'+str(ID_DESTINATION_CRS)))
         monProjet.addMapLayer(mes_parcelles, False)
@@ -760,6 +769,11 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 				featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
               nom_vignes_tous_attributs = os.path.join( CHEMIN_SYNCHRONISATION, "MES_PARCELLES_TOUS_ATTRIBUTS"+EXT_geojson)
               traitementSauverEcraser( selection_input, nom_vignes_tous_attributs)
+              # Vérifier si on a une seule cave
+              dfVignes = gpd.read_file( nom_vignes_tous_attributs)
+              available_cave=dfVignes['cave'].sort_values().unique()
+              print("= Info = Les caves {}.".format( available_cave))
+              # TODO puis extraire les vignes NULL qui n'ot pas de cave
               toutes_attr_vignes = QgsVectorLayer( nom_vignes_tous_attributs, \
               		MonParcellaireFiltre_GJ, "ogr")
               monProjet.addMapLayer(toutes_attr_vignes, False)
@@ -773,7 +787,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 				"MES_PARCELLES_MINI_ATTRIBUTS"+EXT_geojson)
               traitementGarderChamps( nom_vignes_tous_attributs, nom_vignes_mini_attributs)
               nom_vignes = os.path.join( CHEMIN_SYNCHRONISATION, "MES_PARCELLES_VIGNES"+EXT_geojson)
-              traitementDupliquer_nom_parcelle( nom_vignes_mini_attributs, nom_vignes)
+              # Retrouver le champ du nom de parcelle choisi
+              LE_CHAMP_NOM_VIGNE_MP = self.AttributMesParcellesCombo.currentText()
+              traitementDupliquer_nom_parcelle( nom_vignes_mini_attributs, nom_vignes, LE_CHAMP_NOM_VIGNE_MP)
               toutes_vignes = QgsVectorLayer(nom_vignes, \
               		MonParcellaire_attr_MP, "ogr")
               monProjet.addMapLayer(toutes_vignes, False)
@@ -786,15 +802,15 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
               CHOIX_ORIENTATION = "YES" if self.Orientation_checkBox.isChecked() else "NO"
               if CHOIX_ORIENTATION == "YES":
                 _, _, nom_vignes_orientees_modele = nommagesGPKG( REPERTOIRE_GPKG, MonParcellaire_ORIENTE_MODELE_DANS_GPKG)
-                #nom_vignes_orientees_modele = os.path.join( CHEMIN_SYNCHRONISATION, MonParcellaire_ORIENTE_MODELE+EXT_geojson)
-                nom_vignes_orientees = os.path.join( CHEMIN_SYNCHRONISATION, \
-					MonParcellaire_ORIENTE+EXT_geojson)
-                traitementJointureOrientation( nom_vignes, \
-					nom_vignes_orientees_modele, nom_vignes_orientees)
-                vignes_orientees = QgsVectorLayer(nom_vignes_orientees, \
-              		MonParcellaire_ORIENTE, "ogr")
+                monProjet, nouveauGroupeOrientation = self.ouvrirProjetETGroupe( MonParcellaire_ORIENTATION)
+                orientation_centroide = QgsVectorLayer(nom_vignes_orientees_modele, "Modèle des "+MonParcellaire_ORIENTATION, 'ogr')
+                monProjet.addMapLayer(orientation_centroide, False)
+                nouveauGroupeOrientation.addLayer( orientation_centroide)
+                nom_vignes_orientees = os.path.join( CHEMIN_SYNCHRONISATION, MonParcellaire_ORIENTE+EXT_geojson)
+                traitementJointureOrientation( nom_vignes, nom_vignes_orientees_modele, nom_vignes_orientees)
+                vignes_orientees = QgsVectorLayer(nom_vignes_orientees, MonParcellaire_ORIENTE, "ogr")
                 monProjet.addMapLayer(vignes_orientees, False)
-                nouveauGroupeMP.addLayer( vignes_orientees)
+                nouveauGroupeOrientation.addLayer( vignes_orientees)
                 return nom_vignes_orientees
         except:
               monPrint( "Vecteur {0} ne convient pas pour joindre les orientations".format( nom_vignes_orientees_modele), T_ERR)
@@ -871,13 +887,14 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             cible=os.path.join(CHEMIN_SYNCHRONISATION,cible)
         monProjet, nouveauGroupeSUITE = self.ouvrirProjetETGroupe( MonParcellaire_SUI)
         monPrint( "Traitement vignes suites ... Version {} module {}".format(APPLI_VERSION, __name__))
-        import geopandas as gpd
         dfAffectation = gpd.read_file( source)
         dfAffectation[ "suite"]="Non"
         #dump_df( dfAffectation, "Affect")
 
+        # Supprimer les parcelles sans nom
         available_parcelles=dfAffectation['nom'].sort_values().unique()
         print("= Info = Nombre de parcelles uniques {}.".format( len( available_parcelles)))
+        print("= Info = Les parcelles {}.".format( available_parcelles))
         nb_double=0
         derniere_liste_a_ecrire=[]
         inconsistants=[]
@@ -887,6 +904,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             #   break
             #if une_parcelle != "F0001CO24":
             #    continue
+            if une_parcelle == "NULL":
+                print("{} = On Saute des NULL.".format( E_WARNING))
+                continue
             df_une_parcelle=dfAffectation[ (dfAffectation['nom'] == une_parcelle)]
             if len(df_une_parcelle) > 1:
                 nb_double=nb_double+1
@@ -897,23 +917,33 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             pre_orientation= df_une_parcelle['orientation'].values[0]
             try:
                 orientation=int( pre_orientation)
-            except ValueError:
+            except (ValueError, TypeError):
                 orientation=9999
             #print( "Pour la parcelle {} a pour affectation {} et orientation {}".format(une_parcelle, affectation_coopviti, orientation))
             # Rapprochement des vignes suites (A B C D) avec sa vigne principale
             suite="Non"
             if affectation_coopviti is None or affectation_coopviti == "nan" or len(affectation_coopviti) <= 0:
-                if une_parcelle[-1] in ["A", "B", "C", "D", "E", "F"]:
-                    if une_parcelle[0:-1] == derniere_liste_a_ecrire[0]:
-                        #print("== Parcelle suite {} est rapprochée de {}".format( une_parcelle, derniere_liste_a_ecrire[0] ))
+				# Gerer aussi les _A _B _C
+                caractere_suite=0
+                if une_parcelle[-1] in ["A", "B", "C", "D", "E", "F"] or une_parcelle[-1] in ["a", "b", "c", "d", "e", "f"]:
+                    caractere_suite=-1
+                    if une_parcelle[-2:] in ["_A", "_B", "_C", "_D", "_E", "_F"] or une_parcelle[-2:] in ["_a", "_b", "_c", "_d", "_e", "_f"]:
+                        caractere_suite=-2
+                    if une_parcelle[-2:] in ["-A", "-B", "-C", "-D", "-E", "-F"] or une_parcelle[-2:] in ["-a", "-b", "-c", "-d", "-e", "-f"]:
+                        caractere_suite=-2
+
+                if caractere_suite < 0:    # parcelle suite possible
+                    parcelle_possible=une_parcelle[0:caractere_suite]
+                    if une_parcelle[0:caractere_suite] == derniere_liste_a_ecrire[0]:
+                        #monPrint("== Parcelle suite {} est rapprochée de {}".format( une_parcelle, derniere_liste_a_ecrire[0] ))
                         affectation_coopviti= derniere_liste_a_ecrire[1]
                         cepage=derniere_liste_a_ecrire[2]
                         if orientation==9999:
                             orientation=int( derniere_liste_a_ecrire[3])
                         suite="Oui"
                     else:
-                        print("{} == Parcelle suite {} ne peut pas être rapprochée de la précedente parcelle {}".\
-							  format( E_WARNING, une_parcelle, derniere_liste_a_ecrire[0] ))
+                        monPrint("{} == Parcelle potentiellement suite {} ne peut pas être rapprochée de {}, car la précedente parcelle est {}".\
+							  format( E_WARNING, une_parcelle, parcelle_possible, derniere_liste_a_ecrire[0] ))
                         affectation_coopviti="Inconnue"
                         cepage="Inconnu"
                         if orientation==9999:
@@ -928,7 +958,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "orientation"] = orientation
                     dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "suite"] = suite
                 else:
-                    print("{} BASES INCONSISTANTES == Parcelle {} (non A B C OU D) sans affectation, cépage et orientation n'est pas conservé".format( E_WARNING, une_parcelle ))
+                    print("{} BASES INCONSISTANTES == Parcelle {} (non A B C D E OU F) sans affectation, cépage et orientation n'est pas conservé".format( E_WARNING, une_parcelle ))
                     dfAffectation.drop(dfAffectation.loc[dfAffectation["nom"] == une_parcelle].index, inplace=True)
                     # Ecrire une liste sans affectations
                     inconsistants.append( une_parcelle)
@@ -980,7 +1010,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
            Imprimer l'atlas de chaque selection
         """
         self.ecrireSettings()
-        _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, _, _, _, _, DERNIER_ATLAS_CHOISI = self.lireSettings()
+        _, _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, _, _, _, _, DERNIER_ATLAS_CHOISI = self.lireSettings()
         if selection == []:
             impressionSelectionnes=self.NomsImprimables_listWidget.selectedItems()
             impressionListe = []
@@ -1011,7 +1041,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """ Retrouver tous les noms imprimables et appeler imprimerSelection
         """
         self.ecrireSettings()
-        _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, _, _, LISTE_TOUS_IMPRIMABLES, _, _ = self.lireSettings()
+        _, _, _, _, _, _, _, _,REPERTOIRE_GPKG, _, _, _, LISTE_TOUS_IMPRIMABLES, _, _ = self.lireSettings()
         #monPrint("Début impression de tous retrouver dans : {}".format( LISTE_TOUS_IMPRIMABLES))
         if LISTE_TOUS_IMPRIMABLES != ["Pas de noms imprimables"]:
             self.imprimerSelection( LISTE_TOUS_IMPRIMABLES)
@@ -1055,8 +1085,6 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         monProjet.addMapLayer(consolide_terroir, False)
         nouveauGroupeTERROIR.addLayer( consolide_terroir)
         # PB Lire geojson dans Pandas (export CSV dans DEV/CONSOLIDATION_TERROIR
-        df_T_P = gpd.read_file( consolide_surface)
-
         #cible_csv=os.path.join(REPERTOIRE_TERROIR,"UTs_par_parcelles.csv")
         #traitementSauverEcraser( consolide_surface, cible_csv)
 		# Verifier presence et passage eventuel en UTF

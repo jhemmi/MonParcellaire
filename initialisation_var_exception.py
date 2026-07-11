@@ -27,7 +27,7 @@ else:
     MonParcellaire_TRACE="NO"
 
 APPLI_NOM="MonParcellaire"
-APPLI_VERSION="3.44.3-versQ4"  
+APPLI_VERSION="3.44.12"  # Gaillac
 APPLI_NOM_VERSION=APPLI_NOM + " (" +  APPLI_VERSION + ")"
 # Suivi des versions dans metadata.txt
 PARTIE_CENTIPEDE="NO"   # "YES" utilise pyproj et geopandas
@@ -115,12 +115,16 @@ MonParcellaire_SYN="SYNCHRONISATION"
 MonParcellaire_AFF="affectations"
 # Répertoires
 REP_SYN="SYNCHRONISATION"
+MonParcellaire_ORIENTATION="Orientation"
 MonParcellaire_ORIENTE=MonParcellaire_PAR+SEP_U+"orientées"
 #MonParcellaire_ORIENTE_MODELE="MODELE"+SEP_U+MonParcellaire_ORIENTE
-MonParcellaire_ORIENTE_MODELE_DANS_GPKG="modele " + MonParcellaire_PAR + " orientees"
+MonParcellaire_ORIENTE_MODELE_DANS_GPKG="modele " + MonParcellaire_PAR + " orientées"
 MonParcellaireNomAttribut='nom'
 # Nommage dans Mes Parcelles en dur "nom_parcelle"
-
+MesParcellesNomAttribut="nom_parcelle"
+MesParcellesNomAttributBIS="code_vigne" #"code_parcelle" Cas Gaillac
+MesParcellesNomPossible=[ MesParcellesNomAttribut,MesParcellesNomAttributBIS]
+MesParcellesCaveRattachement="cave"
 # Autres noms
 MonParcellaire_MP="Import de Mes Parcelles" 
 MesParcelles_GJ="Vignes dans geojson" 
