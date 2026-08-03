@@ -1007,7 +1007,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 					if choix_cave_pour_apport == 'OUI':
 						dfAffectation.loc[dfAffectation["nom"] == une_parcelle, "Cave pour apport"] = cave
 				else:
-					print("{} BASES INCONSISTANTES == Parcelle {} (non A B C D E OU F) sans affectation, cépage et orientation n'est pas conservé".format( E_WARNING, une_parcelle ))
+					monPrint("{} BASES INCONSISTANTES == Parcelle {} (non A B C D E OU F) sans affectation, cépage et orientation n'est pas conservé".format( E_WARNING, une_parcelle ))
 					dfAffectation.drop(dfAffectation.loc[dfAffectation["nom"] == une_parcelle].index, inplace=True)
 					# Ecrire une liste sans affectations
 					inconsistants.append( une_parcelle)
