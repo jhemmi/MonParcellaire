@@ -20,11 +20,11 @@ from qgis.core import ( Qgis, QgsMessageLog )
 MonParcellaire_PROD="TEST" ##"TERMINAL" # HE ou TEST
 MonParcellaire_TIMESTAMP="NO"
 if MonParcellaire_PROD in [ "TEST",  "HE"]: #, "HE", "FR"]:
-    MonParcellaire_TRACE="YES"
+	MonParcellaire_TRACE="YES"
 elif MonParcellaire_PROD=="TERMINAL":
-    MonParcellaire_TRACE="TERMINAL"
+	MonParcellaire_TRACE="TERMINAL"
 else:
-    MonParcellaire_TRACE="NO"
+	MonParcellaire_TRACE="NO"
 
 APPLI_NOM="MonParcellaire"
 APPLI_VERSION="3.44.12"  # Gaillac
@@ -125,14 +125,20 @@ MesParcellesNomAttribut="nom_parcelle"
 MesParcellesNomAttributBIS="code_vigne" #"code_parcelle" Cas Gaillac
 MesParcellesNomPossible=[ MesParcellesNomAttribut,MesParcellesNomAttributBIS]
 MesParcellesCaveRattachement="cave"
+
+MonParcellaireCavePourApport="Cave pour apport"
+
 # Autres noms
 MonParcellaire_MP="Import de Mes Parcelles" 
 MesParcelles_GJ="Vignes dans geojson" 
 MonParcellaireFiltre_GJ="Vignes filtrées dans geojson" 
 MonParcellaire_attr_MP="Vignes attribuées pour Mon Parcellaire" 
 MonParcellaire_JOI="jointure" # EN join between
+MonParcellaire_JOI_CAVE="jointure_cave_pour_apport" # 
 MonParcellaire_SUI=MonParcellaire_PAR+" suites".upper()
 MonParcellaire_AFF_SANS_SUITE="affectations_sans_suite".upper()
+MonParcellaire_AFF_SANS_SUITE_CAVE="affectations_sans_suite_mais_cave".upper()
+
 # Terroir 
 NOM_REPERTOIRE_TERROIR="SOLS_TERROIRS"
 NOM_TERROIR_GPKG="IFV_sols_terroir"+ EXT_gpkg
@@ -184,59 +190,59 @@ REPERTOIRE_CENTIPEDE_POINTS         ="POINTS"                   # point brise co
 
 # Exceptions
 class MonParcellaireException( BaseException):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+		return repr(self.value)
 # Exemple    
 
 class MonParcellaireErreurData( MonParcellaireException):
-    pass
+	pass
 class MonParcellairePasRepertoire( MonParcellaireException):
-    pass
+	pass
 class MonParcellaireErreurMethodo( MonParcellaireException):
-    pass
+	pass
 
 # Texte des messages
 NOM_APPS_VENDANGE="CoopViti"
 NOM_SIG_VENDANGE="QGIS Projet Référentiel Mon Tom"
 VerificationReferentielMonParcellaire="Avez-vous paramétré le chemin vers le référentiel Mon Parcellaire ? \n\
-    Vérifiez dans l'onglet {} si le chemin vers le référentiel est correct. \n\
-    Avez-vous déposer une jointure d'extension {} dans ce référentiel ? \n\
-    Son encodage est de l'UTF-8 ? \n\
-    La jointure a-t-elle un délimiteur parmi {}".format( E_OK, EXTENSIONS_CONNUES,  tuple( DELIMITEURS_CONNUS))
+	Vérifiez dans l'onglet {} si le chemin vers le référentiel est correct. \n\
+	Avez-vous déposer une jointure d'extension {} dans ce référentiel ? \n\
+	Son encodage est de l'UTF-8 ? \n\
+	La jointure a-t-elle un délimiteur parmi {}".format( E_OK, EXTENSIONS_CONNUES,  tuple( DELIMITEURS_CONNUS))
 Maintenance="Contactez la maintenance jhemmi.eu"
 Support="Si besoin, contactez pour du support jhemmi.eu"
 Maintenance_GPKG="{0}, en fournissant votre GPKG de référence ~MonParcellaire/MonParcellaire.gpkg.".format(Maintenance)
 VerificationVersionQGIS="Votre version de QGIS n'inclut pas ce module"
 VerificationVersionQGISWin="Sous Windows, utilisez QGIS 3.10.x ou 3.12.y qui contiennent ce module."
 Pas_verif_mais_maintenance=Maintenance_GPKG + \
-    "En cas d'urgence, vous pouvez sortir de QGIS, sauver le GPKG ~MonParcellaire/MonParcellaire.gpkg pour l'envoyer à jhemmi.eu, \
-    sinon recréer votre référentiel GPKG à partir de la dernière sauvegarde présente dans ~MonParcellaire/MonParcellaire_SAUVEGARDE "
+	"En cas d'urgence, vous pouvez sortir de QGIS, sauver le GPKG ~MonParcellaire/MonParcellaire.gpkg pour l'envoyer à jhemmi.eu, \
+	sinon recréer votre référentiel GPKG à partir de la dernière sauvegarde présente dans ~MonParcellaire/MonParcellaire_SAUVEGARDE "
 
 # REPERTOIRE
 def erreurRepertoire( CHEMIN_REP, correction=VerificationReferentielMonParcellaire):
-    aText="Nom de répertoire {0} n'existe pas".format( CHEMIN_REP)
-    raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1}".format(aText, correction))
+	aText="Nom de répertoire {0} n'existe pas".format( CHEMIN_REP)
+	raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1}".format(aText, correction))
 # FICHIER    
 def erreurGeojsonOuvert( NOM_gson):
-    aText="Vous avez probablement jouer plusieurs fois la synchronisatoin : la couche {0} est déjà existante. Ouvrez un nouveau projet vide (sans sauver le précédent) et relancez une synchronisation".format(NOM_gson)
-    monPrint( "{0}".format(aText),  T_ERR)
-    return
+	aText="Vous avez probablement jouer plusieurs fois la synchronisatoin : la couche {0} est déjà existante. Ouvrez un nouveau projet vide (sans sauver le précédent) et relancez une synchronisation".format(NOM_gson)
+	monPrint( "{0}".format(aText),  T_ERR)
+	return
 def erreurGPKG( CHEMIN_REP, NOM_GPKG, correction=VerificationReferentielMonParcellaire):
-    aText="Pas de GPKG à traiter - nom de gpkg {0} - répertoire recherché {1})".format(NOM_GPKG, CHEMIN_REP)
-    raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
+	aText="Pas de GPKG à traiter - nom de gpkg {0} - répertoire recherché {1})".format(NOM_GPKG, CHEMIN_REP)
+	raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
 def erreurJointuresExtensions( LISTE_EXTENSIONS=EXTENSIONS_CONNUES, correction=VerificationReferentielMonParcellaire):
-    aText="Aucun jointure avec aucune des extensions {}".format( LISTE_EXTENSIONS)
-    raise MonParcellaireErreurData( "{0} || CORRECTION : {1}".format(aText, correction))
+	aText="Aucun jointure avec aucune des extensions {}".format( LISTE_EXTENSIONS)
+	raise MonParcellaireErreurData( "{0} || CORRECTION : {1}".format(aText, correction))
 def erreurJointureDelimeteurs( NOM_JOINTURE, LISTE_DELIMITEURS=DELIMITEURS_CONNUS, correction=VerificationReferentielMonParcellaire):
-    aText="La jointure {0} n'a aucun des délimiteurs connus {1}. ".format(NOM_JOINTURE, LISTE_DELIMITEURS)
-    aText=aText+"Supprimez ou créez de nouveau cette jointure".format(NOM_JOINTURE)
-    monPrint( "{0} || AUTRES CORRECTIONS : \n{1} parmi {2} ?".format(aText, correction,  LISTE_DELIMITEURS),  T_ERR)
-    return
+	aText="La jointure {0} n'a aucun des délimiteurs connus {1}. ".format(NOM_JOINTURE, LISTE_DELIMITEURS)
+	aText=aText+"Supprimez ou créez de nouveau cette jointure".format(NOM_JOINTURE)
+	monPrint( "{0} || AUTRES CORRECTIONS : \n{1} parmi {2} ?".format(aText, correction,  LISTE_DELIMITEURS),  T_ERR)
+	return
 def erreurVecteur( CHEMIN_REP,  NOM_VECTEUR, correction=VerificationReferentielMonParcellaire):
-    aText="Pas de vecteur {0} dans le répertoire recherché {1}".format(NOM_VECTEUR, CHEMIN_REP)
-    raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
+	aText="Pas de vecteur {0} dans le répertoire recherché {1}".format(NOM_VECTEUR, CHEMIN_REP)
+	raise MonParcellairePasRepertoire( "{0} || CORRECTION : {1} si il est correct contacter jhemmi.eu".format(aText, correction))
 #def erreur_ecrire_vecteur( aText, correction=Maintenance):
 #    raise MonParcellaireErreurData( "{0} || CORRECTION : {1}".format(aText, correction))
 
@@ -247,39 +253,39 @@ def erreurVecteur( CHEMIN_REP,  NOM_VECTEUR, correction=VerificationReferentielM
 #    raise MonParcellaireErreurMethodo( "{0} || CORRECTION : {1}".format(aText, correction + " en précisant les noms du fournisseur et de l'algo problématiques"))
 
 def erreurTraitement( NOM_ALGO, correction=Pas_verif_mais_maintenance):
-    aText="L'algorithme {0} n'a pas pu s'exécuter correctement. Vérifier le message d'erreur dans le journal des messages (onglet Traitement)".\
-        format(NOM_ALGO)
-    raise MonParcellaireErreurMethodo( "{0} || CORRECTION : {1}".format(aText, correction + " en fournissant votre GPKG et le nom de l'algo problématique"))
+	aText="L'algorithme {0} n'a pas pu s'exécuter correctement. Vérifier le message d'erreur dans le journal des messages (onglet Traitement)".\
+		format(NOM_ALGO)
+	raise MonParcellaireErreurMethodo( "{0} || CORRECTION : {1}".format(aText, correction + " en fournissant votre GPKG et le nom de l'algo problématique"))
 def erreur_traitement( NOM_ALGO, correction=Pas_verif_mais_maintenance):
-    erreurTraitement( NOM_ALGO, correction)
+	erreurTraitement( NOM_ALGO, correction)
 def incoherenceTraceCentipedeVignoble( nomPos):    
-    aText="Cette trace Centipede {} ne concerne pas votre parcellaire. Les traces sont-elles issues votre vignoble? ".format( nomPos)
-    raise MonParcellaireErreurData( "{} || Vérifiez que vous avez bien déposer la trace sont dans votre répertoire".format(aText) + \
-          " MON_PARCELLAIRE/CENTIPEDE_BRUT. Avez-vous créer vos parcelles dans le GPKG MonParcellaire en précisant la couche parcelles." + \
-          " Si vous rejouer un traitement, il faut renommer dans MON_PARCELLAIRE/CENTIPEDE_BRUT le fichier .pos_TRAITE_xxx en .pos." + \
-          " {}".format( Support))
+	aText="Cette trace Centipede {} ne concerne pas votre parcellaire. Les traces sont-elles issues votre vignoble? ".format( nomPos)
+	raise MonParcellaireErreurData( "{} || Vérifiez que vous avez bien déposer la trace sont dans votre répertoire".format(aText) + \
+		" MON_PARCELLAIRE/CENTIPEDE_BRUT. Avez-vous créer vos parcelles dans le GPKG MonParcellaire en précisant la couche parcelles." + \
+		" Si vous rejouer un traitement, il faut renommer dans MON_PARCELLAIRE/CENTIPEDE_BRUT le fichier .pos_TRAITE_xxx en .pos." + \
+		" {}".format( Support))
 def erreurImportVersion( module, correction=VerificationVersionQGIS):
-    if MACHINE != 'Linux':
-        correction=correction+'\n'+VerificationVersionQGISWin
-    aText="Le module {0} n'est pas présent ou actif dans QGIS.".format(module)
-    monPrint( "{0} || CORRECTION : {1}".format(aText, correction))
-    return
+	if MACHINE != 'Linux':
+		correction=correction+'\n'+VerificationVersionQGISWin
+	aText="Le module {0} n'est pas présent ou actif dans QGIS.".format(module)
+	monPrint( "{0} || CORRECTION : {1}".format(aText, correction))
+	return
 def erreurImport( module, correction=Maintenance):
-    aText="Le module {0} n'est pas présent ou actif dans QGIS. Reprendre le document d'installation".format(module)
-    raise MonParcellaireErreurMethodo( "{0} || Si vous restez sans solution : {1}".format(aText, correction))
+	aText="Le module {0} n'est pas présent ou actif dans QGIS. Reprendre le document d'installation".format(module)
+	raise MonParcellaireErreurMethodo( "{0} || Si vous restez sans solution : {1}".format(aText, correction))
 #def erreur_fermer_projet_QGIS( libelle_traitement, correction="Fermez le projet sans quitter QGIS3 qui reste nécessaire pour activer ce traitement"):
 #    aText="Le traitement de {0} préfére qu'aucun projet QGIS ({1}) ne soit ouvert.".format( libelle_traitement,  "nom_projet")
 #    MonConseil = "{0} || CORRECTION : {1}".format(aText, correction)
 #    raise MonParcellaireErreurMethodo( MonConseil)
 def erreurCoherenceDF( parcelle, ligne, correction=Maintenance):
-    aText="Dataframe pour la ligne {0} de la parcelle {1} n'est pas cohérente".format(ligne, parcelle)
-    raise MonParcellaireErreurMethodo( "{0} || {1}".format(aText, correction))
+	aText="Dataframe pour la ligne {0} de la parcelle {1} n'est pas cohérente".format(ligne, parcelle)
+	raise MonParcellaireErreurMethodo( "{0} || {1}".format(aText, correction))
 
 
 def monPrint( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX="MonParcellaire"):
-    """ Mon print part vers LOG, il decore selon le level (prefixe, emoi et mis en correspondance avec gravité) 
-        entete et pied pour encadrement
-        en Option il peut aller vers BAR (log aussi) ou sortie STANDARD"""
+	""" Mon print part vers LOG, il decore selon le level (prefixe, emoi et mis en correspondance avec gravité) 
+		entete et pied pour encadrement
+		en Option il peut aller vers BAR (log aussi) ou sortie STANDARD"""
 #    global FICHIER_TEMP_TRACE
 #    if TRACE_TEMP == "OK":
 #        if FICHIER_TEMP_TRACE == "à créer":
@@ -288,153 +294,153 @@ def monPrint( aText, level = "Sans_niveau", vers_ou = T_LOG, dialog=None, PREFIX
 #            print(fichier_temp.name)
 #        fichier_temp.write( aText)         
 #        fichier_temp.close()  
-    if MonParcellaire_TRACE == "NO" and level == "Sans_niveau":
-        return # Pas de trace et petit level
-    chaine = ""
-    gravite=Qgis.Info
-    if level == "Sans_niveau":
-        # Quand pas de niveau, on ne fait pas de retour ligne par defaut
-        chaine = "{0}".format( aText)
-    elif level == T_INF:
-        chaine = "{0} {1}: {2}".format( PREFIX, U_INFO, aText)
-        gravite=Qgis.Info
-    elif level == T_WAR:
-        chaine = "{0} {1}: {2}".format( PREFIX, E_WARNING, aText)
-        gravite=Qgis.Warning
-    elif level == T_ERR:   
-        chaine = "{0} {1}: {2}".format( PREFIX, E_INTERDIT, aText)
-        gravite=Qgis.Critical
-    elif level == T_OK:   
-        chaine = "{0} {1}: {2}".format( PREFIX, E_OK, aText)
-        gravite=Qgis.Success
-    else:
-        chaine=""
-        
-    # Communication
-    if chaine !="":
-        mon_prefixe = PREFIX = "== "
-        if MonParcellaire_TRACE == "TERMINAL":
-            la_date = datetime.now()
-            mon_prefixe = la_date.strftime("%H:%M:%S") + SEP_PIPE + " " + PREFIX
-            print( mon_prefixe + chaine)
+	if MonParcellaire_TRACE == "NO" and level == "Sans_niveau":
+		return # Pas de trace et petit level
+	chaine = ""
+	gravite=Qgis.Info
+	if level == "Sans_niveau":
+		# Quand pas de niveau, on ne fait pas de retour ligne par defaut
+		chaine = "{0}".format( aText)
+	elif level == T_INF:
+		chaine = "{0} {1}: {2}".format( PREFIX, U_INFO, aText)
+		gravite=Qgis.Info
+	elif level == T_WAR:
+		chaine = "{0} {1}: {2}".format( PREFIX, E_WARNING, aText)
+		gravite=Qgis.Warning
+	elif level == T_ERR:   
+		chaine = "{0} {1}: {2}".format( PREFIX, E_INTERDIT, aText)
+		gravite=Qgis.Critical
+	elif level == T_OK:   
+		chaine = "{0} {1}: {2}".format( PREFIX, E_OK, aText)
+		gravite=Qgis.Success
+	else:
+		chaine=""
+		
+	# Communication
+	if chaine !="":
+		mon_prefixe = PREFIX = "== "
+		if MonParcellaire_TRACE == "TERMINAL":
+			la_date = datetime.now()
+			mon_prefixe = la_date.strftime("%H:%M:%S") + SEP_PIPE + " " + PREFIX
+			print( mon_prefixe + chaine)
 
-        if vers_ou == T_LOG:
-            QgsMessageLog.logMessage( chaine, MonParcellaire_LOG, gravite)                
-        elif vers_ou == T_BAR:
-            if dialog != None:
-                dialog.bar.pushMessage( chaine, gravite, 15)
-            else:
-                QgsMessageLog.logMessage( "Inconsistance : impossible de trouver le dialogue pour accéder la barre", MonParcellaire_LOG, Qgis.Warning)
-                QgsMessageLog.logMessage( chaine, MonParcellaire_LOG, gravite)
-        else:
-            print( chaine)
+		if vers_ou == T_LOG:
+			QgsMessageLog.logMessage( chaine, MonParcellaire_LOG, gravite)                
+		elif vers_ou == T_BAR:
+			if dialog != None:
+				dialog.bar.pushMessage( chaine, gravite, 15)
+			else:
+				QgsMessageLog.logMessage( "Inconsistance : impossible de trouver le dialogue pour accéder la barre", MonParcellaire_LOG, Qgis.Warning)
+				QgsMessageLog.logMessage( chaine, MonParcellaire_LOG, gravite)
+		else:
+			print( chaine)
 
 def creerRepertoireOptionTemporaire( repertoireCible, temporaire=False):
-    if not os.path.isdir( repertoireCible):
-        os.mkdir(repertoireCible)
-    if temporaire:
-        repertoireCibleTmp=os.path.join( repertoireCible, "TMP")
-        if not os.path.isdir( repertoireCibleTmp):
-            os.mkdir(repertoireCibleTmp)
-        return repertoireCibleTmp
-    return None
+	if not os.path.isdir( repertoireCible):
+		os.mkdir(repertoireCible)
+	if temporaire:
+		repertoireCibleTmp=os.path.join( repertoireCible, "TMP")
+		if not os.path.isdir( repertoireCibleTmp):
+			os.mkdir(repertoireCibleTmp)
+		return repertoireCibleTmp
+	return None
 
 def creerRepertoireEtQML( repertoireCible, temporaire=False):
-    repertoireTemporaire = creerRepertoireOptionTemporaire(repertoireCible, temporaire)
-    creerQML(repertoireCible)
-    return repertoireTemporaire
-    
+	repertoireTemporaire = creerRepertoireOptionTemporaire(repertoireCible, temporaire)
+	creerQML(repertoireCible)
+	return repertoireTemporaire
+	
 def creerQML( repertoireCible):
-    baseQML=os.path.join( os.path.dirname(__file__), EXT_qml[1:])
-    nomQML = os.path.basename( repertoireCible)
-    sourceQML=os.path.join( baseQML, nomQML + EXT_qml)
-    cibleQML=os.path.join( repertoireCible, nomQML + EXT_qml)
-    if not os.path.isfile( cibleQML):
-        shutil.copy( sourceQML, cibleQML)
-    return
+	baseQML=os.path.join( os.path.dirname(__file__), EXT_qml[1:])
+	nomQML = os.path.basename( repertoireCible)
+	sourceQML=os.path.join( baseQML, nomQML + EXT_qml)
+	cibleQML=os.path.join( repertoireCible, nomQML + EXT_qml)
+	if not os.path.isfile( cibleQML):
+		shutil.copy( sourceQML, cibleQML)
+	return
 
 def nommageVecteur( Repertoire, nomVecteur, Extension=EXT_geojson, doitExister="Oui"):
-        """ Calcule le nom du vecteur et vérifie si le chemin au vecteur existe
-        Rend le nom """
-        # Assert
-        if not os.path.isdir( Repertoire):
-            erreurRepertoire( Repertoire)
-        chemin_complet = os.path.join( Repertoire, nomVecteur + Extension)
-        if  doitExister == "Oui" and not os.path.isfile( chemin_complet):
-            erreurVecteur( Repertoire,  nomVecteur + Extension)
-        return chemin_complet
-    
+		""" Calcule le nom du vecteur et vérifie si le chemin au vecteur existe
+		Rend le nom """
+		# Assert
+		if not os.path.isdir( Repertoire):
+			erreurRepertoire( Repertoire)
+		chemin_complet = os.path.join( Repertoire, nomVecteur + Extension)
+		if  doitExister == "Oui" and not os.path.isfile( chemin_complet):
+			erreurVecteur( Repertoire,  nomVecteur + Extension)
+		return chemin_complet
+	
 def nommagesGPKG( Repertoire, nomTable, nomGPKG=MonParcellaire_GPKG, presenceAttendu=False):
-    """ Calcule le nom de table et vérifie si le chemin au GPKG existe
-    Rend le nom du gpkg, un libelle et le nom pour ouvrir avec QGIS API"""
-    # Assert
-    if not os.path.isdir( Repertoire):
-        erreurRepertoire( Repertoire)
-    CHEMIN_GPKG = os.path.join( Repertoire, nomGPKG)
-    if not os.path.isfile( CHEMIN_GPKG):
-        if presenceAttendu:
-            erreurGPKG( nomGPKG,  CHEMIN_GPKG)
-        return None, None, None
-    #print( "nommageGPKG", CHEMIN_GPKG, "layer='{}'".format(nomTable), CHEMIN_GPKG + GPKG_LAYERNAME + nomTable)
-    return CHEMIN_GPKG, "layer='{}'".format(nomTable), CHEMIN_GPKG + GPKG_LAYERNAME + nomTable
-    
+	""" Calcule le nom de table et vérifie si le chemin au GPKG existe
+	Rend le nom du gpkg, un libelle et le nom pour ouvrir avec QGIS API"""
+	# Assert
+	if not os.path.isdir( Repertoire):
+		erreurRepertoire( Repertoire)
+	CHEMIN_GPKG = os.path.join( Repertoire, nomGPKG)
+	if not os.path.isfile( CHEMIN_GPKG):
+		if presenceAttendu:
+			erreurGPKG( nomGPKG,  CHEMIN_GPKG)
+		return None, None, None
+	#print( "nommageGPKG", CHEMIN_GPKG, "layer='{}'".format(nomTable), CHEMIN_GPKG + GPKG_LAYERNAME + nomTable)
+	return CHEMIN_GPKG, "layer='{}'".format(nomTable), CHEMIN_GPKG + GPKG_LAYERNAME + nomTable
+	
 # Import communs
 
 import platform
 MACHINE = platform.system()
 
 try:
-    from shapely.geometry.polygon import Polygon
-    from shapely.geometry import Point, LineString, MultiLineString
-    if MonParcellaire_TRACE=="YES": 
-        dir( Point)
-        dir( LineString)
-        dir( Polygon)
-        dir( MultiLineString)
+	from shapely.geometry.polygon import Polygon
+	from shapely.geometry import Point, LineString, MultiLineString
+	if MonParcellaire_TRACE=="YES": 
+		dir( Point)
+		dir( LineString)
+		dir( Polygon)
+		dir( MultiLineString)
 except:
-    erreurImport("shapely")
+	erreurImport("shapely")
 try:
-    import pandas as pd
-    VERSION_PANDAS=pd.__version__
-    #if MonParcellaire_TRACE=="YES": 
-    print("Version pandas : {0}. Option sans warning".format( VERSION_PANDAS))
+	import pandas as pd
+	VERSION_PANDAS=pd.__version__
+	#if MonParcellaire_TRACE=="YES": 
+	print("Version pandas : {0}. Option sans warning".format( VERSION_PANDAS))
 except:
-    VERSION_PANDAS=None
-    erreurImportVersion("pandas") 
+	VERSION_PANDAS=None
+	erreurImportVersion("pandas") 
 
 try:
-    pd.options.mode.chained_assignment = None
-    # OLD pd.set_option('mode.chained_assignment',None)
-    #from pandas.io.json import json_normalize
-    #if MonParcellaire_TRACE=="YES": dir(json_normalize)
+	pd.options.mode.chained_assignment = None
+	# OLD pd.set_option('mode.chained_assignment',None)
+	#from pandas.io.json import json_normalize
+	#if MonParcellaire_TRACE=="YES": dir(json_normalize)
 
 except:
-    VERSION_PANDAS=None
-    erreurImportVersion("pandas try 2")        
+	VERSION_PANDAS=None
+	erreurImportVersion("pandas try 2")        
 try:
-    import json
-    if MonParcellaire_TRACE=="YES": dir( json)
+	import json
+	if MonParcellaire_TRACE=="YES": dir( json)
 except:
-    erreurImport("json")
+	erreurImport("json")
 if PARTIE_CENTIPEDE == "YES" or PARTIE_TERROIR == "YES":
-    try:
-        import geopandas as gpd
-        from geopandas import datasets, GeoDataFrame, read_file,  __version__ as gpdVersion    
-        from geopandas.tools import sjoin
-        if MonParcellaire_TRACE=="YES": 
-            print("Version geopandas : {0} ".format( gpdVersion))
-            dir( datasets)
-            dir(GeoDataFrame)
-            dir(read_file)
-            dir(sjoin)
-    except:
-        VERSION_GEOPANDAS=None
-        if MonParcellaire_TRACE=="YES": print("geopandas non disponible (pour information, mais sans conséquence)")
+	try:
+		import geopandas as gpd
+		from geopandas import datasets, GeoDataFrame, read_file,  __version__ as gpdVersion    
+		from geopandas.tools import sjoin
+		if MonParcellaire_TRACE=="YES": 
+			print("Version geopandas : {0} ".format( gpdVersion))
+			dir( datasets)
+			dir(GeoDataFrame)
+			dir(read_file)
+			dir(sjoin)
+	except:
+		VERSION_GEOPANDAS=None
+		if MonParcellaire_TRACE=="YES": print("geopandas non disponible (pour information, mais sans conséquence)")
 try:
-    import chardet
-    if MonParcellaire_TRACE=="YES": print("Version chardet : {0} ".format( chardet.__version__))
+	import chardet
+	if MonParcellaire_TRACE=="YES": print("Version chardet : {0} ".format( chardet.__version__))
 except:
-    erreurImport("chardet")
+	erreurImport("chardet")
 
 
 import os
@@ -446,16 +452,16 @@ if MonParcellaire_TRACE=="YES": dir( datetime)
 from numpy import sqrt
 if MonParcellaire_TRACE=="YES": dir( sqrt)
 try:
-    import shutil
-    if MonParcellaire_TRACE=="YES": dir( shutil)
+	import shutil
+	if MonParcellaire_TRACE=="YES": dir( shutil)
 except:
-    erreurImport("shutil")
+	erreurImport("shutil")
 
 if PARTIE_CENTIPEDE == "YES":
-    from pyproj import Proj, transform , __version__ as v_pyproj
-    if MonParcellaire_TRACE=="YES": print("Version pyproj {} et transformateur {}".format( v_pyproj, transform))
-    PYPROJ_SOURCE_CRS      = Proj(init='epsg:4326') #+str(ID_SOURCE_CRS))
-    PYPROJ_DESTINATION_CRS = Proj(init='epsg:2154') #+str(ID_DESTINATION_CRS))
+	from pyproj import Proj, transform , __version__ as v_pyproj
+	if MonParcellaire_TRACE=="YES": print("Version pyproj {} et transformateur {}".format( v_pyproj, transform))
+	PYPROJ_SOURCE_CRS      = Proj(init='epsg:4326') #+str(ID_SOURCE_CRS))
+	PYPROJ_DESTINATION_CRS = Proj(init='epsg:2154') #+str(ID_DESTINATION_CRS))
 
 ## N'est plus utile mais contient une creation de multipolygone
 
