@@ -466,22 +466,22 @@ def monPrint(aText, level="Sans_niveau", vers_ou=T_LOG, dialog=None,
     if MonParcellaire_TRACE == "NO" and level == "Sans_niveau":
         return  # Pas de trace et petit level
     chaine = ""
-    gravite = Qgis.Info
+    gravite = Qgis.MessageLevel.Info
     if level == "Sans_niveau":
         # Quand pas de niveau, on ne fait pas de retour ligne par defaut
         chaine = "{0}".format(aText)
     elif level == T_INF:
         chaine = "{0} {1}: {2}".format(PREFIX, U_INFO, aText)
-        gravite = Qgis.Info
+        gravite = Qgis.MessageLevel.Info
     elif level == T_WAR:
         chaine = "{0} {1}: {2}".format(PREFIX, E_WARNING, aText)
-        gravite = Qgis.Warning
+        gravite = Qgis.MessageLevel.Warning
     elif level == T_ERR:
         chaine = "{0} {1}: {2}".format(PREFIX, E_INTERDIT, aText)
-        gravite = Qgis.Critical
+        gravite = Qgis.MessageLevel.Critical
     elif level == T_OK:
         chaine = "{0} {1}: {2}".format(PREFIX, E_OK, aText)
-        gravite = Qgis.Success
+        gravite = Qgis.MessageLevel.Success
     else:
         chaine = ""
 
@@ -504,7 +504,7 @@ def monPrint(aText, level="Sans_niveau", vers_ou=T_LOG, dialog=None,
                            "le dialogue pour accéder la barre"
                 QgsMessageLog.logMessage(aMessage,
                                          MonParcellaire_LOG,
-                                         Qgis.Warning)
+                                         Qgis.MessageLevel.Warning)
                 QgsMessageLog.logMessage(chaine, MonParcellaire_LOG,
                                          gravite)
         else:

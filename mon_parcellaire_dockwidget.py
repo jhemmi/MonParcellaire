@@ -360,7 +360,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.setupUi(self)
         # Barre de comm
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum,
+                               QSizePolicy.Policy.Fixed)
 
         self.plugin_dir = os.path.dirname(__file__)
 
@@ -373,9 +374,11 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             LISTE_NOMS_IMPRIMABLES, LISTE_NOMS_IMPRIMES, \
             DERNIER_ATLAS_CHOISI = self.lireSettings()
         # Slot boutons
-        self.Prepare_buttonBox.button(QDialogButtonBox.Ok).\
+        self.Prepare_buttonBox.button(
+            QDialogButtonBox.StandardButton.Ok).\
             pressed.connect(self.slotTraiterRepertoireGPKGJointure)
-        self.Prepare_buttonBox.button(QDialogButtonBox.Save). \
+        self.Prepare_buttonBox.button(
+            QDialogButtonBox.StandardButton.Save). \
             pressed.connect(self.ecrireSettings)
         self.TestButton.pressed.connect(self.traiterCentipedePos)
 # pour test: self.SuiteButton.pressed.connect(self.affecterVignesSuites)
@@ -420,10 +423,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                                       "des attributs à joindre")
         # Cas où jointure est attendu mais n'existe pas (ou plus)
         if CHOIX_JOINTURE == "YES" and CHEMIN_JOINTURE is None:
-            self.Jointure_checkBox.setChecked(Qt.Unchecked)
+            self.Jointure_checkBox.setChecked(Qt.CheckState.Unchecked)
             CHOIX_JOINTURE == "NO"
         else:
-            self.Jointure_checkBox.setChecked(Qt.Checked)
+            self.Jointure_checkBox.setChecked(Qt.CheckState.Checked)
         self.slotBasculeJointure
 
         # Les noms imprimables dans NomsImprimables_listWidget
@@ -529,9 +532,10 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         CHOIX_TOUT_VOIR = s.value("MonParcellaire/Tout_voir", "NO")
         CHOIX_MES_PARCELLES = s.value(
             "MonParcellaire/ImportMesParcelles", "NO")
-        self.Mes_Parcelles_checkBox.setChecked(Qt.Checked) \
+        self.Mes_Parcelles_checkBox.setChecked(Qt.CheckState.Checked) \
             if CHOIX_MES_PARCELLES == "YES" \
-            else self.Mes_Parcelles_checkBox.setChecked(Qt.Unchecked)
+            else self.Mes_Parcelles_checkBox.setChecked(
+                Qt.CheckState.Unchecked)
         NOM_CSV_MES_PARCELLES = s.value(
             "MonParcellaire/nomMesParcelles",
             "Export geometries parcelles2025_Fronton.csv")
@@ -539,19 +543,21 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         CHAMP_NOM_VIGNE_MP = s.value("MonParcellaire/ChampNomVigneMP",
                                      MesParcellesNomPossible[0])
         CHOIX_ORIENTATION = s.value("MonParcellaire/Orientation", "NO")
-        self.Orientation_checkBox.setChecked(Qt.Checked) \
+        self.Orientation_checkBox.setChecked(Qt.CheckState.Checked) \
             if CHOIX_ORIENTATION == "YES" \
-            else self.Orientation_checkBox.setChecked(Qt.Unchecked)
+            else self.Orientation_checkBox.setChecked(Qt.CheckState.Unchecked)
         NOM_ORIENTATION = s.value("MonParcellaire/nomOrientation",
                                   "modele parcelles orientées")
         self.Orientation_lineEdit.setText(NOM_ORIENTATION)
         CHOIX_SUITE = s.value("MonParcellaire/VigneSuite", "NO")
-        self.Suite_checkBox.setChecked(Qt.Checked) if CHOIX_SUITE == "YES" \
-            else self.Suite_checkBox.setChecked(Qt.Unchecked)
+        if CHOIX_SUITE == "YES":
+            self.Suite_checkBox.setChecked(Qt.CheckState.Checked)
+        else:
+            self.Suite_checkBox.setChecked(Qt.CheckState.Unchecked)
         CHOIX_JOINTURE = s.value("MonParcellaire/PresenceJointure", "NO")
-        self.Jointure_checkBox.setChecked(Qt.Checked) \
+        self.Jointure_checkBox.setChecked(Qt.CheckState.Checked) \
             if CHOIX_JOINTURE == "YES" \
-            else self.Jointure_checkBox.setChecked(Qt.Unchecked)
+            else self.Jointure_checkBox.setChecked(Qt.CheckState.Unchecked)
         referentiel_plugin = os.path.join(self.plugin_dir, "data")
         REPERTOIRE_GPKG = s.value("MonParcellaire/repertoireGPKG",
                                   referentiel_plugin)
@@ -684,7 +690,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                                           LISTE_ATTRIBUTS_A_JOINDRE,
                                           "attributs à joindre")
         else:
-            self.Jointure_checkBox.setChecked(Qt.Unchecked)
+            self.Jointure_checkBox.setChecked(Qt.CheckState.Unchecked)
             self.AttributJointure_comboBox.setEnabled(False)
             self.AttributsAJoindre_listWidget.setEnabled(False)
             self.label_Jointure.setEnabled(False)
@@ -736,7 +742,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             listWidget.addItems(LISTE_VALEURS_POSSIBLE)
 
             for i in LISTE_VALEURS:
-                matching_items = listWidget.findItems(i, Qt.MatchExactly)
+                matching_items = listWidget.findItems(i,
+                    Qt.MatchFlag.MatchExactly)
                 for item in matching_items:
                     item.setSelected(True)
 
@@ -765,7 +772,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         nomRepertoire = QFileDialog.getExistingDirectory(self,
             self.tr("Choisir le répertoire de votre GPKG"),
             REPERTOIRE_GPKG,
-            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+            QFileDialog.Option.ShowDirsOnly)
         if len(nomRepertoire) == 0:
             return
         if not os.path.isdir(nomRepertoire):
@@ -912,8 +919,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     lesDelimiteurs = lesDelimiteurs + "TABULATION "
                 try:
                     dfJointure = pd.read_csv(CHEMIN_JOINTURE, sep="{}".
-                                             format(delimiteur))
-                except:
+                                         format(delimiteur))
+                except ValueError:
                     monPrint('Délimiteur "{0}" ne convient pas au csv {1}'.
                              format(delimiteur, CHEMIN_JOINTURE))
                     continue
@@ -930,7 +937,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     csv = QgsVectorLayer(nomCsv,
                                          MonParcellaire_JOI,
                                          'delimitedtext')
-                except:
+                except ValueError:  # JH to be test
                     monPrint("Délimiteur {0} ne convient pas au csv {1}".
                              format(delimiteur, nomCsv))
                     continue
@@ -978,7 +985,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                      " n'est unique: jointure impossible",
                      T_ERR, T_BAR, self)
             # Décocher le choix de jointure
-            self.Jointure_checkBox.setChecked(Qt.Unchecked)
+            self.Jointure_checkBox.setChecked(Qt.CheckState.Unchecked)
         return nomColonnes, nomColonnesUniques
 
     def extraireVignesMesParcelles(self):
@@ -1013,16 +1020,17 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             toutes_parcelles = QgsVectorLayer(nom_toutes_parcelles,
                     MesParcelles_GJ, "ogr")
             monProjet.addMapLayer(toutes_parcelles, False)
-        except:
+        except Exception:
             erreurGeojsonOuvert(nom_toutes_parcelles)
         # Filtrer les seules vignes
         try:
             traitementSelectionnerVignes(nom_toutes_parcelles)
+            gC = QgsFeatureRequest.InvalidGeometryCheck.GeometryAbortOnInvalid
             selection_input = QgsProcessingFeatureSourceDefinition(
                 nom_toutes_parcelles,
                 selectedFeaturesOnly=True,
                 featureLimit=-1,
-                geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
+                geometryCheck=gC)
             nom_vignes_tous_attributs = os.path.join(CHEMIN_SYNCHRONISATION,
                 "MES_PARCELLES_TOUS_ATTRIBUTS" + EXT_geojson)
             traitementSauverEcraser(selection_input, nom_vignes_tous_attributs)
