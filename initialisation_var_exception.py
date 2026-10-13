@@ -331,7 +331,7 @@ VerificationReferentielMonParcellaire = \
     Son encodage est de l'UTF-8 ? \n\
     La jointure a-t-elle un délimiteur parmi {}".\
     format(E_OK, EXTENSIONS_CONNUES, tuple(DELIMITEURS_CONNUS))
-VerificationChoixAttibut= \
+VerificationChoixAttibut = \
     "Dans l'onglet synchronisation, il faut choisir le nom de l'attribut \n\
     Mes Parcelles qui est en correspondance avec le nom des vignes dans \n\
     CoopViti"

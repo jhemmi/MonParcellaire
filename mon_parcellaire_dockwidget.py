@@ -1227,7 +1227,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                              " sauvegarde GPKGs"),
                      T_OK)
 
-    def affecterVignesSuites(self, 
+    def affecterVignesSuites(self,
             source=MonParcellaire_AFF_SANS_SUITE + EXT_geojson,
             choix_cave_pour_apport='NON',
             cible=MonParcellaire_SUI + SEP_U + 'SANS_superficie' + EXT_geojson
@@ -1580,7 +1580,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             # print("Position {} parcelle {}".format(pos, p))
             df_une = dfT[
                 (dfT['nom'] == p) & (dfT['pourcent_ut_dans_parcelle'] > pour)]
-            # print("Colonnes dans df Parcelle {}".format(list(df_une.columns)))
+            # print("Cols dans df Parcelle {}".format(list(df_une.columns)))
             # print("df Parcelle orientation {}".format(df_une['orientation']))
             info_terroir = df_une[['pourcent_ut_dans_parcelle',
                 'CODE_UT', 'N_REG_SOL', 'NOMENCLATU', 'RUM',
