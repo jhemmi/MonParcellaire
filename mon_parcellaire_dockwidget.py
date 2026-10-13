@@ -1049,7 +1049,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     MonParcellaireFiltre_GJ, "ogr")
             monProjet.addMapLayer(toutes_attr_vignes, False)
             # nouveauGroupeMP.addLayer(toutes_attr_vignes)
-        except:
+        except Exception:
             aPrint = "Vecteur {} ne convient pas ".format(nom_toutes_parcelles)
             aPrint = aPrint + "pour la sélection des vignes"
             monPrint(aPrint, T_ERR)
@@ -1071,7 +1071,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     MonParcellaire_attr_MP, "ogr")
             monProjet.addMapLayer(toutes_vignes, False)
             nouveauGroupeMP.addLayer(toutes_vignes)
-        except:
+        except Exception:
             monPrint("Vecteur {0} ne convient pas pour gerer attribut pour"
                      "Mon Parcellaire la sélection des vignes".
                      format(nom_vignes_tous_attributs), T_ERR)
@@ -1107,7 +1107,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 monProjet.addMapLayer(vignes_orientees, False)
                 nouveauGroupeOrientation.addLayer(vignes_orientees)
                 return nom_vignes_orientees
-        except:
+        except Exception:
             monPrint(
                 "Vecteur {0} ne convient pas pour joindre les orientations".
                 format(nom_vignes_orientees_modele), T_ERR)
@@ -1449,9 +1449,9 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                         sub = str(f) + ' ' + str(o) + ' ' + "'" + str(v) + "'"
                         katman.layer().setSubsetString(sub)
                         # print(layer_name + ' couche filtrée.')
-                    except:
+                    except Exception:
                         print(layer_name + " n'est pas filtrée.")
-                except:
+                except Exception:
                     print("Une couche n'est pas filtrée.")
         return
 
@@ -1496,6 +1496,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                             'INCLUDE_METADATA': True, 'DISABLE_TILED': False,
                             'SIMPLIFY': True, 'TEXT_FORMAT': 1,
                             'IMAGE_COMPRESSION': 0, 'OUTPUT': pdf_print})
+            # TODO: JH Gérer l'execption _core.QgsProcessingException
         monPrint("Fin des impression de la liste : {}".format(selection))
         return
 
