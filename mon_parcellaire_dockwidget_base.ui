@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string notr="true">Mon Parcellaire V3.40.12 - Qt5 -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V3.40.13 - Qt5 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
