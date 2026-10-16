@@ -39,7 +39,7 @@ from .initialisation_var_exception import (monPrint, MonParcellaire_TRACE,
                                            APPLI_NOM, APPLI_VERSION,
                                            VERSION_PANDAS,
                                            T_ERR, T_WAR, T_OK, T_BAR,
-                                           E_WARNING, E_CLAP,
+                                           T_INF, E_WARNING, E_CLAP,
                                            EXT_csv, EXT_geojson, EXT_qgz,
                                            EXT_kml, EXT_pdf, EXT_gpkg,
                                            EXTENSIONS_CONNUES,
@@ -109,8 +109,12 @@ except ImportError:
 
 import geopandas as gpd
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'mon_parcellaire_dockwidget_base.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(
+        os.path.dirname(__file__),
+        'mon_parcellaire_dockwidget_base.ui'),
+    from_imports=True,
+    import_from='mon_parcellaire')
 
 
 MP_PAR = MonParcellaire_PAR
@@ -453,6 +457,8 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.initialiserCombo(self.Atlas_comboBox, LISTE_ATLAS,
                               DERNIER_ATLAS_CHOISI,
                               "des atlas disponibles dans le projet")
+        # TODO: JH ecrire           
+        self.slotBasculeAtlas()
         self.ecrireSettings()
         return
 
@@ -661,6 +667,23 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.label_chemin_orientation.setEnabled(False)
             self.label_chemin_Mes_Parcelles.setEnabled(False)
         return
+
+    def slotBasculeAtlas(self):
+        """ 
+        Si combo_atlas contient "Aucun atlas disponible"
+        Ne pas lancer d'impression
+        """
+        choix_atlas = self.Atlas_comboBox.currentText()
+        if choix_atlas == "Aucun atlas disponible":
+            self.ImprimerTousButton.setEnabled(False)
+            self.ImprimerSelectionButton.setEnabled(False)
+            monPrint("Pas de projet ouvert avec un atlas, pas d'impression possible",
+                     T_WAR)
+            monPrint("Ouvrir un projet contenant au moins un atlas",)
+            monPrint("et relancer QGIS et l'extension Mon Parcellaire",)
+        else:
+            self.ImprimerTousButton.setEnabled(True)
+            self.ImprimerSelectionButton.setEnabled(True)
 
     def slotBasculeJointure(self):
         """
@@ -937,7 +960,7 @@ class MonParcellaireDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     csv = QgsVectorLayer(nomCsv,
                                          MonParcellaire_JOI,
                                          'delimitedtext')
-                except ValueError:  # JH to be test
+                except Exception:
                     monPrint("Délimiteur {0} ne convient pas au csv {1}".
                              format(delimiteur, nomCsv))
                     continue

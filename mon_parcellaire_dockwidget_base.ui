@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>388</width>
-    <height>420</height>
+    <width>398</width>
+    <height>427</height>
    </rect>
   </property>
   <property name="font">
@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string notr="true">Mon Parcellaire V3.40.13 - Qt5 -  jhemmi.eu</string>
+   <string notr="true">Mon Parcellaire V3.40.14 - Qt5 -  jhemmi.eu</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -365,7 +365,7 @@
            <rect>
             <x>10</x>
             <y>0</y>
-            <width>460</width>
+            <width>361</width>
             <height>353</height>
            </rect>
           </property>
@@ -626,7 +626,7 @@
            <rect>
             <x>0</x>
             <y>230</y>
-            <width>361</width>
+            <width>371</width>
             <height>111</height>
            </rect>
           </property>

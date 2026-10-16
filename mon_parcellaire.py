@@ -20,13 +20,14 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
-# Initialize Qt resources from file resources.py
 
 # Import the code for the DockWidget
 from .mon_parcellaire_dockwidget import MonParcellaireDockWidget
 import os
-from . import resources
-dir(resources)
+
+icon_path = os.path.join(
+    os.path.dirname(__file__),
+    'icon.png')
 
 
 class MonParcellaire:
@@ -156,8 +157,8 @@ class MonParcellaire:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-        icon_path = ':/plugins/mon_parcellaire/icon.png'
-        print("Icon path {}".format(icon_path))
+
+        # print("Icon path {}".format(icon_path))
 
         self.add_action(
             icon_path,
@@ -167,8 +168,6 @@ class MonParcellaire:
 
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
-
-        print("** Fermeture MonParcellaire")
 
         # disconnects
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
